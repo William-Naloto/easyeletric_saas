@@ -1,0 +1,17 @@
+# OS/editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# local secrets
+.env
+*.env
+*.local
+
+# generated archives
+*.zip
+
+# Never commit tokens
+*token*
+*pat*
