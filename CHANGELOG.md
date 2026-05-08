@@ -1,25 +1,23 @@
 # Changelog
 
-## v0.3 — 2026-05-08
+## v0.4 — Produção inicial
 
-### Added
-- Aba `Kits comerciais` para monetização por agrupamento de materiais.
-- AffiliateEngine com campanha/UTM padrão.
-- Queries comerciais para Kit QDF, Kit DR+DPS, Kit cabos, Kit infraestrutura, Kit chuveiro e Kit iluminação.
-- Documentação de deploy em GitHub Repository.
-- Estrutura Git-ready com `index.html`, `README.md`, `.nojekyll`, scripts e docs.
+- Adicionado GitHub Pages workflow.
+- Adicionadas landing pages SEO/tráfego pago.
+- Adicionados robots.txt, sitemap.xml, manifest.json e 404.html.
+- Adicionada aba Produção & SEO.
+- Atualizadas metatags SEO/Open Graph.
+- Atualizado AffiliateEngine para v0.4.
+- Adicionado tracking local de clique afiliado sem envio remoto.
+- Atualizado armazenamento local para v0.4 com fallback v0.3.
 
-### Changed
-- Branding de trabalho atualizado para EasyEletric SaaS.
-- Exportação CSV atualizada para `easyeletric-materiais-v0-3.csv`.
-- LocalStorage atualizado para `easyeletric-project-v03`.
+## v0.3 — Materiais e afiliados
 
-### Security
-- PAT não deve ser salvo no repositório nem em scripts.
-- Deploy script usa variável de ambiente `GITHUB_TOKEN`.
+- Kits comerciais.
+- Estrutura Git-ready.
+- Links afiliados configuráveis.
 
-## v0.2 — 2026-05-08
+## v0.2 — Refatoração SaaS
 
-- Layout SaaS profissional.
-- Suporte a circuitos 1F+N, 2F, 2F+N, 3F e 3F+N.
-- QDF, DR/IDR, DDR, DPS e lista expandida de materiais.
+- Motor trifásico corrigido.
+- QDF e lista expandida de materiais.

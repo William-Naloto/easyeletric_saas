@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://william-naloto.github.io/easyeletric_saas/sitemap.xml

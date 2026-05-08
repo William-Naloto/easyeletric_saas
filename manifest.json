@@ -1,0 +1,10 @@
+{
+  "name": "EasyEletric SaaS",
+  "short_name": "EasyEletric",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#07111f",
+  "theme_color": "#07111f",
+  "description": "Dimensionador elétrico residencial com lista de materiais e links afiliados.",
+  "icons": []
+}

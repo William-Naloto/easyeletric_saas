@@ -1,48 +1,23 @@
 # EasyEletric SaaS
 
-Frontend estático para pré-dimensionamento elétrico residencial com lista de materiais, QDF, DR/IDR, DDR, DPS e links de compra/afiliados.
+Pré-dimensionador elétrico residencial estático, com circuitos monofásicos, bifásicos e trifásicos, QDF, lista de materiais e links afiliados.
 
 ## Versão atual
 
-v0.3 — Materiais, kits comerciais, AffiliateEngine e preparação para deploy GitHub.
+v0.4 — Produção inicial, GitHub Pages, SEO e funis de tráfego.
 
-## Como executar localmente
+## Arquivos principais
 
-Abra `index.html` no navegador.
+- `index.html` — aplicação principal.
+- `pages/` — landing pages SEO/tráfego pago.
+- `.github/workflows/pages.yml` — deploy automático GitHub Pages.
+- `robots.txt` e `sitemap.xml` — indexação.
+- `docs/` — histórico e documentação.
 
-Opcionalmente, rode um servidor estático local:
+## Privacidade
 
-```bash
-python -m http.server 8080
-```
+O MVP não usa login, backend ou banco de dados. O salvamento ocorre localmente no navegador via `localStorage`.
 
-Depois acesse:
+## Aviso técnico
 
-```text
-http://localhost:8080
-```
-
-## Deploy recomendado
-
-### Opção 1 — GitHub Pages por branch
-
-1. Faça push do conteúdo deste repositório para `main`.
-2. No GitHub, vá em `Settings > Pages`.
-3. Selecione `Deploy from a branch`.
-4. Escolha `main` e pasta `/root`.
-5. Salve.
-
-### Opção 2 — Vercel ou Netlify
-
-1. Conecte o repositório `William-Naloto/easyeletric_saas`.
-2. Configure como site estático.
-3. Build command: vazio.
-4. Output directory: `/`.
-
-## Segurança
-
-Não commitar PAT, chaves, tokens ou credenciais. Use variáveis de ambiente ou autenticação interativa do GitHub CLI.
-
-## Disclaimer técnico
-
-Esta aplicação é uma ferramenta de apoio para pré-dimensionamento. Não substitui projeto elétrico, ART/RRT, consulta à ABNT NBR 5410 oficial, padrão da concessionária e catálogos dos fabricantes.
+Ferramenta de apoio e pré-dimensionamento. Não substitui projeto elétrico, ART/RRT, ABNT NBR 5410 oficial, padrão da concessionária e validação por profissional habilitado.
