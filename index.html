@@ -2986,15 +2986,15 @@ function runQATests(){
   test("[Affil] Sistema afiliado localStorage",()=>{
     return typeof getAffLinks()==="object"&&"cabo_2.5mm" in getAffLinks();
   });
-  test("[DevOps] SheetJS XLSX disponível",()=>typeof XLSX!=="undefined");
+  test("[DevOps] Exportação XLSX disponível (lazy-load sob demanda)",()=>typeof exportToExcel==="function");
 
   // --- 3 NEW TESTS ---
   test("[AUTO] Gerar circuitos por área — sala 20m² gera ≥1 iluminação + ≥1 TUG",()=>{
     const testRoom={id:99,name:"Sala Teste",area:20,perim:18,type:"sala",dist:12};
-    const{illVA,tugVA}=calcRoomPreview(testRoom);
+    const{illVA,tugVA127,tugVA220}=calcRoomPreview(testRoom);
     // illVA for 20m²: 100 + ceil((20-6)/4)*60 = 100+4*60=340VA → 1 circuit OK
     // tugVA for sala 18m perim: ceil(18/5)*100 = 4*100 = 400VA → 1 circuit
-    return illVA>=100&&tugVA>=100;
+    return illVA>=100&&(tugVA127+tugVA220)>=100;
   });
   test("[AUTO] Iluminação NBR: 6m²=100VA, 10m²=160VA",()=>{
     const r6={area:6,perim:8,type:"sala"};
@@ -3134,7 +3134,7 @@ function exportToExcel(){
     toast("Carregando XLSX…","info");
     const sc=document.createElement("script");
     sc.src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
-    sc.integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==";
+    sc.integrity="sha512-r22gChDnGvBylk90+2e/ycr3RVrDi8DIOkIGNhJlKfuyQM4tIRAI062MaV8sfjQKYVGjOBaZBOA87z+IhZE9DA==";
     sc.crossOrigin="anonymous";
     sc.onload=()=>exportToExcel();
     sc.onerror=()=>toast("Falha ao carregar SheetJS","err");
