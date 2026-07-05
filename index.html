@@ -841,6 +841,36 @@ nav {
   font-size:11px; color:var(--t2); font-family:var(--mono); line-height:1.9;
 }
 .memo-item strong { color:var(--t1) }
+/* Collapsible memorial sections — technical documentation style */
+.memo-sec {
+  background:var(--bgc); border:1px solid var(--br);
+  border-radius:var(--rm); margin-bottom:8px; overflow:hidden;
+}
+.memo-sec summary {
+  list-style:none; cursor:pointer; user-select:none;
+  display:flex; align-items:center; gap:10px;
+  padding:10px 14px; transition:background .15s;
+}
+.memo-sec summary::-webkit-details-marker { display:none }
+.memo-sec summary:hover { background:var(--bgh) }
+.memo-sec-id {
+  font-family:var(--mono); font-size:11px; font-weight:700;
+  color:var(--acl); background:var(--acg); border:1px solid var(--brf);
+  padding:2px 8px; border-radius:8px; flex-shrink:0;
+}
+.memo-sec-name {
+  font-size:12px; font-weight:600; color:var(--t1);
+  flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+.memo-sec-meta { display:flex; gap:4px; flex-shrink:0; align-items:center }
+.memo-sec .chevron { font-size:11px }
+.memo-sec[open] .chevron { transform:rotate(180deg) }
+.memo-sec-body {
+  padding:10px 14px; border-top:1px solid var(--br);
+  font-size:11px; color:var(--t2); font-family:var(--mono); line-height:1.9;
+  background:var(--bg2);
+}
+.memo-sec-body strong { color:var(--t1) }
 .ok-span  { color:var(--ok) }  .er-span { color:var(--er) }
 .ac-span  { color:var(--acl) } .wn-span { color:var(--wn) }
 
@@ -1621,8 +1651,14 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
 
       <!-- MEMORIAL -->
       <div id="panel-memo" style="display:none">
-        <div style="font-size:13px;font-weight:600;color:var(--t2);display:flex;align-items:center;gap:7px;margin-bottom:12px">
-          <i class="fa-solid fa-scroll" style="color:var(--ac)"></i> Memorial de Cálculo — NBR 5410:2023
+        <div class="sh" style="margin-bottom:12px;flex-wrap:wrap;gap:8px">
+          <div style="font-size:13px;font-weight:600;color:var(--t2);display:flex;align-items:center;gap:7px">
+            <i class="fa-solid fa-scroll" style="color:var(--ac)"></i> Memorial de Cálculo — NBR 5410:2023
+          </div>
+          <div class="toolbar-group">
+            <button class="btn btn-tb" onclick="memoToggleAll(true)"><i class="fa-solid fa-angles-down"></i> Expandir tudo</button>
+            <button class="btn btn-tb" onclick="memoToggleAll(false)"><i class="fa-solid fa-angles-up"></i> Recolher tudo</button>
+          </div>
         </div>
         <div id="memoContent">
           <div class="empty-st"><i class="fa-solid fa-scroll"></i><p>Calcule para gerar memorial</p></div>
@@ -3064,25 +3100,44 @@ function filterBOM(q){
 // MEMORIAL
 // ================================================================
 function renderMemo(res,g){
-  document.getElementById("memoContent").innerHTML=res.map(r=>{
+  document.getElementById("memoContent").innerHTML=res.map((r,i)=>{
     const pct=parseFloat(r.vd.pct);
     const fIb=r.wtype==="tri"?`P/(√3×Vll×FP) = ${r.l.power}/(1.732×${r.V}×${r.l.pf})`:
               r.wtype==="bi"?`P/(Vll×FP) = ${r.l.power}/(${r.V}×${r.l.pf})`:
               `P/(Vfn×FP) = ${r.l.power}/(${r.V}×${r.l.pf})`;
     const fDv=r.wtype==="tri"?`√3×ρ×L×Ib/S = 1.732×${NBR.rho}×${r.l.distance}×${r.Ib}/${r.sz}`:
               `2×ρ×L×Ib/S = 2×${NBR.rho}×${r.l.distance}×${r.Ib}/${r.sz}`;
-    return`<div class="memo-item">
-<strong>C${String(r.idx).padStart(2,"0")} — ${r.l.name}</strong> | ${names[r.l.type]} | ${r.wt} | V=${r.V}V (${r.wtype})<br>
+    const secOk=parseFloat(r.Izc)>=parseFloat(r.Ib);
+    const dvOk=pct<=r.maxDp;
+    const allOk=secOk&&dvOk&&r.mcbOk;
+    return`<details class="memo-sec"${i===0?" open":""}>
+    <summary>
+      <span class="memo-sec-id">C${String(r.idx).padStart(2,"0")}</span>
+      <span class="memo-sec-name">${r.l.name}</span>
+      <span class="memo-sec-meta">
+        <span class="badge b-gr">${r.wt}</span>
+        <span class="badge b-inf">${r.sz}mm²</span>
+        <span class="badge b-gr">${r.mcb}A/${r.curve}</span>
+        <span class="badge ${allOk?"b-ok":"b-er"}">${allOk?"✓ Conforme":"✗ Verificar"}</span>
+        <i class="fa-solid fa-chevron-down chevron"></i>
+      </span>
+    </summary>
+    <div class="memo-sec-body">
+${names[r.l.type]} | ${r.wt} | V=${r.V}V (${r.wtype})<br>
 P=${r.l.power}W | L=${r.l.distance}m | Met.${r.l.method} | FP=${r.l.pf}<br>
 <strong>Ib</strong> = ${fIb} = <span class="ac-span">${r.Ib} A</span><br>
 <strong>Ft</strong>=${g.Ft} (Tab.40,Ta=${g.Ta}°C) | <strong>Fg</strong>=${g.Fg} (Tab.42,n=${g.nC})<br>
 <strong>Iz</strong>=${r.Iz}A | <strong>Izc</strong>=${r.Iz}×${g.Ft}×${g.Fg}=<span class="ok-span">${r.Izc}A</span><br>
-<strong>Seção</strong>: <span class="ac-span">${r.sz} mm²</span> | Min.NBR=${NBR.minS[r.l.type]}mm² | Izc(${r.Izc}A)≥Ib(${r.Ib}A) ${parseFloat(r.Izc)>=parseFloat(r.Ib)?"✓ OK":"✗ FALHA!"}<br>
+<strong>Seção</strong>: <span class="ac-span">${r.sz} mm²</span> | Min.NBR=${NBR.minS[r.l.type]}mm² | Izc(${r.Izc}A)≥Ib(${r.Ib}A) ${secOk?"✓ OK":"✗ FALHA!"}<br>
 <strong>ΔV</strong>=${fDv}=${r.vd.dv}V=<span class="${pct>r.maxDp?"er-span":"ok-span"}">${r.vd.pct}%</span> ${pct>r.maxDp?"EXCEDE "+r.maxDp+"%!":"≤"+r.maxDp+"% OK"} | Vfinal=${r.vd.fin}V<br>
 <strong>MCB</strong>: ${r.mcb}A/${r.curve} | ${r.Ib}A≤${r.mcb}A≤${r.Izc}A ${r.mcbOk?"✓ OK":"✗ FALHA"}<br>
 <strong>DR/IDR</strong>: ${r.mcb}A/${r.dr}mA | <strong>Icc</strong>=${r.icc}A
-    </div>`;
+    </div>
+  </details>`;
   }).join("");
+}
+function memoToggleAll(open){
+  document.querySelectorAll("#memoContent .memo-sec").forEach(d=>{d.open=open});
 }
 
 function updStats(res){
@@ -3349,7 +3404,7 @@ function exportToPDF(){
     toast("Carregando jsPDF…","info");
     const sc=document.createElement("script");
     sc.src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js";
-    sc.integrity="sha512-qZvrmS2ekKPF2mSznTQsxqPgnpkI4DNTlrdUmTzrDgektczlKNRRhy5X5AAOnx5S09ydFYWWNSfDMM6qLBTQ==";
+    sc.integrity="sha512-qZvrmS2ekKPF2mSznTQsxqPgnpkI4DNTlrdUmTzrDgektczlKNRRhy5X5AAOnx5S09ydFYWWNSfcEqDTTHgtNA==";
     sc.crossOrigin="anonymous";
     sc.onload=()=>exportToPDF();
     sc.onerror=()=>{ toast("Falha ao carregar jsPDF","err"); };
