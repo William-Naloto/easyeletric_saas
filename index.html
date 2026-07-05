@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="description" content="EasyEletric SaaS v3.0 - Projetista elétrico residencial NBR 5410:2023. Dimensionamento automático por cômodos, QDF unifilar, mono/bi/trifásico.">
+<meta name="description" content="EasyEletric SaaS v3.1 - Projetista elétrico residencial NBR 5410:2023. Dimensionamento automático por cômodos, QDF unifilar, mono/bi/trifásico.">
 <meta name="keywords" content="dimensionador elétrico,NBR 5410,calcular disjuntor,QDF residencial,DR DPS,projeto elétrico">
 <meta name="robots" content="index,follow">
 <meta property="og:title" content="EasyEletric SaaS | Projetista Elétrico NBR 5410:2023">
@@ -1202,7 +1202,7 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
   <div class="nav-logo" onclick="gotoSection('hero')">
     <div class="logo-icon"><i class="fa-solid fa-bolt"></i></div>
     <span>EasyEletric</span>
-    <span class="logo-badge">SaaS v3.0</span>
+    <span class="logo-badge">SaaS v3.1</span>
   </div>
   <div class="nav-links">
     <button class="nav-link" onclick="gotoSection('features')">Recursos</button>
@@ -1279,7 +1279,7 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
      FEATURES
      ============================================================ -->
 <section class="section" id="features">
-  <div class="sec-lbl"><i class="fa-solid fa-star"></i> Recursos v3.0</div>
+  <div class="sec-lbl"><i class="fa-solid fa-star"></i> Recursos v3.1</div>
   <h2 class="sec-h2">Projetista Assistido Residencial</h2>
   <p class="sec-sub">Duas formas de uso: informe cômodos e áreas para geração automática, ou adicione cargas manualmente.</p>
   <div class="feat-grid">
@@ -1321,9 +1321,9 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
     </div>
     <div class="fc-card">
       <div class="fc-icon" style="background:var(--erb);color:var(--er)"><i class="fa-solid fa-flask"></i></div>
-      <h3>QA Suite — 18 Testes</h3>
+      <h3>QA Suite — 22 Testes</h3>
       <p>Fórmulas elétricas, tensão por sistema, condutor mínimo, queda de tensão, automático por cômodo, balanceamento e afiliados.</p>
-      <span class="ftt">18 testes QA</span>
+      <span class="ftt">22 testes QA</span>
     </div>
     <div class="fc-card">
       <div class="fc-icon" style="background:var(--okb);color:var(--ok)"><i class="fa-solid fa-floppy-disk"></i></div>
@@ -1771,12 +1771,12 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
       <div class="footer-col">
         <h4>Sobre</h4>
         <a href="https://github.com/William-Naloto/easyeletric_saas" target="_blank">GitHub</a>
-        <a href="CHANGELOG.md">Changelog v3.0</a>
+        <a href="CHANGELOG.md">Changelog v3.1</a>
         <a href="README.md">Documentação</a>
       </div>
     </div>
     <div class="footer-bottom">
-      <p>EasyEletric SaaS v3.0 &copy; 2025 William Naloto &bull; Sem coleta de PII &bull;
+      <p>EasyEletric SaaS v3.1 &copy; 2025 William Naloto &bull; Sem coleta de PII &bull;
         <a href="https://github.com/William-Naloto/easyeletric_saas" target="_blank">GitHub Pages</a><br>
         <strong>Aviso:</strong> Ferramenta de pré-dimensionamento. Não substitui projeto elétrico, ART/RRT, consulta NBR 5410 oficial e catálogos de fabricantes.
       </p>
@@ -1784,7 +1784,7 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
         <span class="fbadge">NBR 5410</span>
         <span class="fbadge">Offline</span>
         <span class="fbadge">No PII</span>
-        <span class="fbadge">v3.0</span>
+        <span class="fbadge">v3.1</span>
       </div>
     </div>
   </div>
@@ -1856,13 +1856,37 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
 // NBR 5410:2023 ENGINE — validated formulas
 // ================================================================
 const NBR = {
+  // Capacidade de condução (A) — cobre, NBR 5410 Tabela 36 (PVC 70°C) e
+  // Tabela 37 (EPR/XLPE 90°C), por método de instalação e número de
+  // condutores carregados (2 = F+N ou F+F; 3 = trifásico).
   amp: {
-    B1:{1.5:15,2.5:20,4:27,6:35,10:47,16:62,25:81,35:100,50:120,70:150,95:182,120:210},
-    B2:{1.5:14,2.5:18.5,4:25,6:32,10:43,16:57,25:75,35:92,50:111,70:139,95:168,120:194},
-    C:{1.5:17,2.5:23,4:30,6:39,10:53,16:70,25:92,35:113,50:136,70:173,95:210,120:242},
-    D:{1.5:17,2.5:22,4:29,6:36,10:48,16:62,25:80,35:97,50:116,70:143,95:174,120:200},
-    E:{1.5:21,2.5:28,4:37,6:47,10:64,16:85,25:112,35:138,50:166,70:211,95:255,120:297}
+    PVC:{
+      B1:{2:{1.5:17.5,2.5:24,4:32,6:41,10:57,16:76,25:101,35:125,50:151,70:192,95:232,120:269},
+          3:{1.5:15.5,2.5:21,4:28,6:36,10:50,16:68,25:89,35:110,50:134,70:171,95:207,120:239}},
+      B2:{2:{1.5:16.5,2.5:23,4:30,6:38,10:52,16:69,25:90,35:111,50:133,70:168,95:201,120:232},
+          3:{1.5:15,2.5:20,4:27,6:34,10:46,16:62,25:80,35:99,50:118,70:149,95:179,120:206}},
+      C:{2:{1.5:19.5,2.5:27,4:36,6:46,10:63,16:85,25:112,35:138,50:168,70:213,95:258,120:299},
+         3:{1.5:17.5,2.5:24,4:32,6:41,10:57,16:76,25:96,35:119,50:144,70:184,95:223,120:259}},
+      D:{2:{1.5:22,2.5:29,4:38,6:47,10:63,16:81,25:104,35:125,50:148,70:183,95:216,120:246},
+         3:{1.5:18,2.5:24,4:31,6:39,10:52,16:67,25:86,35:103,50:122,70:151,95:179,120:203}},
+      E:{2:{1.5:22,2.5:30,4:40,6:51,10:70,16:94,25:119,35:148,50:180,70:232,95:282,120:328},
+         3:{1.5:18.5,2.5:25,4:34,6:43,10:60,16:80,25:101,35:126,50:153,70:196,95:238,120:276}}
+    },
+    XLPE:{
+      B1:{2:{1.5:23,2.5:31,4:42,6:54,10:75,16:100,25:133,35:164,50:198,70:253,95:306,120:354},
+          3:{1.5:20,2.5:28,4:37,6:48,10:66,16:88,25:117,35:144,50:175,70:222,95:269,120:312}},
+      B2:{2:{1.5:22,2.5:30,4:40,6:51,10:69,16:91,25:119,35:146,50:175,70:221,95:265,120:305},
+          3:{1.5:19.5,2.5:26,4:35,6:44,10:60,16:80,25:105,35:128,50:154,70:194,95:233,120:268}},
+      C:{2:{1.5:24,2.5:33,4:45,6:58,10:80,16:107,25:138,35:171,50:209,70:269,95:328,120:382},
+         3:{1.5:22,2.5:30,4:40,6:52,10:71,16:96,25:119,35:147,50:179,70:229,95:278,120:322}},
+      D:{2:{1.5:26,2.5:34,4:44,6:56,10:73,16:95,25:121,35:146,50:173,70:213,95:252,120:287},
+         3:{1.5:22,2.5:29,4:37,6:46,10:61,16:79,25:101,35:122,50:144,70:178,95:211,120:240}},
+      E:{2:{1.5:26,2.5:36,4:49,6:63,10:86,16:115,25:149,35:185,50:225,70:289,95:352,120:410},
+         3:{1.5:23,2.5:32,4:42,6:54,10:75,16:100,25:127,35:158,50:192,70:246,95:298,120:346}}
+    }
   },
+  // Horas de uso típico por dia, para estimativa de consumo mensal
+  usageH:{iluminacao:5,tomadas:4,climatizacao:8,aquecimento:0.5,motor:2,uso_geral:4},
   sizes:[1.5,2.5,4,6,10,16,25,35,50,70,95,120],
   fg:[1.00,0.80,0.70,0.65,0.60,0.57,0.54,0.52,0.50,0.48],
   ft:{10:1.22,15:1.17,20:1.12,25:1.06,30:1.00,35:0.94,40:0.87,45:0.79,50:0.71},
@@ -1936,12 +1960,27 @@ function calcVd(Ib,L,S,wt){
 }
 function gFg(n){return NBR.fg[Math.min(n-1,NBR.fg.length-1)]||0.48}
 function gFt(t){const ks=Object.keys(NBR.ft).map(Number).sort((a,b)=>a-b);let c=ks[0];for(const k of ks)if(Math.abs(k-t)<Math.abs(c-t))c=k;return NBR.ft[c]}
-function gIz(m,s,ins){return(NBR.amp[m]||NBR.amp.B1)[s]*(ins==="XLPE"?1.15:1.0)}
+// Iz de tabela: método, seção, isolação (PVC=Tab.36 / XLPE=Tab.37) e
+// nº de condutores carregados (2 = mono/bifásico, 3 = trifásico)
+function gIz(m,s,ins,nc){
+  const tab=NBR.amp[ins==="XLPE"?"XLPE":"PVC"];
+  const met=tab[m]||tab.B1;
+  return(met[nc===3?3:2])[s];
+}
+const nLoadedOf=wt=>wt==="A+B+C"?3:2;
 const nextS=s=>{const i=NBR.sizes.indexOf(s);return i<NBR.sizes.length-1?NBR.sizes[i+1]:s};
-function selCond(Ib,m,Ft,Fg,ins){
-  for(const s of NBR.sizes){if(gIz(m,s,ins)*Ft*Fg>=Ib)return s}return 120;
+function selCond(Ib,m,Ft,Fg,ins,nc){
+  for(const s of NBR.sizes){if(gIz(m,s,ins,nc)*Ft*Fg>=Ib)return s}return 120;
 }
 const selMCB=Ib=>{for(const r of NBR.mcb)if(r>=Ib)return r;return 125};
+// Coordenação disjuntor × condutor adotado (NBR 5410 §5.3.4):
+// maior In padrão que satisfaz Ib ≤ In ≤ Izc — o disjuntor protege o
+// condutor pela sua capacidade máxima, não apenas pela carga.
+function selMCBCoord(Ib,Izc){
+  let best=null;
+  for(const r of NBR.mcb){if(r>=Ib&&r<=Izc)best=r}
+  return best;
+}
 const mcbCurve=t=>(t==="motor"||t==="climatizacao")?"C":"B";
 const drSens=t=>t==="iluminacao"?300:30;
 
@@ -2616,7 +2655,8 @@ function calculateAll(targetTab="circ"){
       results=loads.map((l,i)=>{
         const Ib=calcIb(l);
         const wt=l.wiringType||"A+N";
-        let sz=selCond(Ib,l.method,Ft,Fg,ins);
+        const nc=nLoadedOf(wt);
+        let sz=selCond(Ib,l.method,Ft,Fg,ins,nc);
         sz=Math.max(sz,NBR.minS[l.type]||2.5);
         let vd=calcVd(Ib,l.distance,sz,wt);
         let upsized=false,upsizeImpossible=false;
@@ -2636,17 +2676,24 @@ function calculateAll(targetTab="circ"){
         }
         // PE section per circuit — NBR 5410 §5.4.4
         const peSz=sz<=16?sz:sz<=35?16:sz/2;
-        // Upsize for MCB criterion: In must be <= Izc
-        const mcb=selMCB(Ib),curve=mcbCurve(l.type),dr=drSens(l.type);
-        let Iz=gIz(l.method,sz,ins);
+        // Proteção coordenada com o condutor ADOTADO: Ib ≤ In ≤ Izc,
+        // escolhendo o maior In padrão suportado pelo cabo (§5.3.4).
+        const curve=mcbCurve(l.type),dr=drSens(l.type);
+        let Iz=gIz(l.method,sz,ins,nc);
         let Izc=parseFloat((Iz*Ft*Fg).toFixed(2));
-        if(mcb>Izc){
+        let mcb=selMCBCoord(Ib,Izc);
+        if(mcb===null){
+          // Nenhum In padrão cabe em [Ib, Izc] — aumentar a seção até
+          // o menor In ≥ Ib caber sob o novo Izc.
+          mcb=selMCB(Ib);
           for(const ts of NBR.sizes){
             if(ts<=sz)continue;
-            const newIz=gIz(l.method,ts,ins);
+            const newIz=gIz(l.method,ts,ins,nc);
             const newIzc=parseFloat((newIz*Ft*Fg).toFixed(2));
             if(mcb<=newIzc){sz=ts;Iz=newIz;Izc=newIzc;vd=calcVd(Ib,l.distance,sz,wt);upsized=true;break}
           }
+          // Após o upsize o cabo suporta mais — reaproveitar a folga
+          mcb=selMCBCoord(Ib,Izc)??mcb;
         }
         const{V,type:wtype}=getWiringVoltage(wt);
         const icc=(V/(0.05+2*NBR.rho*l.distance/sz)).toFixed(0);
@@ -2794,9 +2841,22 @@ function renderQDF(res){
   if(st==="trifasico") feederIb=demandedPower/(Math.sqrt(3)*Vll*0.92);
   else if(st==="bifasico") feederIb=demandedPower/(Vll*0.92);
   else feederIb=demandedPower/(Vfn*0.92);
-  const feederSz=selCond(feederIb,"C",1.0,1.0,"PVC");
-  const feederMCB=selMCB(feederIb);
-  const feederMCBVal=[25,32,40,50,63,80,100,125,160].find(v=>v>=feederMCB)||63;
+  const feederNc=st==="trifasico"?3:2;
+  let feederSz=selCond(feederIb,"C",1.0,1.0,"PVC",feederNc);
+  // Disjuntor geral coordenado com o alimentador adotado: Ib ≤ In ≤ Iz
+  const DG_RATINGS=[25,32,40,50,63,80,100,125,160];
+  let feederIz=gIz("C",feederSz,"PVC",feederNc);
+  let feederMCBVal=null;
+  for(const v of DG_RATINGS){if(v>=feederIb&&v<=feederIz)feederMCBVal=v}
+  if(feederMCBVal===null){
+    const minIn=DG_RATINGS.find(v=>v>=feederIb)||160;
+    for(const ts of NBR.sizes){
+      if(ts<=feederSz)continue;
+      const iz=gIz("C",ts,"PVC",feederNc);
+      if(minIn<=iz){feederSz=ts;feederIz=iz;break}
+    }
+    feederMCBVal=minIn;
+  }
 
   // ── ΔV global check (NBR 5410 §6.2.7.2 — limite 7%) ──
   const maxCircVd=res.length?Math.max(...res.map(r=>parseFloat(r.vd.pct))):0;
@@ -3134,15 +3194,15 @@ function renderMemo(res,g){
       </span>
     </summary>
     <div class="memo-sec-body">
-${names[r.l.type]} | ${r.wt} | V=${r.V}V (${r.wtype})<br>
+${names[r.l.type]} | ${r.wt} (${nLoadedOf(r.wt)} condutores carregados) | V=${r.V}V (${r.wtype})<br>
 P=${r.l.power}W | L=${r.l.distance}m | Met.${r.l.method} | FP=${r.l.pf}<br>
+<strong>Consumo estimado</strong>: <span class="ac-span">${(r.l.power*(NBR.usageH[r.l.type]||4)*30/1000).toFixed(1)} kWh/mês</span> (uso típico ${NBR.usageH[r.l.type]||4}h/dia)<br>
 <strong>Ib</strong> = ${fIb} = <span class="ac-span">${r.Ib} A</span><br>
 <strong>Ft</strong>=${g.Ft} (Tab.40,Ta=${g.Ta}°C) | <strong>Fg</strong>=${g.Fg} (Tab.42,n=${g.nC})<br>
-<strong>Iz</strong>=${r.Iz}A | <strong>Izc</strong>=${r.Iz}×${g.Ft}×${g.Fg}=<span class="ok-span">${r.Izc}A</span><br>
-<strong>Seção</strong>: <span class="ac-span">${r.sz} mm²</span> | Min.NBR=${NBR.minS[r.l.type]}mm² | Izc(${r.Izc}A)≥Ib(${r.Ib}A) ${secOk?"✓ OK":"✗ FALHA!"}<br>
+<strong>Condutor adotado</strong>: <span class="ac-span">${r.sz} mm² ${r.ins}</span> | Min.NBR=${NBR.minS[r.l.type]}mm² | Iz=${r.Iz}A (Tab.${r.ins==="XLPE"?"37":"36"}, ${r.l.method}) | <strong>Izc</strong>=${r.Iz}×${g.Ft}×${g.Fg}=<span class="ok-span">${r.Izc}A</span> ≥ Ib ${secOk?"✓ OK":"✗ FALHA!"}<br>
 <strong>ΔV</strong>=${fDv}=${r.vd.dv}V=<span class="${pct>r.maxDp?"er-span":"ok-span"}">${r.vd.pct}%</span> ${pct>r.maxDp?"EXCEDE "+r.maxDp+"%!":"≤"+r.maxDp+"% OK"} | Vfinal=${r.vd.fin}V<br>
-<strong>MCB</strong>: ${r.mcb}A/${r.curve} | ${r.Ib}A≤${r.mcb}A≤${r.Izc}A ${r.mcbOk?"✓ OK":"✗ FALHA"}<br>
-<strong>DR/IDR</strong>: ${r.mcb}A/${r.dr}mA | <strong>Icc</strong>=${r.icc}A
+<strong>Disjuntor (coordenado ao condutor)</strong>: <span class="ac-span">${r.mcb}A curva ${r.curve}</span> | maior In padrão com Ib(${r.Ib}A) ≤ In ≤ Izc(${r.Izc}A) ${r.mcbOk?"✓ OK":"✗ FALHA"} — NBR 5410 §5.3.4<br>
+<strong>DR/IDR</strong>: ${r.mcb}A/${r.dr}mA | <strong>PE</strong>: ${r.peSz}mm² | <strong>Icc</strong>=${r.icc}A
     </div>
   </details>`;
   }).join("");
@@ -3171,7 +3231,7 @@ function clearRes(){
 }
 
 // ================================================================
-// QA TESTS — 18 tests
+// QA TESTS — 22 tests
 // ================================================================
 function runQATests(){
   const R={passed:0,failed:0,tests:[]};
@@ -3199,7 +3259,22 @@ function runQATests(){
   test("[EE] Chuveiro 5500W bifásico → condutor ≥4mm²",()=>{
     document.getElementById("nomVolt").value="127";
     const Ib=calcIb({wiringType:"A+B",power:5500,pf:1.0});
-    return Math.max(selCond(Ib,"B1",1.0,0.70,"PVC"),NBR.minS["aquecimento"])>=4;
+    return Math.max(selCond(Ib,"B1",1.0,0.70,"PVC",2),NBR.minS["aquecimento"])>=4;
+  });
+  test("[EE] Tab.36 B1/2c: 2.5=24A, 4=32A, 6=41A, 10=57A",()=>{
+    return gIz("B1",2.5,"PVC",2)===24&&gIz("B1",4,"PVC",2)===32&&
+           gIz("B1",6,"PVC",2)===41&&gIz("B1",10,"PVC",2)===57;
+  });
+  test("[EE] Tab.36 3 carregados < 2 carregados (B1 6mm²: 36A < 41A)",()=>{
+    return gIz("B1",6,"PVC",3)===36&&gIz("B1",6,"PVC",3)<gIz("B1",6,"PVC",2);
+  });
+  test("[EE] Coordenação In×condutor: Ib=15A, 4mm² Izc=22.4A → In=20A",()=>{
+    return selMCBCoord(15,32*0.7)===20;
+  });
+  test("[EE] Chuveiro 25A agrupado (Fg=0.7): cabo 6mm² + In=25A",()=>{
+    const sz=selCond(25,"B1",1.0,0.70,"PVC",2);
+    const Izc=gIz("B1",sz,"PVC",2)*0.70;
+    return sz===6&&selMCBCoord(25,Izc)===25;
   });
   test("[EE] Queda tensão monofásica fórmula",()=>{
     document.getElementById("nomVolt").value="127";
@@ -3302,7 +3377,7 @@ function backupLinks(){
   const d={links:getAffLinks(),ts:new Date().toISOString(),version:"2.2"};
   const a=document.createElement("a");
   a.href=URL.createObjectURL(new Blob([JSON.stringify(d,null,2)],{type:"application/json"}));
-  a.download="backup_afiliados_v3.0.json";a.click();toast("Backup exportado!","ok");
+  a.download="backup_afiliados_v3.1.json";a.click();toast("Backup exportado!","ok");
 }
 function resetLinks(){saveAffLinksData({...DEFAULT_LINKS});toast("Links resetados","info")}
 
@@ -3388,7 +3463,7 @@ function exportToExcel(){
   const{Vfn,Vll}=getSysVoltages();
   const wb=XLSX.utils.book_new();
   const sum=[
-    ["EasyEletric SaaS v3.0 — NBR 5410:2023"],[""],
+    ["EasyEletric SaaS v3.1 — NBR 5410:2023"],[""],
     ["Projeto","EasyEletric"],["Data",new Date().toLocaleDateString("pt-BR")],
     ["Circuitos",results.length],["Potência Total (W)",results.reduce((s,r)=>s+r.l.power,0)],
     ["Maior Queda (%)",Math.max(...results.map(r=>parseFloat(r.vd.pct))).toFixed(2)],
@@ -3757,7 +3832,7 @@ function buildUnifilarSVG(){
 
   // Info bar
   s+=rc(0,55,PW,28,'fill="#f0f0f0" stroke="#ccc" stroke-width="0.5"');
-  s+=tx(12,74,"Projeto: EasyEletric SaaS v3.0",'font-size="10" fill="#333"');
+  s+=tx(12,74,"Projeto: EasyEletric SaaS v3.1",'font-size="10" fill="#333"');
   s+=tx(PW/2,74,"ABNT NBR 5410:2023",
     'text-anchor="middle" font-size="10" font-weight="bold" fill="#000"');
   s+=tx(PW-12,74,`Data: ${date}`,'text-anchor="end" font-size="10" fill="#333"');
@@ -3901,7 +3976,7 @@ function buildUnifilarSVG(){
   s+=rc(0,PH_TOT-18,PW,18,'fill="#f0f0f0"');
   s+=ln(0,PH_TOT-18,PW,PH_TOT-18,'stroke="#ccc" stroke-width="0.5"');
   s+=tx(10,PH_TOT-5,
-    `EasyEletric SaaS v3.0 | ABNT NBR 5410:2023 | Gerado em ${date} | `+
+    `EasyEletric SaaS v3.1 | ABNT NBR 5410:2023 | Gerado em ${date} | `+
     `Pré-dimensionamento — não substitui projeto assinado com ART/RRT`,
     'font-size="7.5" fill="#888"');
 

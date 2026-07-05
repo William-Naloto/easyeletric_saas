@@ -4,7 +4,7 @@ Plataforma profissional de pré-dimensionamento elétrico residencial conforme *
 
 ## Versão atual
 
-**v3.0** — Evolução de produto: workspace de engenharia como protagonista, sistema de design com tokens, QDF interativo com foco por fase, score de equilíbrio de fases, BOM agrupada com busca, memorial colapsável e acessibilidade WCAG (teclado + ARIA).
+**v3.1** — Correção de dimensionamento (Tab.36/37 oficiais + disjuntor coordenado ao condutor) sobre a evolução v3.0: workspace de engenharia como protagonista, sistema de design com tokens, QDF interativo com foco por fase, score de equilíbrio de fases, BOM agrupada com busca, memorial colapsável e acessibilidade WCAG (teclado + ARIA).
 
 ## Publicação
 
@@ -29,7 +29,7 @@ Depois acesse `http://localhost:8080`.
 - **Lista de Materiais (BOM)** — agrupada por categoria de engenharia, com busca em tempo real e links de afiliados fechados (sem fallback de busca).
 - **Memorial de Cálculo** — seções colapsáveis por circuito com selo de conformidade, fórmulas e referências de norma.
 - **Exportações** — XLSX (3 abas), PDF e diagrama unifilar SVG vetorial.
-- **QA Suite** — 18 testes de fórmulas elétricas e comportamento executáveis no Dev Panel (`Ctrl+Shift+D`).
+- **QA Suite** — 22 testes de fórmulas elétricas e comportamento executáveis no Dev Panel (`Ctrl+Shift+D`).
 - **Offline-first** — 100% estático, sem backend; projetos salvos como `.json` local.
 
 ## Estrutura
