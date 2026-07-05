@@ -745,6 +745,27 @@ nav {
 }
 .qdf-ch-desc { text-align:left; padding:5px 8px; border-right:1px solid var(--br) }
 
+/* ── QDF interactivity ─────────────────────────────────────────
+   Hovering a circuit dims unrelated rows and lights its phase bus.
+   Clicking a phase bus toggles persistent focus on that phase.   */
+.qdf-bus-ph[data-phase] { cursor:pointer; transition:filter .15s, box-shadow .15s }
+.qdf-bus-ph[data-phase]:hover { filter:brightness(1.35) }
+#qdfBoard[data-hl] .qdf-row-item:not(.qdf-reserved),
+#qdfBoard[data-focus] .qdf-row-item:not(.qdf-reserved) { opacity:.28; transition:opacity .18s }
+#qdfBoard[data-hl~="A"] .qdf-row-item[data-phases~="A"],
+#qdfBoard[data-hl~="B"] .qdf-row-item[data-phases~="B"],
+#qdfBoard[data-hl~="C"] .qdf-row-item[data-phases~="C"],
+#qdfBoard[data-focus="A"] .qdf-row-item[data-phases~="A"],
+#qdfBoard[data-focus="B"] .qdf-row-item[data-phases~="B"],
+#qdfBoard[data-focus="C"] .qdf-row-item[data-phases~="C"] { opacity:1 }
+#qdfBoard[data-hl~="A"] .bus-a, #qdfBoard[data-focus="A"] .bus-a { box-shadow:inset 0 -3px 0 var(--ph-a); filter:brightness(1.35) }
+#qdfBoard[data-hl~="B"] .bus-b, #qdfBoard[data-focus="B"] .bus-b { box-shadow:inset 0 -3px 0 var(--ph-b); filter:brightness(1.35) }
+#qdfBoard[data-hl~="C"] .bus-c, #qdfBoard[data-focus="C"] .bus-c { box-shadow:inset 0 -3px 0 var(--ph-c); filter:brightness(1.35) }
+#qdfBoard[data-focus="A"] .bus-a::after,
+#qdfBoard[data-focus="B"] .bus-b::after,
+#qdfBoard[data-focus="C"] .bus-c::after { content:" ◉ FOCO" ; font-size:8px }
+.qdf-row-item { cursor:default }
+
 /* Phase balance panel */
 .phase-balance {
   display:grid; grid-template-columns:repeat(3,1fr);
@@ -978,6 +999,7 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
 .toast-c {
   position:fixed; bottom:22px; left:50%; transform:translateX(-50%);
   z-index:9999; display:flex; flex-direction:column; gap:6px; align-items:center;
+  pointer-events:none;
 }
 .toast {
   background:var(--bgc); border:1px solid var(--br); border-radius:var(--rm);
@@ -2706,7 +2728,7 @@ function renderQDF(res){
         <div class="qdf-cell qdf-cell-dot"><div class="dr-dot dr-dot-none"></div></div>
       </div>`;continue;}
       const hasDR=r.dr===30;
-      html+=`<div class="qdf-row-item ${phRowClass(r.wt)}" title="${r.l.name} | Ib=${r.Ib}A | ${r.wt}">
+      html+=`<div class="qdf-row-item ${phRowClass(r.wt)}" data-phases="${(r.phases||[]).join(" ")}" title="${r.l.name} | Ib=${r.Ib}A | ${r.wt}">
         <div class="qdf-cell qdf-cell-num">${String(r.idx).padStart(2,"0")}</div>
         <div class="qdf-cell qdf-cell-mcb">${r.mcb}A<br><span style="font-size:8px;color:var(--t3)">${r.curve}</span></div>
         <div class="qdf-cell qdf-cell-sz">${r.sz}<br><span style="font-size:8px;color:var(--t3)">mm²</span></div>
@@ -2726,23 +2748,24 @@ function renderQDF(res){
   </div>`;
 
   // Busbar HTML conditional on supply type
+  const busTitle="Clique para focar os circuitos desta fase";
   const busbarHtml=st==="monofasico"
     ?`<div class="qdf-busbar-row">
-        <div class="qdf-bus-ph bus-a" style="flex:2">FASE A — ${Vfn}V</div>
+        <div class="qdf-bus-ph bus-a" data-phase="A" title="${busTitle}" style="flex:2">FASE A — ${Vfn}V</div>
         <div class="qdf-bus-ph bus-n">NEUTRO</div>
         <div class="qdf-bus-ph bus-t">TERRA PE</div>
       </div>`
     :st==="bifasico"
     ?`<div class="qdf-busbar-row">
-        <div class="qdf-bus-ph bus-a">FASE A — ${Vfn}V</div>
-        <div class="qdf-bus-ph bus-b">FASE B — ${Vfn}V</div>
+        <div class="qdf-bus-ph bus-a" data-phase="A" title="${busTitle}">FASE A — ${Vfn}V</div>
+        <div class="qdf-bus-ph bus-b" data-phase="B" title="${busTitle}">FASE B — ${Vfn}V</div>
         <div class="qdf-bus-ph bus-n">NEUTRO</div>
         <div class="qdf-bus-ph bus-t">TERRA PE</div>
       </div>`
     :`<div class="qdf-busbar-row">
-        <div class="qdf-bus-ph bus-a">FASE A (R) — ${Vfn}V</div>
-        <div class="qdf-bus-ph bus-b">FASE B (S) — ${Vfn}V</div>
-        <div class="qdf-bus-ph bus-c">FASE C (T) — ${Vfn}V</div>
+        <div class="qdf-bus-ph bus-a" data-phase="A" title="${busTitle}">FASE A (R) — ${Vfn}V</div>
+        <div class="qdf-bus-ph bus-b" data-phase="B" title="${busTitle}">FASE B (S) — ${Vfn}V</div>
+        <div class="qdf-bus-ph bus-c" data-phase="C" title="${busTitle}">FASE C (T) — ${Vfn}V</div>
         <div class="qdf-bus-ph bus-n">NEUTRO</div>
         <div class="qdf-bus-ph bus-t">TERRA PE</div>
       </div>`;
@@ -3407,6 +3430,27 @@ function showTab(id){
     document.getElementById("tab-"+t).classList.toggle("active",t===id);
   });
 }
+// QDF interactivity — hover a circuit to light its phase bus and dim
+// unrelated rows; click a phase bus to toggle persistent focus.
+(function(){
+  const board=document.getElementById("qdfBoard");
+  if(!board)return;
+  board.addEventListener("mouseover",e=>{
+    const row=e.target.closest(".qdf-row-item[data-phases]");
+    if(row&&row.dataset.phases)board.setAttribute("data-hl",row.dataset.phases);
+  });
+  board.addEventListener("mouseout",e=>{
+    if(e.target.closest(".qdf-row-item"))board.removeAttribute("data-hl");
+  });
+  board.addEventListener("click",e=>{
+    const bus=e.target.closest(".qdf-bus-ph[data-phase]");
+    if(!bus)return;
+    const ph=bus.dataset.phase;
+    if(board.getAttribute("data-focus")===ph){board.removeAttribute("data-focus")}
+    else{board.setAttribute("data-focus",ph);toast(`Foco na Fase ${ph} — clique novamente para liberar`,"info")}
+  });
+})();
+
 function openModal(id){document.getElementById(id).classList.add("open")}
 function closeModal(id){document.getElementById(id).classList.remove("open")}
 document.querySelectorAll(".modal-ov").forEach(m=>m.addEventListener("click",e=>{if(e.target===m)m.classList.remove("open")}));
