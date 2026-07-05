@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="description" content="EasyEletric SaaS v2.2 - Projetista elétrico residencial NBR 5410:2023. Dimensionamento automático por cômodos, QDF unifilar, mono/bi/trifásico.">
+<meta name="description" content="EasyEletric SaaS v3.0 - Projetista elétrico residencial NBR 5410:2023. Dimensionamento automático por cômodos, QDF unifilar, mono/bi/trifásico.">
 <meta name="keywords" content="dimensionador elétrico,NBR 5410,calcular disjuntor,QDF residencial,DR DPS,projeto elétrico">
 <meta name="robots" content="index,follow">
 <meta property="og:title" content="EasyEletric SaaS | Projetista Elétrico NBR 5410:2023">
@@ -1202,7 +1202,7 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
   <div class="nav-logo" onclick="gotoSection('hero')">
     <div class="logo-icon"><i class="fa-solid fa-bolt"></i></div>
     <span>EasyEletric</span>
-    <span class="logo-badge">SaaS v2.2</span>
+    <span class="logo-badge">SaaS v3.0</span>
   </div>
   <div class="nav-links">
     <button class="nav-link" onclick="gotoSection('features')">Recursos</button>
@@ -1279,7 +1279,7 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
      FEATURES
      ============================================================ -->
 <section class="section" id="features">
-  <div class="sec-lbl"><i class="fa-solid fa-star"></i> Recursos v2.2</div>
+  <div class="sec-lbl"><i class="fa-solid fa-star"></i> Recursos v3.0</div>
   <h2 class="sec-h2">Projetista Assistido Residencial</h2>
   <p class="sec-sub">Duas formas de uso: informe cômodos e áreas para geração automática, ou adicione cargas manualmente.</p>
   <div class="feat-grid">
@@ -1287,7 +1287,7 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
       <div class="fc-icon" style="background:var(--okb);color:var(--ok)"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
       <h3>Dimensionamento Automático</h3>
       <p>Informe sala, quarto, cozinha e área. O sistema aplica NBR 5410 e gera circuitos de TUG e iluminação automaticamente.</p>
-      <span class="ftt ftt-ok">NOVO v2.2</span>
+      <span class="ftt ftt-ok">NOVO v3.0</span>
     </div>
     <div class="fc-card">
       <div class="fc-icon" style="background:var(--acg);color:var(--acl)"><i class="fa-solid fa-table-cells"></i></div>
@@ -1321,9 +1321,9 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
     </div>
     <div class="fc-card">
       <div class="fc-icon" style="background:var(--erb);color:var(--er)"><i class="fa-solid fa-flask"></i></div>
-      <h3>QA Suite — 17 Testes</h3>
+      <h3>QA Suite — 18 Testes</h3>
       <p>Fórmulas elétricas, tensão por sistema, condutor mínimo, queda de tensão, automático por cômodo, balanceamento e afiliados.</p>
-      <span class="ftt">17 testes QA</span>
+      <span class="ftt">18 testes QA</span>
     </div>
     <div class="fc-card">
       <div class="fc-icon" style="background:var(--okb);color:var(--ok)"><i class="fa-solid fa-floppy-disk"></i></div>
@@ -1771,12 +1771,12 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
       <div class="footer-col">
         <h4>Sobre</h4>
         <a href="https://github.com/William-Naloto/easyeletric_saas" target="_blank">GitHub</a>
-        <a href="CHANGELOG.md">Changelog v2.2</a>
+        <a href="CHANGELOG.md">Changelog v3.0</a>
         <a href="README.md">Documentação</a>
       </div>
     </div>
     <div class="footer-bottom">
-      <p>EasyEletric SaaS v2.2 &copy; 2025 William Naloto &bull; Sem coleta de PII &bull;
+      <p>EasyEletric SaaS v3.0 &copy; 2025 William Naloto &bull; Sem coleta de PII &bull;
         <a href="https://github.com/William-Naloto/easyeletric_saas" target="_blank">GitHub Pages</a><br>
         <strong>Aviso:</strong> Ferramenta de pré-dimensionamento. Não substitui projeto elétrico, ART/RRT, consulta NBR 5410 oficial e catálogos de fabricantes.
       </p>
@@ -1784,7 +1784,7 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
         <span class="fbadge">NBR 5410</span>
         <span class="fbadge">Offline</span>
         <span class="fbadge">No PII</span>
-        <span class="fbadge">v2.2</span>
+        <span class="fbadge">v3.0</span>
       </div>
     </div>
   </div>
@@ -3171,7 +3171,7 @@ function clearRes(){
 }
 
 // ================================================================
-// QA TESTS — 17 tests including 3 new
+// QA TESTS — 18 tests
 // ================================================================
 function runQATests(){
   const R={passed:0,failed:0,tests:[]};
@@ -3302,7 +3302,7 @@ function backupLinks(){
   const d={links:getAffLinks(),ts:new Date().toISOString(),version:"2.2"};
   const a=document.createElement("a");
   a.href=URL.createObjectURL(new Blob([JSON.stringify(d,null,2)],{type:"application/json"}));
-  a.download="backup_afiliados_v2.2.json";a.click();toast("Backup exportado!","ok");
+  a.download="backup_afiliados_v3.0.json";a.click();toast("Backup exportado!","ok");
 }
 function resetLinks(){saveAffLinksData({...DEFAULT_LINKS});toast("Links resetados","info")}
 
@@ -3388,7 +3388,7 @@ function exportToExcel(){
   const{Vfn,Vll}=getSysVoltages();
   const wb=XLSX.utils.book_new();
   const sum=[
-    ["EasyEletric SaaS v2.2 — NBR 5410:2023"],[""],
+    ["EasyEletric SaaS v3.0 — NBR 5410:2023"],[""],
     ["Projeto","EasyEletric"],["Data",new Date().toLocaleDateString("pt-BR")],
     ["Circuitos",results.length],["Potência Total (W)",results.reduce((s,r)=>s+r.l.power,0)],
     ["Maior Queda (%)",Math.max(...results.map(r=>parseFloat(r.vd.pct))).toFixed(2)],
@@ -3757,7 +3757,7 @@ function buildUnifilarSVG(){
 
   // Info bar
   s+=rc(0,55,PW,28,'fill="#f0f0f0" stroke="#ccc" stroke-width="0.5"');
-  s+=tx(12,74,"Projeto: EasyEletric SaaS v2.2",'font-size="10" fill="#333"');
+  s+=tx(12,74,"Projeto: EasyEletric SaaS v3.0",'font-size="10" fill="#333"');
   s+=tx(PW/2,74,"ABNT NBR 5410:2023",
     'text-anchor="middle" font-size="10" font-weight="bold" fill="#000"');
   s+=tx(PW-12,74,`Data: ${date}`,'text-anchor="end" font-size="10" fill="#333"');
@@ -3901,7 +3901,7 @@ function buildUnifilarSVG(){
   s+=rc(0,PH_TOT-18,PW,18,'fill="#f0f0f0"');
   s+=ln(0,PH_TOT-18,PW,PH_TOT-18,'stroke="#ccc" stroke-width="0.5"');
   s+=tx(10,PH_TOT-5,
-    `EasyEletric SaaS v2.2 | ABNT NBR 5410:2023 | Gerado em ${date} | `+
+    `EasyEletric SaaS v3.0 | ABNT NBR 5410:2023 | Gerado em ${date} | `+
     `Pré-dimensionamento — não substitui projeto assinado com ART/RRT`,
     'font-size="7.5" fill="#888"');
 
