@@ -21,6 +21,8 @@
 </head>
 <body>
 
+<a class="skip-link" href="#app">Ir direto para a ferramenta</a>
+
 <!-- Loading overlay -->
 <div class="lov" id="lov"><div class="lov-box"><div class="spin"></div><p id="lovMsg">Calculando...</p></div></div>
 <!-- Toast container -->
@@ -88,6 +90,15 @@ body {
 ::-webkit-scrollbar-thumb:hover { background:var(--brf); border:2px solid transparent; background-clip:padding-box }
 a { color:var(--acl); text-decoration:none }
 ::selection { background:var(--acg); color:var(--t1) }
+
+/* Skip link — visible only on keyboard focus */
+.skip-link {
+  position:fixed; top:-48px; left:16px; z-index:9500;
+  background:var(--ac); color:#fff; font-weight:600; font-size:13px;
+  padding:10px 18px; border-radius:0 0 var(--rm) var(--rm);
+  transition:top .2s;
+}
+.skip-link:focus { top:0 }
 
 /* Keyboard focus — visible ring on every interactive element */
 :focus { outline:none }
@@ -1535,11 +1546,11 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
 
     <!-- ========== RIGHT PANEL ========== -->
     <div class="app-right">
-      <div class="app-tabs">
-        <button class="app-tab active" id="tab-circ" onclick="showTab('circ')"><i class="fa-solid fa-bolt"></i> Circuitos</button>
-        <button class="app-tab" id="tab-qdf"  onclick="showTab('qdf')"><i class="fa-solid fa-table-cells"></i> QDF</button>
-        <button class="app-tab" id="tab-bom"  onclick="showTab('bom')"><i class="fa-solid fa-boxes-stacked"></i> Materiais</button>
-        <button class="app-tab" id="tab-memo" onclick="showTab('memo')"><i class="fa-solid fa-scroll"></i> Memorial</button>
+      <div class="app-tabs" role="tablist" aria-label="Painéis de resultado">
+        <button class="app-tab active" id="tab-circ" role="tab" aria-selected="true"  aria-controls="panel-circ" onclick="showTab('circ')"><i class="fa-solid fa-bolt" aria-hidden="true"></i> Circuitos</button>
+        <button class="app-tab" id="tab-qdf"  role="tab" aria-selected="false" tabindex="-1" aria-controls="panel-qdf"  onclick="showTab('qdf')"><i class="fa-solid fa-table-cells" aria-hidden="true"></i> QDF</button>
+        <button class="app-tab" id="tab-bom"  role="tab" aria-selected="false" tabindex="-1" aria-controls="panel-bom"  onclick="showTab('bom')"><i class="fa-solid fa-boxes-stacked" aria-hidden="true"></i> Materiais</button>
+        <button class="app-tab" id="tab-memo" role="tab" aria-selected="false" tabindex="-1" aria-controls="panel-memo" onclick="showTab('memo')"><i class="fa-solid fa-scroll" aria-hidden="true"></i> Memorial</button>
       </div>
 
       <div class="stats-row" id="statsRow" style="display:none">
@@ -1550,7 +1561,7 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
       </div>
 
       <!-- CIRCUITOS -->
-      <div id="panel-circ">
+      <div id="panel-circ" role="tabpanel" aria-labelledby="tab-circ">
         <div class="empty-st" id="emptyCirc">
           <i class="fa-solid fa-bolt"></i>
           <h3 style="color:var(--t2);margin-bottom:8px">Nenhum circuito calculado</h3>
@@ -1568,7 +1579,7 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
       </div>
 
       <!-- QDF -->
-      <div id="panel-qdf" style="display:none">
+      <div id="panel-qdf" role="tabpanel" aria-labelledby="tab-qdf" style="display:none">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
           <div style="font-size:13px;font-weight:600;color:var(--t2);display:flex;align-items:center;gap:7px">
             <i class="fa-solid fa-table-cells" style="color:var(--ac)"></i> Quadro de Distribuição (QDF)
@@ -1619,7 +1630,7 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
       </div>
 
       <!-- BOM -->
-      <div id="panel-bom" style="display:none">
+      <div id="panel-bom" role="tabpanel" aria-labelledby="tab-bom" style="display:none">
         <div class="sh" style="margin-bottom:12px;flex-wrap:wrap;gap:8px">
           <div style="font-size:13px;font-weight:600;color:var(--t2);display:flex;align-items:center;gap:7px">
             <i class="fa-solid fa-boxes-stacked" style="color:var(--ac)"></i> Lista de Materiais
@@ -1650,7 +1661,7 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
       </div>
 
       <!-- MEMORIAL -->
-      <div id="panel-memo" style="display:none">
+      <div id="panel-memo" role="tabpanel" aria-labelledby="tab-memo" style="display:none">
         <div class="sh" style="margin-bottom:12px;flex-wrap:wrap;gap:8px">
           <div style="font-size:13px;font-weight:600;color:var(--t2);display:flex;align-items:center;gap:7px">
             <i class="fa-solid fa-scroll" style="color:var(--ac)"></i> Memorial de Cálculo — NBR 5410:2023
@@ -1797,7 +1808,7 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
         <button class="btn btn-p" style="font-size:12px;padding:5px 11px" onclick="exportUnifilarPDF()">
           <i class="fa-solid fa-file-pdf"></i> Exportar PDF
         </button>
-        <button class="modal-close" onclick="closeModal('unifilarModal')"><i class="fa-solid fa-xmark"></i></button>
+        <button class="modal-close" aria-label="Fechar diagrama" onclick="closeModal('unifilarModal')"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
       </div>
     </div>
     <div id="unifilarSVGContainer" style="padding:16px;background:#e8e8e8;overflow:auto"></div>
@@ -1810,7 +1821,7 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
 <div class="dev-panel" id="devPanel">
   <div class="dev-hdr">
     <h3><i class="fa-solid fa-terminal"></i> Dev Panel <span class="dev-badge">Ctrl+Shift+D</span></h3>
-    <button class="btn-sm" onclick="toggleDev()"><i class="fa-solid fa-xmark"></i></button>
+    <button class="btn-sm" aria-label="Fechar painel de desenvolvedor" onclick="toggleDev()"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
   </div>
   <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px">
     <button class="btn btn-pu" style="font-size:11px;padding:4px 9px" onclick="openAffModal()"><i class="fa-solid fa-tags"></i> Afiliados</button>
@@ -1826,7 +1837,7 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
   <div class="modal-box" style="max-width:720px">
     <div class="modal-hdr">
       <h2><i class="fa-solid fa-tags" style="color:var(--pu)"></i> Gestão de Afiliados</h2>
-      <button class="modal-close" onclick="closeModal('affModal')"><i class="fa-solid fa-xmark"></i></button>
+      <button class="modal-close" aria-label="Fechar gestão de afiliados" onclick="closeModal('affModal')"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
     </div>
     <p style="font-size:12px;color:var(--t3);margin-bottom:14px">
       Cole links dos programas de afiliados. O botão "Comprar com Desconto" aparece na BOM apenas quando configurado. Sem link → botão desabilitado (sem busca no Google).
@@ -3584,10 +3595,29 @@ function toggleColl(id){
 function gotoSection(id){document.getElementById(id)?.scrollIntoView({behavior:"smooth",block:"start"})}
 function showTab(id){
   ["circ","qdf","bom","memo"].forEach(t=>{
-    document.getElementById("panel-"+t).style.display=t===id?"block":"none";
-    document.getElementById("tab-"+t).classList.toggle("active",t===id);
+    const active=t===id;
+    document.getElementById("panel-"+t).style.display=active?"block":"none";
+    const tab=document.getElementById("tab-"+t);
+    tab.classList.toggle("active",active);
+    tab.setAttribute("aria-selected",active?"true":"false");
+    if(active)tab.removeAttribute("tabindex");else tab.setAttribute("tabindex","-1");
   });
 }
+// Roving arrow-key navigation inside the result tablist (WAI-ARIA APG)
+document.querySelector(".app-tabs")?.addEventListener("keydown",e=>{
+  const order=["circ","qdf","bom","memo"];
+  const cur=order.findIndex(t=>document.getElementById("tab-"+t)===document.activeElement);
+  if(cur<0)return;
+  let next=null;
+  if(e.key==="ArrowRight")next=(cur+1)%order.length;
+  else if(e.key==="ArrowLeft")next=(cur-1+order.length)%order.length;
+  else if(e.key==="Home")next=0;
+  else if(e.key==="End")next=order.length-1;
+  if(next===null)return;
+  e.preventDefault();
+  showTab(order[next]);
+  document.getElementById("tab-"+order[next]).focus();
+});
 // QDF interactivity — hover a circuit to light its phase bus and dim
 // unrelated rows; click a phase bus to toggle persistent focus.
 (function(){
