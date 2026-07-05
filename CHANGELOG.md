@@ -1,5 +1,19 @@
 # Changelog
 
+## v3.1 — 2026-07-05
+
+Correção técnica de dimensionamento, solicitada e validada contra o Guia de Dimensionamento de Cabos para Baixa Tensão (Rev. 9, tabelas da NBR 5410).
+
+### Fixed
+- **Tabela de ampacidade corrigida**: os valores internos não correspondiam à Tabela 36 da NBR 5410 (a coluna "B1" continha na prática os valores de A1, "B2" os de A2 etc.), superdimensionando cabos. Agora o motor usa as Tabelas 36 (PVC 70°C) e 37 (EPR/XLPE 90°C) oficiais, por método de instalação (B1/B2/C/D/E) e por **número de condutores carregados** (2 para mono/bifásico, 3 para trifásico). O multiplicador aproximado de 1,15 para XLPE foi substituído pela tabela real.
+
+### Changed
+- **Disjuntor coordenado ao condutor adotado (NBR 5410 §5.3.4)**: o In deixa de ser o menor valor ≥ Ib e passa a ser o **maior In padrão com Ib ≤ In ≤ Izc** — o dispositivo protege o cabo pela capacidade máxima que ele suporta. Se nenhum In padrão couber no intervalo, a seção é aumentada até o menor In ≥ Ib caber sob o novo Izc. Exemplos no projeto-tipo (Fg=0,7): chuveiro 5500W → 6mm² + 25A (antes 10mm² + 25A); micro-ondas → 2,5mm² + 16A (antes 4mm² + 16A); iluminação → 1,5mm² + 10A.
+- Disjuntor geral do QDF coordenado com o alimentador pelo mesmo critério.
+- A regra de queda de tensão (≤4% terminal, §6.2.7.2) é preservada e continua podendo aumentar a seção; a proteção é então recoordenada ao condutor final adotado.
+- **Memorial de cálculo ampliado**: estimativa de consumo mensal (kWh/mês por horas de uso típicas), condutor adotado com Iz/Izc e tabela de origem, e o critério de coordenação do disjuntor explícito.
+- QA suite ampliada para 22 testes (valores da Tab.36, 2×3 condutores carregados, coordenação In×condutor e par chuveiro 6mm²+25A).
+
 ## v3.0 — 2026-07-05
 
 Evolução de produto sobre a base v2.2 (motor NBR 5410:2023 validado — nenhum cálculo alterado).

@@ -4,7 +4,7 @@ Registro das decisões da evolução v2.2 → v3.0. Público: quem for manter ou
 
 ## Princípio inegociável
 
-**O motor de cálculo NBR 5410:2023 é validado e intocável.** Toda mudança de UI acontece em volta dele: renderização, agrupamento e interação podem mudar; `calcIb`, seleção de condutores, queda de tensão, MCB/DR/DPS e as tabelas NBR não. A QA suite (18 testes, `Ctrl+Shift+D` → Rodar QA) deve permanecer 18/18 após qualquer mudança.
+**O motor de cálculo NBR 5410:2023 é validado e intocável.** Toda mudança de UI acontece em volta dele: renderização, agrupamento e interação podem mudar; `calcIb`, seleção de condutores, queda de tensão, MCB/DR/DPS e as tabelas NBR não. A QA suite (22 testes, `Ctrl+Shift+D` → Rodar QA) deve permanecer 22/22 após qualquer mudança.
 
 ## Arquitetura
 
