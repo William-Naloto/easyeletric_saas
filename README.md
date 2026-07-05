@@ -4,7 +4,7 @@ Plataforma profissional de pré-dimensionamento elétrico residencial conforme *
 
 ## Versão atual
 
-**v3.1** — Correção de dimensionamento (Tab.36/37 oficiais + disjuntor coordenado ao condutor) sobre a evolução v3.0: workspace de engenharia como protagonista, sistema de design com tokens, QDF interativo com foco por fase, score de equilíbrio de fases, BOM agrupada com busca, memorial colapsável e acessibilidade WCAG (teclado + ARIA).
+**v3.2** — Motor de cálculo redesenhado (`scripts/nbr5410_engine.js`): pipeline normativo **condutor antes do disjuntor** (Ib → método → Ft×Fg → Izc → menor seção que atende tudo → menor In com Ib ≤ In ≤ Izc), QDF por **demanda diversificada** (fatores progressivos de iluminação+TUG, aquecimento por nº de aparelhos, correntes por fase), curto-circuito com verificação de capacidade de interrupção, pipeline de validação PASS/WARN/ERROR e memorial com auditoria completa de cada decisão. Metodologia em `docs/metodologia_calculo_nbr5410.md`.
 
 ## Publicação
 
@@ -29,7 +29,7 @@ Depois acesse `http://localhost:8080`.
 - **Lista de Materiais (BOM)** — agrupada por categoria de engenharia, com busca em tempo real e links de afiliados fechados (sem fallback de busca).
 - **Memorial de Cálculo** — seções colapsáveis por circuito com selo de conformidade, fórmulas e referências de norma.
 - **Exportações** — XLSX (3 abas), PDF e diagrama unifilar SVG vetorial.
-- **QA Suite** — 22 testes de fórmulas elétricas e comportamento executáveis no Dev Panel (`Ctrl+Shift+D`).
+- **QA Suite** — 28 verificações in-app no Dev Panel (`Ctrl+Shift+D`) + suíte de 55 testes do motor executável em Node: `node scripts/test_nbr5410_engine.js`.
 - **Offline-first** — 100% estático, sem backend; projetos salvos como `.json` local.
 
 ## Estrutura
@@ -38,12 +38,12 @@ Depois acesse `http://localhost:8080`.
 - `pages/`: landing pages para SEO/tráfego pago.
 - `releases/`: histórico dos HTMLs por versão.
 - `docs/`: histórico, decisões de design e planos.
-- `scripts/`: scripts de deploy local.
+- `scripts/`: motor de cálculo (`nbr5410_engine.js`), suíte de testes (`test_nbr5410_engine.js`) e scripts de deploy local.
 - `.github/workflows/`: workflow GitHub Pages.
 
 ## Engenharia — regra de ouro
 
-Os cálculos elétricos (fórmulas NBR 5410, tabelas de ampacidade, queda de tensão, seleção de MCB/DR/DPS) são considerados **validados**. Mudanças de UI nunca devem alterar essas rotinas; ver `docs/design_decisions_v3.md`.
+Os cálculos elétricos vivem no motor `scripts/nbr5410_engine.js` (sem DOM, testável em Node) — fórmulas, tabelas normativas, fatores de correção, demanda e validação. Mudanças de UI nunca devem alterar essas rotinas; toda alteração de engenharia deve passar por `node scripts/test_nbr5410_engine.js`. Metodologia completa, fórmulas e premissas: `docs/metodologia_calculo_nbr5410.md`; decisões de design: `docs/design_decisions_v3.md`.
 
 ## Segurança
 

@@ -1,5 +1,25 @@
 # Changelog
 
+## v3.2 — 2026-07-05
+
+Redesenho do motor de dimensionamento: sequência normativa completa (condutor antes do disjuntor), QDF por demanda diversificada e pipeline de validação. Metodologia, fórmulas e premissas documentadas em `docs/metodologia_calculo_nbr5410.md`.
+
+### Added
+- **Motor de cálculo autocontido** `scripts/nbr5410_engine.js` (browser + Node, sem DOM): fonte única de fórmulas, tabelas normativas (Tab. 36/37/40/42/47/58), fatores de demanda, curto-circuito e validação. O `index.html` passa a delegar todos os cálculos a ele (adaptadores retrocompatíveis mantidos).
+- **Suíte de testes em Node** `scripts/test_nbr5410_engine.js` — 55 casos: iluminação, tomadas, TUE, chuveiro, ar-condicionado, trifásico, alta demanda, QDF, queda de tensão, correções de temperatura/agrupamento, curto-circuito, casos-limite e regressões de determinismo.
+- **Pipeline de validação PASS/WARN/ERROR** por circuito (seção mínima, ampacidade, coordenação, queda, capacidade de interrupção, disparo magnético, verificação adiabática §5.3.5.4, DR, viabilidade) e por QDF (coordenação do geral, queda do alimentador, equilíbrio de fases, interrupção) — chips no card do circuito e lista completa no memorial.
+- **Curto-circuito real**: Icc presumida na entrada (6 kA padrão) atenuada pelas impedâncias do alimentador e do circuito; capacidade de interrupção mínima (Icn 3/4,5/6/10 kA) exibida e verificada; disparo magnético por curva (5×In B / 10×In C).
+- **Memorial auditável**: trilha de seleção da seção (cada seção reprovada e por quê), auditoria de disjuntores comerciais (ex.: `20A ❌ · 25A ✅ · 32A ❌ excede Izc`) e critério dominante do dimensionamento.
+
+### Changed
+- **Disjuntor: MENOR In comercial com Ib ≤ In ≤ Izc (§5.3.4)** — substitui o critério "maior In ≤ Izc" da v3.1: a proteção atende a carga com a menor corrente nominal possível, jamais excedendo a capacidade do condutor; se nenhum In couber na janela, a seção é elevada. Junto com a seleção do condutor pela menor seção que atende TODOS os critérios (Tab. 47 + ampacidade + queda), elimina superdimensionamentos desnecessários.
+- **QDF por demanda diversificada** — o disjuntor geral deixa de usar fator por faixa de potência total (e o unifilar deixa de usar 0,6×ΣIb): fatores progressivos de iluminação+TUG, aquecimento por nº de aparelhos, climatização 100%, motores (100% maior + 70% demais), com salvaguarda de demanda ≥ maior carga individual. Ib do alimentador = **máxima corrente de fase** (bifásicos somam corrente de linha nas duas fases). QDF, unifilar SVG e PDF passam a usar **o mesmo resultado**.
+- **Alimentador dimensionado automaticamente**: cabo para Ib×1,20 (margem de expansão só no cabo), método B1, mínimo de entrada 10 mm², queda ≤ 2%; neutro = fase; PE pela Tab. 58; disjuntor geral coordenado Ib ≤ In ≤ Izc; DR geral ≥ In (padrão comercial); DPS com Uc e polos por sistema.
+- **Queda de tensão**: resistividade do cobre na temperatura de operação do condutor (PVC 70 °C: 0,02063; XLPE 90 °C: 0,02198 Ω·mm²/m — antes 0,0217 fixo), termos cosφ/senφ com reatância típica, e limite global de 5% para rede pública de BT (§6.2.7 — antes 7%).
+- **Fatores de correção**: Ft da Tab. 40 por isolação (XLPE tem tabela própria — antes usava a de PVC) com escolha conservadora entre linhas; Fg da Tab. 42 completa até ≥20 circuitos (9–11→0,50; 12–15→0,45; 16–19→0,41; ≥20→0,38 — antes truncava em 0,48).
+- **BOM**: polaridade do disjuntor segue a fiação (mono/bi/tripolar), Icn segue a Icc calculada, DR comercial ≥ In e DPS conforme o QDF.
+- QA in-app ampliada para 28 verificações (menor-In, Tab. 40/42, demanda do QDF, pipeline de validação).
+
 ## v3.1 — 2026-07-05
 
 Correção técnica de dimensionamento, solicitada e validada contra o Guia de Dimensionamento de Cabos para Baixa Tensão (Rev. 9, tabelas da NBR 5410).
