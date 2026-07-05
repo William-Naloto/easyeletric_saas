@@ -768,17 +768,21 @@ nav {
 
 /* Phase balance panel */
 .phase-balance {
-  display:grid; grid-template-columns:repeat(3,1fr);
+  display:grid; grid-template-columns:1.3fr repeat(3,1fr);
   gap:10px; margin-top:14px;
 }
+@media(max-width:900px){ .phase-balance { grid-template-columns:1fr 1fr } }
 .pb-card {
   background:var(--bgc); border:1px solid var(--br);
   border-radius:var(--rm); padding:12px; text-align:center;
 }
+.pb-score-card { border-color:var(--brf) }
 .pb-lbl { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; margin-bottom:5px }
 .pb-val { font-size:18px; font-weight:800; font-family:var(--mono) }
 .pb-pct { font-size:10px; color:var(--t3); margin-top:2px }
-.pb-bar { height:4px; border-radius:3px; margin-top:7px }
+.pb-bar { height:4px; border-radius:3px; margin-top:7px; transition:width .8s cubic-bezier(.4,0,.2,1), background .3s }
+.pb-bar-track { height:4px; border-radius:3px; margin-top:7px; background:var(--bgh); overflow:hidden }
+.pb-bar-track .pb-bar { margin-top:0 }
 .imbalance-warn {
   background:var(--wnb); border:1px solid var(--wn);
   border-radius:var(--r); padding:9px 12px;
@@ -1527,6 +1531,12 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
           <div class="empty-st"><i class="fa-solid fa-table-cells"></i><p>Calcule os circuitos para visualizar o QDF</p></div>
         </div>
         <div class="phase-balance" id="phaseBalance" style="display:none">
+          <div class="pb-card pb-score-card">
+            <div class="pb-lbl" style="color:var(--t2)">Equilíbrio de Fases</div>
+            <div class="pb-val" id="pbScore">--</div>
+            <div class="pb-pct" id="pbScoreLbl"></div>
+            <div class="pb-bar-track"><div class="pb-bar pb-gauge-fill" id="pbGaugeFill" style="width:0%"></div></div>
+          </div>
           <div class="pb-card">
             <div class="pb-lbl" style="color:var(--ph-a)">Fase A</div>
             <div class="pb-val" style="color:var(--ph-a)" id="pbA">0W</div>
@@ -2657,7 +2667,9 @@ function renderCircuits(res,Ft,Fg){
 // RENDER QDF — Unifilar panel-schedule style
 // ================================================================
 function renderQDF(res){
-  document.getElementById("phaseBalance").style.display="grid";
+  const st=getSupplyType();
+  // Balance panel only makes sense with 2+ phases
+  document.getElementById("phaseBalance").style.display=st==="monofasico"?"none":"grid";
   const{Vfn,Vll}=getSysVoltages();
 
   // Phase power balance — bifásico divide entre as duas fases, trifásico divide por 3
@@ -2675,13 +2687,31 @@ function renderQDF(res){
     document.getElementById("pbBar"+ph).style.cssText=`height:4px;border-radius:3px;background:${"var(--ph-"+["a","b","c"][i]+")"}`;
     document.getElementById("pbBar"+ph).style.width=(pw/maxPh*100).toFixed(0)+"%";
   });
-  const maxP=Math.max(pA,pB,pC),minP=Math.min(pA,pB,pC);
-  const imbalance=maxP>0?(maxP-minP)/maxP*100:0;
+  const cardC=document.getElementById("pbC")?.closest(".pb-card");
+  if(cardC)cardC.style.display=st==="bifasico"?"none":"";
+  // Imbalance over the phases actually available in this supply
+  const phasesInUse=st==="bifasico"?[pA,pB]:[pA,pB,pC];
+  const maxP=Math.max(...phasesInUse),minP=Math.min(...phasesInUse);
+  const imbalance=st==="monofasico"?0:maxP>0?(maxP-minP)/maxP*100:0;
   const bw=document.getElementById("balanceWarn");
   if(imbalance>20){bw.style.display="flex";document.getElementById("balanceWarnMsg").textContent=`Desequilíbrio: ${imbalance.toFixed(0)}%. Clique em "Balancear Fases"!`}
   else{bw.style.display="none"}
 
-  const st=getSupplyType();
+  // Balance score 0-100 with qualitative grade
+  const score=Math.max(0,Math.round(100-imbalance));
+  const grade=imbalance<=5?["Excelente","var(--ok)"]
+             :imbalance<=10?["Bom","var(--ok)"]
+             :imbalance<=20?["Aceitável","var(--wn)"]
+             :["Crítico — balanceie as fases","var(--er)"];
+  const scoreEl=document.getElementById("pbScore");
+  if(scoreEl){
+    scoreEl.textContent=score;
+    scoreEl.style.color=grade[1];
+    document.getElementById("pbScoreLbl").textContent=`${grade[0]} · desequilíbrio ${imbalance.toFixed(0)}%`;
+    const gf=document.getElementById("pbGaugeFill");
+    gf.style.background=grade[1];
+    requestAnimationFrame(()=>{gf.style.width=score+"%"});
+  }
 
   // ── Feeder calculation with demand factor NBR 5410 Table 29 ──
   const totalPower=res.reduce((s,r)=>s+r.l.power,0);
