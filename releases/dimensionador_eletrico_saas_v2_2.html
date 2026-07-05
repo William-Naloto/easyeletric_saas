@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="description" content="EasyEletric SaaS v3.0 - Projetista elétrico residencial NBR 5410:2023. Dimensionamento automático por cômodos, QDF unifilar, mono/bi/trifásico.">
+<meta name="description" content="EasyEletric SaaS v2.2 - Projetista elétrico residencial NBR 5410:2023. Dimensionamento automático por cômodos, QDF unifilar, mono/bi/trifásico.">
 <meta name="keywords" content="dimensionador elétrico,NBR 5410,calcular disjuntor,QDF residencial,DR DPS,projeto elétrico">
 <meta name="robots" content="index,follow">
 <meta property="og:title" content="EasyEletric SaaS | Projetista Elétrico NBR 5410:2023">
@@ -20,8 +20,6 @@
 <!-- SheetJS carregado sob demanda (lazy) — evita 800KB no carregamento inicial -->
 </head>
 <body>
-
-<a class="skip-link" href="#app">Ir direto para a ferramenta</a>
 
 <!-- Loading overlay -->
 <div class="lov" id="lov"><div class="lov-box"><div class="spin"></div><p id="lovMsg">Calculando...</p></div></div>
@@ -48,16 +46,6 @@
   --mono:"Roboto Mono",monospace;
   --sh:0 4px 32px rgba(0,0,0,.5);
   --sh-sm:0 2px 12px rgba(0,0,0,.3);
-  /* Typography scale */
-  --fs-display:clamp(1.9rem,4.5vw,3.3rem);
-  --fs-h2:clamp(1.4rem,3vw,2.2rem);
-  --fs-title:15px; --fs-subtitle:13px;
-  --fs-body:13px; --fs-caption:11px; --fs-micro:10px;
-  /* Spacing scale (4px base grid) */
-  --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px;
-  --sp-5:20px; --sp-6:24px; --sp-8:32px; --sp-10:40px;
-  /* Focus ring */
-  --focus-ring:0 0 0 3px var(--acg), 0 0 0 1.5px var(--acl);
 }
 [data-theme="light"] {
   --bg:#f5f7fb; --bg2:#ffffff; --bgc:#ffffff; --bgi:#f0f4fa; --bgh:#e8edf8;
@@ -84,42 +72,10 @@ body {
   min-height:100vh; font-size:14px; line-height:1.6;
   transition:background .3s,color .3s;
 }
-::-webkit-scrollbar { width:8px; height:8px }
-::-webkit-scrollbar-track { background:transparent }
-::-webkit-scrollbar-thumb { background:var(--br); border-radius:4px; border:2px solid transparent; background-clip:padding-box }
-::-webkit-scrollbar-thumb:hover { background:var(--brf); border:2px solid transparent; background-clip:padding-box }
+::-webkit-scrollbar { width:5px; height:5px }
+::-webkit-scrollbar-track { background:var(--bg) }
+::-webkit-scrollbar-thumb { background:var(--br); border-radius:3px }
 a { color:var(--acl); text-decoration:none }
-::selection { background:var(--acg); color:var(--t1) }
-
-/* Skip link — visible only on keyboard focus */
-.skip-link {
-  position:fixed; top:-48px; left:16px; z-index:9500;
-  background:var(--ac); color:#fff; font-weight:600; font-size:13px;
-  padding:10px 18px; border-radius:0 0 var(--rm) var(--rm);
-  transition:top .2s;
-}
-.skip-link:focus { top:0 }
-
-/* Keyboard focus — visible ring on every interactive element */
-:focus { outline:none }
-:focus-visible {
-  outline:none;
-  box-shadow:var(--focus-ring);
-  border-radius:var(--r);
-}
-
-/* Numeric alignment in engineering data */
-.sv,.pb-val,.pts-sum-val,.qdf-cell,.cc-fv,.hs-num { font-variant-numeric:tabular-nums }
-
-/* Respect users who prefer less motion */
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration:.01ms!important;
-    animation-iteration-count:1!important;
-    transition-duration:.01ms!important;
-    scroll-behavior:auto!important;
-  }
-}
 
 /* ============================================================
    NAV
@@ -403,12 +359,6 @@ nav {
   background:transparent; border:1px solid var(--br); color:var(--t2);
 }
 .btn-o:hover { border-color:var(--brf); color:var(--t1); background:var(--bgh) }
-/* Toolbar buttons — compact command-bar variant */
-.btn-tb {
-  font-size:12px; padding:5px 11px;
-  background:transparent; border:1px solid var(--br); color:var(--t2);
-}
-.btn-tb:hover { border-color:var(--brf); color:var(--t1); background:var(--bgh) }
 .btn-del {
   background:transparent; border:1px solid var(--br);
   color:var(--er); padding:4px 8px; border-radius:var(--r);
@@ -756,44 +706,19 @@ nav {
 }
 .qdf-ch-desc { text-align:left; padding:5px 8px; border-right:1px solid var(--br) }
 
-/* ── QDF interactivity ─────────────────────────────────────────
-   Hovering a circuit dims unrelated rows and lights its phase bus.
-   Clicking a phase bus toggles persistent focus on that phase.   */
-.qdf-bus-ph[data-phase] { cursor:pointer; transition:filter .15s, box-shadow .15s }
-.qdf-bus-ph[data-phase]:hover { filter:brightness(1.35) }
-#qdfBoard[data-hl] .qdf-row-item:not(.qdf-reserved),
-#qdfBoard[data-focus] .qdf-row-item:not(.qdf-reserved) { opacity:.28; transition:opacity .18s }
-#qdfBoard[data-hl~="A"] .qdf-row-item[data-phases~="A"],
-#qdfBoard[data-hl~="B"] .qdf-row-item[data-phases~="B"],
-#qdfBoard[data-hl~="C"] .qdf-row-item[data-phases~="C"],
-#qdfBoard[data-focus="A"] .qdf-row-item[data-phases~="A"],
-#qdfBoard[data-focus="B"] .qdf-row-item[data-phases~="B"],
-#qdfBoard[data-focus="C"] .qdf-row-item[data-phases~="C"] { opacity:1 }
-#qdfBoard[data-hl~="A"] .bus-a, #qdfBoard[data-focus="A"] .bus-a { box-shadow:inset 0 -3px 0 var(--ph-a); filter:brightness(1.35) }
-#qdfBoard[data-hl~="B"] .bus-b, #qdfBoard[data-focus="B"] .bus-b { box-shadow:inset 0 -3px 0 var(--ph-b); filter:brightness(1.35) }
-#qdfBoard[data-hl~="C"] .bus-c, #qdfBoard[data-focus="C"] .bus-c { box-shadow:inset 0 -3px 0 var(--ph-c); filter:brightness(1.35) }
-#qdfBoard[data-focus="A"] .bus-a::after,
-#qdfBoard[data-focus="B"] .bus-b::after,
-#qdfBoard[data-focus="C"] .bus-c::after { content:" ◉ FOCO" ; font-size:8px }
-.qdf-row-item { cursor:default }
-
 /* Phase balance panel */
 .phase-balance {
-  display:grid; grid-template-columns:1.3fr repeat(3,1fr);
+  display:grid; grid-template-columns:repeat(3,1fr);
   gap:10px; margin-top:14px;
 }
-@media(max-width:900px){ .phase-balance { grid-template-columns:1fr 1fr } }
 .pb-card {
   background:var(--bgc); border:1px solid var(--br);
   border-radius:var(--rm); padding:12px; text-align:center;
 }
-.pb-score-card { border-color:var(--brf) }
 .pb-lbl { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; margin-bottom:5px }
 .pb-val { font-size:18px; font-weight:800; font-family:var(--mono) }
 .pb-pct { font-size:10px; color:var(--t3); margin-top:2px }
-.pb-bar { height:4px; border-radius:3px; margin-top:7px; transition:width .8s cubic-bezier(.4,0,.2,1), background .3s }
-.pb-bar-track { height:4px; border-radius:3px; margin-top:7px; background:var(--bgh); overflow:hidden }
-.pb-bar-track .pb-bar { margin-top:0 }
+.pb-bar { height:4px; border-radius:3px; margin-top:7px }
 .imbalance-warn {
   background:var(--wnb); border:1px solid var(--wn);
   border-radius:var(--r); padding:9px 12px;
@@ -822,26 +747,6 @@ nav {
   font-size:10px; color:var(--pu); background:var(--pub);
   border:1px solid var(--pu); padding:1px 6px; border-radius:7px; font-family:var(--mono);
 }
-/* BOM category group header rows */
-.bom-group td {
-  background:var(--bgi); color:var(--t2);
-  font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.8px;
-  padding:7px 12px; border-bottom:1px solid var(--br);
-}
-.bom-group td i { color:var(--ac); margin-right:6px }
-.bom-group .bom-group-count { color:var(--t3); font-weight:500; margin-left:6px; text-transform:none; letter-spacing:0 }
-/* BOM search field */
-.bom-search {
-  display:flex; align-items:center; gap:7px;
-  background:var(--bgi); border:1px solid var(--br); border-radius:var(--r);
-  padding:5px 10px; min-width:220px;
-}
-.bom-search i { color:var(--t3); font-size:11px }
-.bom-search input {
-  background:none; border:none; outline:none; color:var(--t1);
-  font-size:12px; font-family:inherit; width:100%;
-}
-.bom-search:focus-within { border-color:var(--brf); box-shadow:0 0 0 3px var(--acg) }
 
 /* ============================================================
    MEMORIAL / FORMULAS
@@ -852,36 +757,6 @@ nav {
   font-size:11px; color:var(--t2); font-family:var(--mono); line-height:1.9;
 }
 .memo-item strong { color:var(--t1) }
-/* Collapsible memorial sections — technical documentation style */
-.memo-sec {
-  background:var(--bgc); border:1px solid var(--br);
-  border-radius:var(--rm); margin-bottom:8px; overflow:hidden;
-}
-.memo-sec summary {
-  list-style:none; cursor:pointer; user-select:none;
-  display:flex; align-items:center; gap:10px;
-  padding:10px 14px; transition:background .15s;
-}
-.memo-sec summary::-webkit-details-marker { display:none }
-.memo-sec summary:hover { background:var(--bgh) }
-.memo-sec-id {
-  font-family:var(--mono); font-size:11px; font-weight:700;
-  color:var(--acl); background:var(--acg); border:1px solid var(--brf);
-  padding:2px 8px; border-radius:8px; flex-shrink:0;
-}
-.memo-sec-name {
-  font-size:12px; font-weight:600; color:var(--t1);
-  flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
-}
-.memo-sec-meta { display:flex; gap:4px; flex-shrink:0; align-items:center }
-.memo-sec .chevron { font-size:11px }
-.memo-sec[open] .chevron { transform:rotate(180deg) }
-.memo-sec-body {
-  padding:10px 14px; border-top:1px solid var(--br);
-  font-size:11px; color:var(--t2); font-family:var(--mono); line-height:1.9;
-  background:var(--bg2);
-}
-.memo-sec-body strong { color:var(--t1) }
 .ok-span  { color:var(--ok) }  .er-span { color:var(--er) }
 .ac-span  { color:var(--acl) } .wn-span { color:var(--wn) }
 
@@ -973,44 +848,33 @@ nav {
    APP SHELL
    ============================================================ */
 .app-section { background:var(--bg2); border-top:1px solid var(--br); border-bottom:1px solid var(--br) }
-/* Toolbar — CAD-style command bar spanning the full workspace width */
 .app-header {
-  padding:var(--sp-3) var(--sp-6); max-width:1560px; margin:0 auto;
+  padding:14px 24px 0; max-width:1400px; margin:0 auto;
   display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;
-  border-bottom:1px solid var(--br);
 }
 .app-title {
-  font-size:var(--fs-title); font-weight:700; display:flex; align-items:center; gap:8px; color:var(--t1);
+  font-size:15px; font-weight:700; display:flex; align-items:center; gap:8px; color:var(--t1);
 }
-.toolbar-group {
-  display:flex; gap:var(--sp-1); flex-wrap:wrap; align-items:center;
-}
-.toolbar-sep { width:1px; height:22px; background:var(--br); margin:0 var(--sp-2); flex-shrink:0 }
-/* Sidebar 25% / Workspace 75% — the engineering canvas is the hero */
 .app-body {
-  display:grid; grid-template-columns:minmax(310px,25%) 1fr;
-  min-height:620px; max-width:1560px; margin:0 auto;
+  display:grid; grid-template-columns:420px 1fr;
+  min-height:620px; max-width:1400px; margin:0 auto;
 }
 .app-left {
-  border-right:1px solid var(--br); padding:var(--sp-4);
-  overflow-y:auto; max-height:calc(100vh - 62px);
+  border-right:1px solid var(--br); padding:15px;
+  overflow-y:auto; max-height:calc(100vh - 120px);
   position:sticky; top:62px;
 }
-.app-right { padding:var(--sp-4) var(--sp-6); min-width:0 }
+.app-right { padding:15px; overflow-y:auto }
 .app-tabs {
-  display:flex; gap:3px;
-  position:sticky; top:62px; z-index:60;
-  background:var(--bg2);
-  margin:calc(-1 * var(--sp-4)) calc(-1 * var(--sp-6)) var(--sp-4);
-  padding:var(--sp-2) var(--sp-6);
-  border-bottom:1px solid var(--br);
+  display:flex; gap:3px; background:var(--bg);
+  border:1px solid var(--br); border-radius:var(--rm);
+  padding:3px; width:fit-content; margin-bottom:14px;
 }
-.app-tabs::before { content:""; position:absolute; inset:0; background:var(--bg2); z-index:-1 }
 .app-tab {
-  padding:7px 15px; border-radius:var(--r); font-size:12px;
-  font-weight:600; color:var(--t2); cursor:pointer;
+  padding:6px 13px; border-radius:var(--r); font-size:12px;
+  font-weight:500; color:var(--t2); cursor:pointer;
   transition:all .2s; border:none; background:none;
-  font-family:inherit; display:flex; align-items:center; gap:6px;
+  font-family:inherit; display:flex; align-items:center; gap:5px;
 }
 .app-tab.active { background:var(--ac); color:#fff }
 .app-tab:hover:not(.active) { background:var(--bgh); color:var(--t1) }
@@ -1064,7 +928,6 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
 .toast-c {
   position:fixed; bottom:22px; left:50%; transform:translateX(-50%);
   z-index:9999; display:flex; flex-direction:column; gap:6px; align-items:center;
-  pointer-events:none;
 }
 .toast {
   background:var(--bgc); border:1px solid var(--br); border-radius:var(--rm);
@@ -1202,7 +1065,7 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
   <div class="nav-logo" onclick="gotoSection('hero')">
     <div class="logo-icon"><i class="fa-solid fa-bolt"></i></div>
     <span>EasyEletric</span>
-    <span class="logo-badge">SaaS v3.0</span>
+    <span class="logo-badge">SaaS v2.2</span>
   </div>
   <div class="nav-links">
     <button class="nav-link" onclick="gotoSection('features')">Recursos</button>
@@ -1279,7 +1142,7 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
      FEATURES
      ============================================================ -->
 <section class="section" id="features">
-  <div class="sec-lbl"><i class="fa-solid fa-star"></i> Recursos v3.0</div>
+  <div class="sec-lbl"><i class="fa-solid fa-star"></i> Recursos v2.2</div>
   <h2 class="sec-h2">Projetista Assistido Residencial</h2>
   <p class="sec-sub">Duas formas de uso: informe cômodos e áreas para geração automática, ou adicione cargas manualmente.</p>
   <div class="feat-grid">
@@ -1287,7 +1150,7 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
       <div class="fc-icon" style="background:var(--okb);color:var(--ok)"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
       <h3>Dimensionamento Automático</h3>
       <p>Informe sala, quarto, cozinha e área. O sistema aplica NBR 5410 e gera circuitos de TUG e iluminação automaticamente.</p>
-      <span class="ftt ftt-ok">NOVO v3.0</span>
+      <span class="ftt ftt-ok">NOVO v2.2</span>
     </div>
     <div class="fc-card">
       <div class="fc-icon" style="background:var(--acg);color:var(--acl)"><i class="fa-solid fa-table-cells"></i></div>
@@ -1321,9 +1184,9 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
     </div>
     <div class="fc-card">
       <div class="fc-icon" style="background:var(--erb);color:var(--er)"><i class="fa-solid fa-flask"></i></div>
-      <h3>QA Suite — 18 Testes</h3>
+      <h3>QA Suite — 17 Testes</h3>
       <p>Fórmulas elétricas, tensão por sistema, condutor mínimo, queda de tensão, automático por cômodo, balanceamento e afiliados.</p>
-      <span class="ftt">18 testes QA</span>
+      <span class="ftt">17 testes QA</span>
     </div>
     <div class="fc-card">
       <div class="fc-icon" style="background:var(--okb);color:var(--ok)"><i class="fa-solid fa-floppy-disk"></i></div>
@@ -1343,18 +1206,16 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
       <i class="fa-solid fa-calculator" style="color:var(--ac)"></i>
       Dimensionador NBR 5410:2023
     </div>
-    <div class="toolbar-group" role="toolbar" aria-label="Ações do projeto">
-      <button class="btn btn-tb" onclick="saveProjectFile()" title="Salvar projeto como arquivo .json"><i class="fa-solid fa-floppy-disk"></i> Salvar</button>
-      <label class="btn btn-tb" style="cursor:pointer" title="Carregar projeto .json">
+    <div style="display:flex;gap:6px;flex-wrap:wrap">
+      <button class="btn btn-o" style="font-size:12px;padding:5px 11px" onclick="saveProjectFile()"><i class="fa-solid fa-floppy-disk"></i> Salvar .json</button>
+      <label class="btn btn-o" style="font-size:12px;padding:5px 11px;cursor:pointer">
         <i class="fa-solid fa-folder-open"></i> Carregar
         <input type="file" accept=".json" id="loadFileInput" onchange="loadProjectFile(this)" style="display:none">
       </label>
-      <span class="toolbar-sep" aria-hidden="true"></span>
-      <button class="btn btn-tb" onclick="exportToExcel()" title="Exportar planilha XLSX com 3 abas"><i class="fa-solid fa-file-excel"></i> XLSX</button>
-      <button class="btn btn-tb" onclick="exportToPDF()" title="Exportar relatório PDF"><i class="fa-solid fa-file-pdf"></i> PDF</button>
-      <button class="btn btn-tb" style="border-color:var(--inf);color:var(--inf)" onclick="generateUnifilarDiagram()" title="Gerar diagrama unifilar SVG"><i class="fa-solid fa-diagram-project"></i> Unifilar</button>
-      <span class="toolbar-sep" aria-hidden="true"></span>
-      <button class="btn btn-tb" onclick="loadPreset()" title="Carregar projeto residencial de exemplo"><i class="fa-solid fa-house-chimney"></i> Projeto Tipo</button>
+      <button class="btn btn-o" style="font-size:12px;padding:5px 11px" onclick="exportToExcel()"><i class="fa-solid fa-file-excel"></i> XLSX</button>
+      <button class="btn btn-o" style="font-size:12px;padding:5px 11px" onclick="exportToPDF()"><i class="fa-solid fa-file-pdf"></i> PDF</button>
+      <button class="btn btn-o" style="font-size:12px;padding:5px 11px;border-color:var(--inf);color:var(--inf)" onclick="generateUnifilarDiagram()"><i class="fa-solid fa-diagram-project"></i> Diagrama Unifilar</button>
+      <button class="btn btn-o" style="font-size:12px;padding:5px 11px" onclick="loadPreset()"><i class="fa-solid fa-house-chimney"></i> Projeto Tipo</button>
     </div>
   </div>
 
@@ -1546,11 +1407,11 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
 
     <!-- ========== RIGHT PANEL ========== -->
     <div class="app-right">
-      <div class="app-tabs" role="tablist" aria-label="Painéis de resultado">
-        <button class="app-tab active" id="tab-circ" role="tab" aria-selected="true"  aria-controls="panel-circ" onclick="showTab('circ')"><i class="fa-solid fa-bolt" aria-hidden="true"></i> Circuitos</button>
-        <button class="app-tab" id="tab-qdf"  role="tab" aria-selected="false" tabindex="-1" aria-controls="panel-qdf"  onclick="showTab('qdf')"><i class="fa-solid fa-table-cells" aria-hidden="true"></i> QDF</button>
-        <button class="app-tab" id="tab-bom"  role="tab" aria-selected="false" tabindex="-1" aria-controls="panel-bom"  onclick="showTab('bom')"><i class="fa-solid fa-boxes-stacked" aria-hidden="true"></i> Materiais</button>
-        <button class="app-tab" id="tab-memo" role="tab" aria-selected="false" tabindex="-1" aria-controls="panel-memo" onclick="showTab('memo')"><i class="fa-solid fa-scroll" aria-hidden="true"></i> Memorial</button>
+      <div class="app-tabs">
+        <button class="app-tab active" id="tab-circ" onclick="showTab('circ')"><i class="fa-solid fa-bolt"></i> Circuitos</button>
+        <button class="app-tab" id="tab-qdf"  onclick="showTab('qdf')"><i class="fa-solid fa-table-cells"></i> QDF</button>
+        <button class="app-tab" id="tab-bom"  onclick="showTab('bom')"><i class="fa-solid fa-boxes-stacked"></i> Materiais</button>
+        <button class="app-tab" id="tab-memo" onclick="showTab('memo')"><i class="fa-solid fa-scroll"></i> Memorial</button>
       </div>
 
       <div class="stats-row" id="statsRow" style="display:none">
@@ -1561,7 +1422,7 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
       </div>
 
       <!-- CIRCUITOS -->
-      <div id="panel-circ" role="tabpanel" aria-labelledby="tab-circ">
+      <div id="panel-circ">
         <div class="empty-st" id="emptyCirc">
           <i class="fa-solid fa-bolt"></i>
           <h3 style="color:var(--t2);margin-bottom:8px">Nenhum circuito calculado</h3>
@@ -1579,7 +1440,7 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
       </div>
 
       <!-- QDF -->
-      <div id="panel-qdf" role="tabpanel" aria-labelledby="tab-qdf" style="display:none">
+      <div id="panel-qdf" style="display:none">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
           <div style="font-size:13px;font-weight:600;color:var(--t2);display:flex;align-items:center;gap:7px">
             <i class="fa-solid fa-table-cells" style="color:var(--ac)"></i> Quadro de Distribuição (QDF)
@@ -1592,12 +1453,6 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
           <div class="empty-st"><i class="fa-solid fa-table-cells"></i><p>Calcule os circuitos para visualizar o QDF</p></div>
         </div>
         <div class="phase-balance" id="phaseBalance" style="display:none">
-          <div class="pb-card pb-score-card">
-            <div class="pb-lbl" style="color:var(--t2)">Equilíbrio de Fases</div>
-            <div class="pb-val" id="pbScore">--</div>
-            <div class="pb-pct" id="pbScoreLbl"></div>
-            <div class="pb-bar-track"><div class="pb-bar pb-gauge-fill" id="pbGaugeFill" style="width:0%"></div></div>
-          </div>
           <div class="pb-card">
             <div class="pb-lbl" style="color:var(--ph-a)">Fase A</div>
             <div class="pb-val" style="color:var(--ph-a)" id="pbA">0W</div>
@@ -1630,16 +1485,10 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
       </div>
 
       <!-- BOM -->
-      <div id="panel-bom" role="tabpanel" aria-labelledby="tab-bom" style="display:none">
-        <div class="sh" style="margin-bottom:12px;flex-wrap:wrap;gap:8px">
+      <div id="panel-bom" style="display:none">
+        <div class="sh" style="margin-bottom:12px">
           <div style="font-size:13px;font-weight:600;color:var(--t2);display:flex;align-items:center;gap:7px">
             <i class="fa-solid fa-boxes-stacked" style="color:var(--ac)"></i> Lista de Materiais
-            <span class="badge b-ac" id="bomCount" style="display:none"></span>
-          </div>
-          <div class="bom-search">
-            <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
-            <input type="search" id="bomSearch" placeholder="Filtrar materiais…"
-                   aria-label="Filtrar lista de materiais" oninput="filterBOM(this.value)">
           </div>
         </div>
         <div class="bom-wrap">
@@ -1661,15 +1510,9 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
       </div>
 
       <!-- MEMORIAL -->
-      <div id="panel-memo" role="tabpanel" aria-labelledby="tab-memo" style="display:none">
-        <div class="sh" style="margin-bottom:12px;flex-wrap:wrap;gap:8px">
-          <div style="font-size:13px;font-weight:600;color:var(--t2);display:flex;align-items:center;gap:7px">
-            <i class="fa-solid fa-scroll" style="color:var(--ac)"></i> Memorial de Cálculo — NBR 5410:2023
-          </div>
-          <div class="toolbar-group">
-            <button class="btn btn-tb" onclick="memoToggleAll(true)"><i class="fa-solid fa-angles-down"></i> Expandir tudo</button>
-            <button class="btn btn-tb" onclick="memoToggleAll(false)"><i class="fa-solid fa-angles-up"></i> Recolher tudo</button>
-          </div>
+      <div id="panel-memo" style="display:none">
+        <div style="font-size:13px;font-weight:600;color:var(--t2);display:flex;align-items:center;gap:7px;margin-bottom:12px">
+          <i class="fa-solid fa-scroll" style="color:var(--ac)"></i> Memorial de Cálculo — NBR 5410:2023
         </div>
         <div id="memoContent">
           <div class="empty-st"><i class="fa-solid fa-scroll"></i><p>Calcule para gerar memorial</p></div>
@@ -1771,12 +1614,12 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
       <div class="footer-col">
         <h4>Sobre</h4>
         <a href="https://github.com/William-Naloto/easyeletric_saas" target="_blank">GitHub</a>
-        <a href="CHANGELOG.md">Changelog v3.0</a>
+        <a href="CHANGELOG.md">Changelog v2.2</a>
         <a href="README.md">Documentação</a>
       </div>
     </div>
     <div class="footer-bottom">
-      <p>EasyEletric SaaS v3.0 &copy; 2025 William Naloto &bull; Sem coleta de PII &bull;
+      <p>EasyEletric SaaS v2.2 &copy; 2025 William Naloto &bull; Sem coleta de PII &bull;
         <a href="https://github.com/William-Naloto/easyeletric_saas" target="_blank">GitHub Pages</a><br>
         <strong>Aviso:</strong> Ferramenta de pré-dimensionamento. Não substitui projeto elétrico, ART/RRT, consulta NBR 5410 oficial e catálogos de fabricantes.
       </p>
@@ -1784,7 +1627,7 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
         <span class="fbadge">NBR 5410</span>
         <span class="fbadge">Offline</span>
         <span class="fbadge">No PII</span>
-        <span class="fbadge">v3.0</span>
+        <span class="fbadge">v2.2</span>
       </div>
     </div>
   </div>
@@ -1808,7 +1651,7 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
         <button class="btn btn-p" style="font-size:12px;padding:5px 11px" onclick="exportUnifilarPDF()">
           <i class="fa-solid fa-file-pdf"></i> Exportar PDF
         </button>
-        <button class="modal-close" aria-label="Fechar diagrama" onclick="closeModal('unifilarModal')"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+        <button class="modal-close" onclick="closeModal('unifilarModal')"><i class="fa-solid fa-xmark"></i></button>
       </div>
     </div>
     <div id="unifilarSVGContainer" style="padding:16px;background:#e8e8e8;overflow:auto"></div>
@@ -1821,7 +1664,7 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
 <div class="dev-panel" id="devPanel">
   <div class="dev-hdr">
     <h3><i class="fa-solid fa-terminal"></i> Dev Panel <span class="dev-badge">Ctrl+Shift+D</span></h3>
-    <button class="btn-sm" aria-label="Fechar painel de desenvolvedor" onclick="toggleDev()"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+    <button class="btn-sm" onclick="toggleDev()"><i class="fa-solid fa-xmark"></i></button>
   </div>
   <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px">
     <button class="btn btn-pu" style="font-size:11px;padding:4px 9px" onclick="openAffModal()"><i class="fa-solid fa-tags"></i> Afiliados</button>
@@ -1837,7 +1680,7 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
   <div class="modal-box" style="max-width:720px">
     <div class="modal-hdr">
       <h2><i class="fa-solid fa-tags" style="color:var(--pu)"></i> Gestão de Afiliados</h2>
-      <button class="modal-close" aria-label="Fechar gestão de afiliados" onclick="closeModal('affModal')"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+      <button class="modal-close" onclick="closeModal('affModal')"><i class="fa-solid fa-xmark"></i></button>
     </div>
     <p style="font-size:12px;color:var(--t3);margin-bottom:14px">
       Cole links dos programas de afiliados. O botão "Comprar com Desconto" aparece na BOM apenas quando configurado. Sem link → botão desabilitado (sem busca no Google).
@@ -2740,9 +2583,7 @@ function renderCircuits(res,Ft,Fg){
 // RENDER QDF — Unifilar panel-schedule style
 // ================================================================
 function renderQDF(res){
-  const st=getSupplyType();
-  // Balance panel only makes sense with 2+ phases
-  document.getElementById("phaseBalance").style.display=st==="monofasico"?"none":"grid";
+  document.getElementById("phaseBalance").style.display="grid";
   const{Vfn,Vll}=getSysVoltages();
 
   // Phase power balance — bifásico divide entre as duas fases, trifásico divide por 3
@@ -2760,31 +2601,13 @@ function renderQDF(res){
     document.getElementById("pbBar"+ph).style.cssText=`height:4px;border-radius:3px;background:${"var(--ph-"+["a","b","c"][i]+")"}`;
     document.getElementById("pbBar"+ph).style.width=(pw/maxPh*100).toFixed(0)+"%";
   });
-  const cardC=document.getElementById("pbC")?.closest(".pb-card");
-  if(cardC)cardC.style.display=st==="bifasico"?"none":"";
-  // Imbalance over the phases actually available in this supply
-  const phasesInUse=st==="bifasico"?[pA,pB]:[pA,pB,pC];
-  const maxP=Math.max(...phasesInUse),minP=Math.min(...phasesInUse);
-  const imbalance=st==="monofasico"?0:maxP>0?(maxP-minP)/maxP*100:0;
+  const maxP=Math.max(pA,pB,pC),minP=Math.min(pA,pB,pC);
+  const imbalance=maxP>0?(maxP-minP)/maxP*100:0;
   const bw=document.getElementById("balanceWarn");
   if(imbalance>20){bw.style.display="flex";document.getElementById("balanceWarnMsg").textContent=`Desequilíbrio: ${imbalance.toFixed(0)}%. Clique em "Balancear Fases"!`}
   else{bw.style.display="none"}
 
-  // Balance score 0-100 with qualitative grade
-  const score=Math.max(0,Math.round(100-imbalance));
-  const grade=imbalance<=5?["Excelente","var(--ok)"]
-             :imbalance<=10?["Bom","var(--ok)"]
-             :imbalance<=20?["Aceitável","var(--wn)"]
-             :["Crítico — balanceie as fases","var(--er)"];
-  const scoreEl=document.getElementById("pbScore");
-  if(scoreEl){
-    scoreEl.textContent=score;
-    scoreEl.style.color=grade[1];
-    document.getElementById("pbScoreLbl").textContent=`${grade[0]} · desequilíbrio ${imbalance.toFixed(0)}%`;
-    const gf=document.getElementById("pbGaugeFill");
-    gf.style.background=grade[1];
-    requestAnimationFrame(()=>{gf.style.width=score+"%"});
-  }
+  const st=getSupplyType();
 
   // ── Feeder calculation with demand factor NBR 5410 Table 29 ──
   const totalPower=res.reduce((s,r)=>s+r.l.power,0);
@@ -2831,7 +2654,7 @@ function renderQDF(res){
         <div class="qdf-cell qdf-cell-dot"><div class="dr-dot dr-dot-none"></div></div>
       </div>`;continue;}
       const hasDR=r.dr===30;
-      html+=`<div class="qdf-row-item ${phRowClass(r.wt)}" data-phases="${(r.phases||[]).join(" ")}" title="${r.l.name} | Ib=${r.Ib}A | ${r.wt}">
+      html+=`<div class="qdf-row-item ${phRowClass(r.wt)}" title="${r.l.name} | Ib=${r.Ib}A | ${r.wt}">
         <div class="qdf-cell qdf-cell-num">${String(r.idx).padStart(2,"0")}</div>
         <div class="qdf-cell qdf-cell-mcb">${r.mcb}A<br><span style="font-size:8px;color:var(--t3)">${r.curve}</span></div>
         <div class="qdf-cell qdf-cell-sz">${r.sz}<br><span style="font-size:8px;color:var(--t3)">mm²</span></div>
@@ -2851,24 +2674,23 @@ function renderQDF(res){
   </div>`;
 
   // Busbar HTML conditional on supply type
-  const busTitle="Clique para focar os circuitos desta fase";
   const busbarHtml=st==="monofasico"
     ?`<div class="qdf-busbar-row">
-        <div class="qdf-bus-ph bus-a" data-phase="A" title="${busTitle}" style="flex:2">FASE A — ${Vfn}V</div>
+        <div class="qdf-bus-ph bus-a" style="flex:2">FASE A — ${Vfn}V</div>
         <div class="qdf-bus-ph bus-n">NEUTRO</div>
         <div class="qdf-bus-ph bus-t">TERRA PE</div>
       </div>`
     :st==="bifasico"
     ?`<div class="qdf-busbar-row">
-        <div class="qdf-bus-ph bus-a" data-phase="A" title="${busTitle}">FASE A — ${Vfn}V</div>
-        <div class="qdf-bus-ph bus-b" data-phase="B" title="${busTitle}">FASE B — ${Vfn}V</div>
+        <div class="qdf-bus-ph bus-a">FASE A — ${Vfn}V</div>
+        <div class="qdf-bus-ph bus-b">FASE B — ${Vfn}V</div>
         <div class="qdf-bus-ph bus-n">NEUTRO</div>
         <div class="qdf-bus-ph bus-t">TERRA PE</div>
       </div>`
     :`<div class="qdf-busbar-row">
-        <div class="qdf-bus-ph bus-a" data-phase="A" title="${busTitle}">FASE A (R) — ${Vfn}V</div>
-        <div class="qdf-bus-ph bus-b" data-phase="B" title="${busTitle}">FASE B (S) — ${Vfn}V</div>
-        <div class="qdf-bus-ph bus-c" data-phase="C" title="${busTitle}">FASE C (T) — ${Vfn}V</div>
+        <div class="qdf-bus-ph bus-a">FASE A (R) — ${Vfn}V</div>
+        <div class="qdf-bus-ph bus-b">FASE B (S) — ${Vfn}V</div>
+        <div class="qdf-bus-ph bus-c">FASE C (T) — ${Vfn}V</div>
         <div class="qdf-bus-ph bus-n">NEUTRO</div>
         <div class="qdf-bus-ph bus-t">TERRA PE</div>
       </div>`;
@@ -3037,21 +2859,7 @@ function renderBOM(res){
   add("pe","Cabo PE verde/amarelo 2.5mm²","Proteção 2.5mm² verde/amarelo",NBR.brands.pe,totL,"m","NBR 5410 §6.3","cabo_2.5mm");
   add("qdf",`QDF ${res.length+3} disjuntores`,`Embutir/sobrepor ${res.length+3}P IP40`,NBR.brands.qdf,1,"un","NBR IEC 60439-3","qdf_box");
 
-  // ── Group items by engineering category (ERP-style) ──
-  const CAT_ORDER=[
-    ["qdf","Quadro de Distribuição","fa-table-cells"],
-    ["mcb","Proteção — Disjuntores","fa-plug-circle-bolt"],
-    ["dr","Proteção — DR / IDR","fa-shield-halved"],
-    ["dps","Proteção — DPS","fa-explosion"],
-    ["cabo","Condutores","fa-bacon"],
-    ["infra","Infraestrutura","fa-circle-nodes"]
-  ];
-  const catOf=k=>k.startsWith("m_")?"mcb":k.startsWith("d_")?"dr":k==="dps"?"dps"
-    :k.startsWith("c_")||k==="pe"?"cabo":k==="qdf"?"qdf":"infra";
-
-  let rowIdx=0;
-  const mkRow=(catLabel)=>([k,it])=>{
-    rowIdx++;
+  document.getElementById("bomBody").innerHTML=Object.entries(bom).map(([k,it],i)=>{
     const affLnk=getAffLink(it.affId||"");
     let cell;
     if(affLnk){
@@ -3061,8 +2869,8 @@ function renderBOM(res){
       cell=`<span class="buy-btn-disabled" title="Link não cadastrado no Dev Panel">
         <i class="fa-solid fa-lock"></i> Sem link</span>`;
     }
-    return`<tr data-search="${(it.name+" "+it.spec+" "+it.brand+" "+catLabel).toLowerCase()}">
-      <td style="font-family:var(--mono);color:var(--t3);font-size:10px">${String(rowIdx).padStart(2,"0")}</td>
+    return`<tr>
+      <td style="font-family:var(--mono);color:var(--t3);font-size:10px">${String(i+1).padStart(2,"0")}</td>
       <td style="font-weight:500;font-size:12px">${it.name}</td>
       <td style="font-size:11px;color:var(--t3)">${it.spec}</td>
       <td><span class="brand-tag">${it.brand}</span></td>
@@ -3071,84 +2879,32 @@ function renderBOM(res){
       <td><span class="badge b-pu" style="font-size:10px">${it.nbr}</span></td>
       <td>${cell}</td>
     </tr>`;
-  };
-
-  const entries=Object.entries(bom);
-  document.getElementById("bomBody").innerHTML=CAT_ORDER.map(([cat,label,icon])=>{
-    const items=entries.filter(([k])=>catOf(k)===cat);
-    if(!items.length)return"";
-    return`<tr class="bom-group"><td colspan="8"><i class="fa-solid ${icon}"></i>${label}<span class="bom-group-count">· ${items.length} ${items.length===1?"item":"itens"}</span></td></tr>`
-      +items.map(mkRow(label)).join("");
   }).join("");
-
-  const cnt=document.getElementById("bomCount");
-  if(cnt){cnt.style.display="";cnt.textContent=`${entries.length} itens`}
-  const bs=document.getElementById("bomSearch");
-  if(bs&&bs.value)filterBOM(bs.value);
-}
-
-// Live BOM filter — hides non-matching rows and empty group headers
-function filterBOM(q){
-  q=(q||"").trim().toLowerCase();
-  const body=document.getElementById("bomBody");
-  let visible=0,lastGroup=null,groupHasRows=false;
-  [...body.rows].forEach(tr=>{
-    if(tr.classList.contains("bom-group")){
-      if(lastGroup)lastGroup.style.display=groupHasRows?"":"none";
-      lastGroup=tr;groupHasRows=false;
-    } else {
-      const hit=!q||tr.dataset.search.includes(q);
-      tr.style.display=hit?"":"none";
-      if(hit){visible++;groupHasRows=true}
-    }
-  });
-  if(lastGroup)lastGroup.style.display=groupHasRows?"":"none";
-  const cnt=document.getElementById("bomCount");
-  if(cnt)cnt.textContent=q?`${visible} de ${body.querySelectorAll("tr[data-search]").length} itens`:`${body.querySelectorAll("tr[data-search]").length} itens`;
 }
 
 // ================================================================
 // MEMORIAL
 // ================================================================
 function renderMemo(res,g){
-  document.getElementById("memoContent").innerHTML=res.map((r,i)=>{
+  document.getElementById("memoContent").innerHTML=res.map(r=>{
     const pct=parseFloat(r.vd.pct);
     const fIb=r.wtype==="tri"?`P/(√3×Vll×FP) = ${r.l.power}/(1.732×${r.V}×${r.l.pf})`:
               r.wtype==="bi"?`P/(Vll×FP) = ${r.l.power}/(${r.V}×${r.l.pf})`:
               `P/(Vfn×FP) = ${r.l.power}/(${r.V}×${r.l.pf})`;
     const fDv=r.wtype==="tri"?`√3×ρ×L×Ib/S = 1.732×${NBR.rho}×${r.l.distance}×${r.Ib}/${r.sz}`:
               `2×ρ×L×Ib/S = 2×${NBR.rho}×${r.l.distance}×${r.Ib}/${r.sz}`;
-    const secOk=parseFloat(r.Izc)>=parseFloat(r.Ib);
-    const dvOk=pct<=r.maxDp;
-    const allOk=secOk&&dvOk&&r.mcbOk;
-    return`<details class="memo-sec"${i===0?" open":""}>
-    <summary>
-      <span class="memo-sec-id">C${String(r.idx).padStart(2,"0")}</span>
-      <span class="memo-sec-name">${r.l.name}</span>
-      <span class="memo-sec-meta">
-        <span class="badge b-gr">${r.wt}</span>
-        <span class="badge b-inf">${r.sz}mm²</span>
-        <span class="badge b-gr">${r.mcb}A/${r.curve}</span>
-        <span class="badge ${allOk?"b-ok":"b-er"}">${allOk?"✓ Conforme":"✗ Verificar"}</span>
-        <i class="fa-solid fa-chevron-down chevron"></i>
-      </span>
-    </summary>
-    <div class="memo-sec-body">
-${names[r.l.type]} | ${r.wt} | V=${r.V}V (${r.wtype})<br>
+    return`<div class="memo-item">
+<strong>C${String(r.idx).padStart(2,"0")} — ${r.l.name}</strong> | ${names[r.l.type]} | ${r.wt} | V=${r.V}V (${r.wtype})<br>
 P=${r.l.power}W | L=${r.l.distance}m | Met.${r.l.method} | FP=${r.l.pf}<br>
 <strong>Ib</strong> = ${fIb} = <span class="ac-span">${r.Ib} A</span><br>
 <strong>Ft</strong>=${g.Ft} (Tab.40,Ta=${g.Ta}°C) | <strong>Fg</strong>=${g.Fg} (Tab.42,n=${g.nC})<br>
 <strong>Iz</strong>=${r.Iz}A | <strong>Izc</strong>=${r.Iz}×${g.Ft}×${g.Fg}=<span class="ok-span">${r.Izc}A</span><br>
-<strong>Seção</strong>: <span class="ac-span">${r.sz} mm²</span> | Min.NBR=${NBR.minS[r.l.type]}mm² | Izc(${r.Izc}A)≥Ib(${r.Ib}A) ${secOk?"✓ OK":"✗ FALHA!"}<br>
+<strong>Seção</strong>: <span class="ac-span">${r.sz} mm²</span> | Min.NBR=${NBR.minS[r.l.type]}mm² | Izc(${r.Izc}A)≥Ib(${r.Ib}A) ${parseFloat(r.Izc)>=parseFloat(r.Ib)?"✓ OK":"✗ FALHA!"}<br>
 <strong>ΔV</strong>=${fDv}=${r.vd.dv}V=<span class="${pct>r.maxDp?"er-span":"ok-span"}">${r.vd.pct}%</span> ${pct>r.maxDp?"EXCEDE "+r.maxDp+"%!":"≤"+r.maxDp+"% OK"} | Vfinal=${r.vd.fin}V<br>
 <strong>MCB</strong>: ${r.mcb}A/${r.curve} | ${r.Ib}A≤${r.mcb}A≤${r.Izc}A ${r.mcbOk?"✓ OK":"✗ FALHA"}<br>
 <strong>DR/IDR</strong>: ${r.mcb}A/${r.dr}mA | <strong>Icc</strong>=${r.icc}A
-    </div>
-  </details>`;
+    </div>`;
   }).join("");
-}
-function memoToggleAll(open){
-  document.querySelectorAll("#memoContent .memo-sec").forEach(d=>{d.open=open});
 }
 
 function updStats(res){
@@ -3171,7 +2927,7 @@ function clearRes(){
 }
 
 // ================================================================
-// QA TESTS — 18 tests
+// QA TESTS — 17 tests including 3 new
 // ================================================================
 function runQATests(){
   const R={passed:0,failed:0,tests:[]};
@@ -3230,15 +2986,15 @@ function runQATests(){
   test("[Affil] Sistema afiliado localStorage",()=>{
     return typeof getAffLinks()==="object"&&"cabo_2.5mm" in getAffLinks();
   });
-  test("[DevOps] Exportação XLSX disponível (lazy-load sob demanda)",()=>typeof exportToExcel==="function");
+  test("[DevOps] SheetJS XLSX disponível",()=>typeof XLSX!=="undefined");
 
   // --- 3 NEW TESTS ---
   test("[AUTO] Gerar circuitos por área — sala 20m² gera ≥1 iluminação + ≥1 TUG",()=>{
     const testRoom={id:99,name:"Sala Teste",area:20,perim:18,type:"sala",dist:12};
-    const{illVA,tugVA127,tugVA220}=calcRoomPreview(testRoom);
+    const{illVA,tugVA}=calcRoomPreview(testRoom);
     // illVA for 20m²: 100 + ceil((20-6)/4)*60 = 100+4*60=340VA → 1 circuit OK
     // tugVA for sala 18m perim: ceil(18/5)*100 = 4*100 = 400VA → 1 circuit
-    return illVA>=100&&(tugVA127+tugVA220)>=100;
+    return illVA>=100&&tugVA>=100;
   });
   test("[AUTO] Iluminação NBR: 6m²=100VA, 10m²=160VA",()=>{
     const r6={area:6,perim:8,type:"sala"};
@@ -3302,7 +3058,7 @@ function backupLinks(){
   const d={links:getAffLinks(),ts:new Date().toISOString(),version:"2.2"};
   const a=document.createElement("a");
   a.href=URL.createObjectURL(new Blob([JSON.stringify(d,null,2)],{type:"application/json"}));
-  a.download="backup_afiliados_v3.0.json";a.click();toast("Backup exportado!","ok");
+  a.download="backup_afiliados_v2.2.json";a.click();toast("Backup exportado!","ok");
 }
 function resetLinks(){saveAffLinksData({...DEFAULT_LINKS});toast("Links resetados","info")}
 
@@ -3378,7 +3134,7 @@ function exportToExcel(){
     toast("Carregando XLSX…","info");
     const sc=document.createElement("script");
     sc.src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
-    sc.integrity="sha512-r22gChDnGvBylk90+2e/ycr3RVrDi8DIOkIGNhJlKfuyQM4tIRAI062MaV8sfjQKYVGjOBaZBOA87z+IhZE9DA==";
+    sc.integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==";
     sc.crossOrigin="anonymous";
     sc.onload=()=>exportToExcel();
     sc.onerror=()=>toast("Falha ao carregar SheetJS","err");
@@ -3388,7 +3144,7 @@ function exportToExcel(){
   const{Vfn,Vll}=getSysVoltages();
   const wb=XLSX.utils.book_new();
   const sum=[
-    ["EasyEletric SaaS v3.0 — NBR 5410:2023"],[""],
+    ["EasyEletric SaaS v2.2 — NBR 5410:2023"],[""],
     ["Projeto","EasyEletric"],["Data",new Date().toLocaleDateString("pt-BR")],
     ["Circuitos",results.length],["Potência Total (W)",results.reduce((s,r)=>s+r.l.power,0)],
     ["Maior Queda (%)",Math.max(...results.map(r=>parseFloat(r.vd.pct))).toFixed(2)],
@@ -3415,7 +3171,7 @@ function exportToPDF(){
     toast("Carregando jsPDF…","info");
     const sc=document.createElement("script");
     sc.src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js";
-    sc.integrity="sha512-qZvrmS2ekKPF2mSznTQsxqPgnpkI4DNTlrdUmTzrDgektczlKNRRhy5X5AAOnx5S09ydFYWWNSfcEqDTTHgtNA==";
+    sc.integrity="sha512-qZvrmS2ekKPF2mSznTQsxqPgnpkI4DNTlrdUmTzrDgektczlKNRRhy5X5AAOnx5S09ydFYWWNSfDMM6qLBTQ==";
     sc.crossOrigin="anonymous";
     sc.onload=()=>exportToPDF();
     sc.onerror=()=>{ toast("Falha ao carregar jsPDF","err"); };
@@ -3595,50 +3351,10 @@ function toggleColl(id){
 function gotoSection(id){document.getElementById(id)?.scrollIntoView({behavior:"smooth",block:"start"})}
 function showTab(id){
   ["circ","qdf","bom","memo"].forEach(t=>{
-    const active=t===id;
-    document.getElementById("panel-"+t).style.display=active?"block":"none";
-    const tab=document.getElementById("tab-"+t);
-    tab.classList.toggle("active",active);
-    tab.setAttribute("aria-selected",active?"true":"false");
-    if(active)tab.removeAttribute("tabindex");else tab.setAttribute("tabindex","-1");
+    document.getElementById("panel-"+t).style.display=t===id?"block":"none";
+    document.getElementById("tab-"+t).classList.toggle("active",t===id);
   });
 }
-// Roving arrow-key navigation inside the result tablist (WAI-ARIA APG)
-document.querySelector(".app-tabs")?.addEventListener("keydown",e=>{
-  const order=["circ","qdf","bom","memo"];
-  const cur=order.findIndex(t=>document.getElementById("tab-"+t)===document.activeElement);
-  if(cur<0)return;
-  let next=null;
-  if(e.key==="ArrowRight")next=(cur+1)%order.length;
-  else if(e.key==="ArrowLeft")next=(cur-1+order.length)%order.length;
-  else if(e.key==="Home")next=0;
-  else if(e.key==="End")next=order.length-1;
-  if(next===null)return;
-  e.preventDefault();
-  showTab(order[next]);
-  document.getElementById("tab-"+order[next]).focus();
-});
-// QDF interactivity — hover a circuit to light its phase bus and dim
-// unrelated rows; click a phase bus to toggle persistent focus.
-(function(){
-  const board=document.getElementById("qdfBoard");
-  if(!board)return;
-  board.addEventListener("mouseover",e=>{
-    const row=e.target.closest(".qdf-row-item[data-phases]");
-    if(row&&row.dataset.phases)board.setAttribute("data-hl",row.dataset.phases);
-  });
-  board.addEventListener("mouseout",e=>{
-    if(e.target.closest(".qdf-row-item"))board.removeAttribute("data-hl");
-  });
-  board.addEventListener("click",e=>{
-    const bus=e.target.closest(".qdf-bus-ph[data-phase]");
-    if(!bus)return;
-    const ph=bus.dataset.phase;
-    if(board.getAttribute("data-focus")===ph){board.removeAttribute("data-focus")}
-    else{board.setAttribute("data-focus",ph);toast(`Foco na Fase ${ph} — clique novamente para liberar`,"info")}
-  });
-})();
-
 function openModal(id){document.getElementById(id).classList.add("open")}
 function closeModal(id){document.getElementById(id).classList.remove("open")}
 document.querySelectorAll(".modal-ov").forEach(m=>m.addEventListener("click",e=>{if(e.target===m)m.classList.remove("open")}));
@@ -3757,7 +3473,7 @@ function buildUnifilarSVG(){
 
   // Info bar
   s+=rc(0,55,PW,28,'fill="#f0f0f0" stroke="#ccc" stroke-width="0.5"');
-  s+=tx(12,74,"Projeto: EasyEletric SaaS v3.0",'font-size="10" fill="#333"');
+  s+=tx(12,74,"Projeto: EasyEletric SaaS v2.2",'font-size="10" fill="#333"');
   s+=tx(PW/2,74,"ABNT NBR 5410:2023",
     'text-anchor="middle" font-size="10" font-weight="bold" fill="#000"');
   s+=tx(PW-12,74,`Data: ${date}`,'text-anchor="end" font-size="10" fill="#333"');
@@ -3901,7 +3617,7 @@ function buildUnifilarSVG(){
   s+=rc(0,PH_TOT-18,PW,18,'fill="#f0f0f0"');
   s+=ln(0,PH_TOT-18,PW,PH_TOT-18,'stroke="#ccc" stroke-width="0.5"');
   s+=tx(10,PH_TOT-5,
-    `EasyEletric SaaS v3.0 | ABNT NBR 5410:2023 | Gerado em ${date} | `+
+    `EasyEletric SaaS v2.2 | ABNT NBR 5410:2023 | Gerado em ${date} | `+
     `Pré-dimensionamento — não substitui projeto assinado com ART/RRT`,
     'font-size="7.5" fill="#888"');
 
