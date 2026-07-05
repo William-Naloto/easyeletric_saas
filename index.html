@@ -1406,7 +1406,7 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
               <option value="3" selected>3 — Fg=0,70</option><option value="4">4 — Fg=0,65</option>
               <option value="5">5 — Fg=0,60</option><option value="6">6 — Fg=0,57</option>
               <option value="7">7 — Fg=0,54</option><option value="8">8 — Fg=0,52</option>
-              <option value="9">9 — Fg=0,50</option><option value="10">10+ — Fg=0,48</option>
+              <option value="9">9 — Fg=0,50</option><option value="10">10+ — Fg=0,50</option>
             </select>
           </div>
           <div class="fg">
@@ -1851,48 +1851,23 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
   </div>
 </div>
 
+<script src="scripts/nbr5410_engine.js"></script>
 <script>
 // ================================================================
-// NBR 5410:2023 ENGINE — validated formulas
+// NBR 5410:2023 — camada de integração com o motor de cálculo
+// (scripts/nbr5410_engine.js). Fórmulas, tabelas normativas e o
+// pipeline de dimensionamento vivem no motor; aqui ficam apenas
+// adaptadores retrocompatíveis e dados de UI (marcas, horas de uso).
 // ================================================================
 const NBR = {
-  // Capacidade de condução (A) — cobre, NBR 5410 Tabela 36 (PVC 70°C) e
-  // Tabela 37 (EPR/XLPE 90°C), por método de instalação e número de
-  // condutores carregados (2 = F+N ou F+F; 3 = trifásico).
-  amp: {
-    PVC:{
-      B1:{2:{1.5:17.5,2.5:24,4:32,6:41,10:57,16:76,25:101,35:125,50:151,70:192,95:232,120:269},
-          3:{1.5:15.5,2.5:21,4:28,6:36,10:50,16:68,25:89,35:110,50:134,70:171,95:207,120:239}},
-      B2:{2:{1.5:16.5,2.5:23,4:30,6:38,10:52,16:69,25:90,35:111,50:133,70:168,95:201,120:232},
-          3:{1.5:15,2.5:20,4:27,6:34,10:46,16:62,25:80,35:99,50:118,70:149,95:179,120:206}},
-      C:{2:{1.5:19.5,2.5:27,4:36,6:46,10:63,16:85,25:112,35:138,50:168,70:213,95:258,120:299},
-         3:{1.5:17.5,2.5:24,4:32,6:41,10:57,16:76,25:96,35:119,50:144,70:184,95:223,120:259}},
-      D:{2:{1.5:22,2.5:29,4:38,6:47,10:63,16:81,25:104,35:125,50:148,70:183,95:216,120:246},
-         3:{1.5:18,2.5:24,4:31,6:39,10:52,16:67,25:86,35:103,50:122,70:151,95:179,120:203}},
-      E:{2:{1.5:22,2.5:30,4:40,6:51,10:70,16:94,25:119,35:148,50:180,70:232,95:282,120:328},
-         3:{1.5:18.5,2.5:25,4:34,6:43,10:60,16:80,25:101,35:126,50:153,70:196,95:238,120:276}}
-    },
-    XLPE:{
-      B1:{2:{1.5:23,2.5:31,4:42,6:54,10:75,16:100,25:133,35:164,50:198,70:253,95:306,120:354},
-          3:{1.5:20,2.5:28,4:37,6:48,10:66,16:88,25:117,35:144,50:175,70:222,95:269,120:312}},
-      B2:{2:{1.5:22,2.5:30,4:40,6:51,10:69,16:91,25:119,35:146,50:175,70:221,95:265,120:305},
-          3:{1.5:19.5,2.5:26,4:35,6:44,10:60,16:80,25:105,35:128,50:154,70:194,95:233,120:268}},
-      C:{2:{1.5:24,2.5:33,4:45,6:58,10:80,16:107,25:138,35:171,50:209,70:269,95:328,120:382},
-         3:{1.5:22,2.5:30,4:40,6:52,10:71,16:96,25:119,35:147,50:179,70:229,95:278,120:322}},
-      D:{2:{1.5:26,2.5:34,4:44,6:56,10:73,16:95,25:121,35:146,50:173,70:213,95:252,120:287},
-         3:{1.5:22,2.5:29,4:37,6:46,10:61,16:79,25:101,35:122,50:144,70:178,95:211,120:240}},
-      E:{2:{1.5:26,2.5:36,4:49,6:63,10:86,16:115,25:149,35:185,50:225,70:289,95:352,120:410},
-         3:{1.5:23,2.5:32,4:42,6:54,10:75,16:100,25:127,35:158,50:192,70:246,95:298,120:346}}
-    }
-  },
+  // Tabelas normativas expostas pelo motor (fonte única de verdade)
+  amp: NBR5410.TABLES.AMPACITY,
+  sizes: NBR5410.TABLES.SECTIONS,
+  mcb: NBR5410.TABLES.MCB_RATINGS,
+  minS: NBR5410.TABLES.MIN_SECTION,
+  get rho(){ return NBR5410.resistivity(document.getElementById("insType")?.value||"PVC"); },
   // Horas de uso típico por dia, para estimativa de consumo mensal
   usageH:{iluminacao:5,tomadas:4,climatizacao:8,aquecimento:0.5,motor:2,uso_geral:4},
-  sizes:[1.5,2.5,4,6,10,16,25,35,50,70,95,120],
-  fg:[1.00,0.80,0.70,0.65,0.60,0.57,0.54,0.52,0.50,0.48],
-  ft:{10:1.22,15:1.17,20:1.12,25:1.06,30:1.00,35:0.94,40:0.87,45:0.79,50:0.71},
-  mcb:[6,10,16,20,25,32,40,50,63,80,100,125],
-  rho:0.0217,
-  minS:{iluminacao:1.5,tomadas:2.5,climatizacao:2.5,aquecimento:2.5,motor:2.5,uso_geral:2.5},
   brands:{
     cond:{1.5:"Corfio",2.5:"Corfio",4:"Prysmian",6:"Prysmian",10:"Nexans",16:"Nexans",25:"Nexans",35:"Nexans",50:"Nexans",70:"Nexans",95:"Nexans",120:"Nexans"},
     mcb:"Schneider iC60N",dr:"Schneider iID",dps:"Clamper DPS",qdf:"Schneider Pragma",elet:"Tigre",pe:"Corfio"
@@ -1945,44 +1920,38 @@ function getAllowedPhaseSystems(){
   if(st==="bifasico")return["monofasico","bifasico"];
   return["monofasico","bifasico","trifasico"];
 }
+// Adaptadores retrocompatíveis — delegam ao motor NBR5410
 function calcIb(load){
   const wt=load.wiringType||"A+N";
-  const{V,type}=getWiringVoltage(wt);
-  const P=parseFloat(load.power)||1000,FP=parseFloat(load.pf)||0.92;
-  if(type==="tri")return P/(Math.sqrt(3)*V*FP);
-  return P/(V*FP);
+  const{Vfn,Vll}=getSysVoltages();
+  return NBR5410.designCurrent({powerVA:parseFloat(load.power)||1000,
+    pf:parseFloat(load.pf)||0.92,system:NBR5410.systemOfWiring(wt),Vfn,Vll});
 }
-function calcVd(Ib,L,S,wt){
+function calcVd(Ib,L,S,wt,pf=1,ins){
+  ins=ins||document.getElementById("insType")?.value||"PVC";
   const{V,type}=getWiringVoltage(wt);
-  const k=type==="tri"?Math.sqrt(3):2;
-  const dv=k*NBR.rho*L*Ib/S;
-  return{dv:dv.toFixed(3),pct:((dv/V)*100).toFixed(2),fin:(V-dv).toFixed(1),V};
+  const r=NBR5410.voltageDrop({Ib,lengthM:L,sectionMm2:S,system:type,V,pf,insulation:ins});
+  return{dv:r.dropV.toFixed(3),pct:r.dropPct.toFixed(2),fin:r.finalV.toFixed(1),V};
 }
-function gFg(n){return NBR.fg[Math.min(n-1,NBR.fg.length-1)]||0.48}
-function gFt(t){const ks=Object.keys(NBR.ft).map(Number).sort((a,b)=>a-b);let c=ks[0];for(const k of ks)if(Math.abs(k-t)<Math.abs(c-t))c=k;return NBR.ft[c]}
+function gFg(n){return NBR5410.groupingFactor(n)}
+function gFt(t,ins){return NBR5410.tempCorrectionFactor(t,ins||document.getElementById("insType")?.value||"PVC")}
 // Iz de tabela: método, seção, isolação (PVC=Tab.36 / XLPE=Tab.37) e
 // nº de condutores carregados (2 = mono/bifásico, 3 = trifásico)
-function gIz(m,s,ins,nc){
-  const tab=NBR.amp[ins==="XLPE"?"XLPE":"PVC"];
-  const met=tab[m]||tab.B1;
-  return(met[nc===3?3:2])[s];
-}
+function gIz(m,s,ins,nc){return NBR5410.tableAmpacity(m,s,ins,nc)}
 const nLoadedOf=wt=>wt==="A+B+C"?3:2;
 const nextS=s=>{const i=NBR.sizes.indexOf(s);return i<NBR.sizes.length-1?NBR.sizes[i+1]:s};
 function selCond(Ib,m,Ft,Fg,ins,nc){
-  for(const s of NBR.sizes){if(gIz(m,s,ins,nc)*Ft*Fg>=Ib)return s}return 120;
+  const r=NBR5410.sizeConductor({Ib,method:m,insulation:ins,loaded:nc,Ft,Fg,
+    minSectionMm2:0,lengthM:0,V:127,system:nc===3?"tri":"mono",pf:1,maxDropPct:Infinity});
+  return r.ok?r.section:120;
 }
 const selMCB=Ib=>{for(const r of NBR.mcb)if(r>=Ib)return r;return 125};
-// Coordenação disjuntor × condutor adotado (NBR 5410 §5.3.4):
-// maior In padrão que satisfaz Ib ≤ In ≤ Izc — o disjuntor protege o
-// condutor pela sua capacidade máxima, não apenas pela carga.
-function selMCBCoord(Ib,Izc){
-  let best=null;
-  for(const r of NBR.mcb){if(r>=Ib&&r<=Izc)best=r}
-  return best;
-}
-const mcbCurve=t=>(t==="motor"||t==="climatizacao")?"C":"B";
-const drSens=t=>t==="iluminacao"?300:30;
+// Coordenação disjuntor × condutor (NBR 5410 §5.3.4): MENOR In
+// comercial que satisfaz Ib ≤ In ≤ Izc — atende a carga com a menor
+// proteção possível, sem jamais exceder a capacidade do condutor.
+function selMCBCoord(Ib,Izc){return NBR5410.selectBreaker({Ib,Izc}).In}
+const mcbCurve=t=>NBR5410.breakerCurve(t);
+const drSens=t=>NBR5410.rcdSensitivity(t);
 
 // Phase helpers
 const icons={tomadas:"fa-plug",iluminacao:"fa-lightbulb",climatizacao:"fa-snowflake",aquecimento:"fa-fire",motor:"fa-gear",uso_geral:"fa-house"};
@@ -2639,6 +2608,17 @@ function autoGenerate(){
 // MAIN CALCULATION
 // ================================================================
 let calcTimer=null;
+let _qdfResult=null; // resultado do QDF (demanda/alimentador/geral) — fonte única p/ QDF, unifilar e PDF
+function buildSite(){
+  const{Vfn,Vll}=getSysVoltages();
+  return{
+    Vfn,Vll,supplyType:getSupplyType(),
+    Ta:parseInt(document.getElementById("ambTemp").value)||30,
+    insulation:document.getElementById("insType").value||"PVC",
+    groupedCircuits:parseInt(document.getElementById("totCirc").value)||3,
+    maxDropPct:parseFloat(document.getElementById("maxDrop").value)||4
+  };
+}
 function calculateAll(targetTab="circ"){
   if(!loads.length){toast("Adicione pelo menos uma carga.","err");return}
   document.getElementById("lov").classList.add("on");
@@ -2646,63 +2626,37 @@ function calculateAll(targetTab="circ"){
   clearTimeout(calcTimer);
   calcTimer=setTimeout(()=>{
     try{
-      const Ta=parseInt(document.getElementById("ambTemp").value)||30;
-      const nC=parseInt(document.getElementById("totCirc").value)||3;
-      const ins=document.getElementById("insType").value||"PVC";
-      const maxDp=parseFloat(document.getElementById("maxDrop").value)||4;
-      const Ft=gFt(Ta),Fg=gFg(nC);
+      const site=buildSite();
+      const{Ta,insulation:ins,maxDropPct:maxDp,groupedCircuits:nC}=site;
+      const Ft=gFt(Ta,ins),Fg=gFg(nC);
 
+      // 1) QDF primeiro: demanda diversificada, alimentador e Icc no
+      //    barramento — os circuitos usam essa impedância a montante.
+      _qdfResult=NBR5410.sizeFeederAndMain(loads,site);
+      const upstreamZOhm=_qdfResult.shortCircuit.zAtBoardOhm;
+
+      // 2) Pipeline normativo por circuito (condutor ANTES do disjuntor)
       results=loads.map((l,i)=>{
-        const Ib=calcIb(l);
-        const wt=l.wiringType||"A+N";
-        const nc=nLoadedOf(wt);
-        let sz=selCond(Ib,l.method,Ft,Fg,ins,nc);
-        sz=Math.max(sz,NBR.minS[l.type]||2.5);
-        let vd=calcVd(Ib,l.distance,sz,wt);
-        let upsized=false,upsizeImpossible=false;
-        // Upsize for voltage drop — NBR 5410 §6.2.7.2
-        if(parseFloat(vd.pct)>maxDp){
-          let solved=false;
-          for(const ts of NBR.sizes){
-            if(ts<=sz)continue;
-            const tv=calcVd(Ib,l.distance,ts,wt);
-            if(parseFloat(tv.pct)<=maxDp){sz=ts;vd=tv;upsized=true;solved=true;break}
-          }
-          if(!solved){
-            // Mesmo 120mm² não resolve — usar o maior disponível e sinalizar
-            const maxSz=NBR.sizes[NBR.sizes.length-1];
-            vd=calcVd(Ib,l.distance,maxSz,wt);sz=maxSz;upsizeImpossible=true;
-          }
-        }
-        // PE section per circuit — NBR 5410 §5.4.4
-        const peSz=sz<=16?sz:sz<=35?16:sz/2;
-        // Proteção coordenada com o condutor ADOTADO: Ib ≤ In ≤ Izc,
-        // escolhendo o maior In padrão suportado pelo cabo (§5.3.4).
-        const curve=mcbCurve(l.type),dr=drSens(l.type);
-        let Iz=gIz(l.method,sz,ins,nc);
-        let Izc=parseFloat((Iz*Ft*Fg).toFixed(2));
-        let mcb=selMCBCoord(Ib,Izc);
-        if(mcb===null){
-          // Nenhum In padrão cabe em [Ib, Izc] — aumentar a seção até
-          // o menor In ≥ Ib caber sob o novo Izc.
-          mcb=selMCB(Ib);
-          for(const ts of NBR.sizes){
-            if(ts<=sz)continue;
-            const newIz=gIz(l.method,ts,ins,nc);
-            const newIzc=parseFloat((newIz*Ft*Fg).toFixed(2));
-            if(mcb<=newIzc){sz=ts;Iz=newIz;Izc=newIzc;vd=calcVd(Ib,l.distance,sz,wt);upsized=true;break}
-          }
-          // Após o upsize o cabo suporta mais — reaproveitar a folga
-          mcb=selMCBCoord(Ib,Izc)??mcb;
-        }
-        const{V,type:wtype}=getWiringVoltage(wt);
-        const icc=(V/(0.05+2*NBR.rho*l.distance/sz)).toFixed(0);
-        const pct=parseFloat(vd.pct);
-        const status=upsizeImpossible?"err":pct>maxDp?"err":pct>maxDp*0.75?"warn":"ok";
-        const mcbOk=mcb>=Ib&&mcb<=Izc;
-        const phases=phUsed(wt);
-        trackUsage("cabo_"+sz+"mm");trackUsage("mcb_"+mcb+"A_"+curve);
-        return{l,idx:i+1,Ib:Ib.toFixed(2),Ft,Fg,sz,peSz,Iz:Iz.toFixed(1),Izc,vd,mcb,curve,dr,icc,status,V,Ta,ins,upsized,upsizeImpossible,maxDp,wt,wtype,phases,mcbOk};
+        const r=NBR5410.sizeCircuit(l,{...site,upstreamZOhm});
+        const status=r.status==="ERROR"?"err":r.status==="WARN"?"warn":"ok";
+        const coordCheck=r.checks.find(c=>c.id==="coordenacao");
+        trackUsage("cabo_"+r.conductor.section+"mm");trackUsage("mcb_"+r.breaker.In+"A_"+r.breaker.curve);
+        return{
+          l,idx:i+1,eng:r,checks:r.checks,
+          Ib:r.Ib.toFixed(2),Ft:r.Ft,Fg:r.Fg,
+          sz:r.conductor.section,peSz:r.conductor.pe,
+          Iz:(r.conductor.Iz||0).toFixed(1),Izc:r.conductor.Izc,
+          vd:{dv:r.drop.dropV.toFixed(3),pct:r.drop.dropPct.toFixed(2),fin:r.drop.finalV.toFixed(1),V:r.V},
+          mcb:r.breaker.In,curve:r.breaker.curve,dr:r.rcd.sensitivityMa,
+          icc:Math.round(r.shortCircuit.iccEndA).toFixed(0),
+          iccBoard:Math.round(r.shortCircuit.iccBoardA),
+          icnReq:r.breaker.icnRequiredA,
+          status,V:r.V,Ta,ins,
+          upsized:r.upsizedForBreaker||r.conductor.governedBy==="queda de tensão",
+          upsizeImpossible:!r.conductor.feasible,
+          maxDp,wt:r.wiring,wtype:r.system,phases:r.phases,
+          mcbOk:coordCheck?coordCheck.status==="PASS":false
+        };
       });
 
       renderCircuits(results,Ft,Fg);
@@ -2752,9 +2706,9 @@ function renderCircuits(res,Ft,Fg){
           <div class="cc-f"><div class="cc-fl">Queda de Tensão</div>
             <div class="cc-fv" style="color:${bclr}">${r.vd.pct}%</div>
             <div class="cc-fs">${r.vd.dv}V | Final: ${r.vd.fin}V<br>Limite: ${r.maxDp}%</div></div>
-          <div class="cc-f"><div class="cc-fl">Icc (remoto)</div>
+          <div class="cc-f"><div class="cc-fl">Icc (fim do circuito)</div>
             <div class="cc-fv">${r.icc} A</div>
-            <div class="cc-fs">V/(Zt+Zc)<br>Zt=0.05 Ω</div></div>
+            <div class="cc-fs">Quadro: ${r.iccBoard}A<br>Icn mín: ${r.icnReq?(r.icnReq/1000)+" kA":"&gt;10 kA!"}</div></div>
         </div>
         <div class="vbar"><div class="vfill" style="width:${bw}%;background:${bclr}"></div></div>
         <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--t3);margin-top:2px">
@@ -2765,6 +2719,13 @@ function renderCircuits(res,Ft,Fg){
         ${parseFloat(r.vd.pct)>r.maxDp&&!r.upsized&&!r.upsizeImpossible?`<div class="err-box"><i class="fa-solid fa-triangle-exclamation"></i> Queda ${r.vd.pct}% excede ${r.maxDp}%! Aumente para ${nextS(r.sz)} mm²</div>`:""}
         ${mcbFlag}
         <div style="font-size:9px;color:var(--t3);margin-top:5px;font-family:var(--mono)">PE: ${r.peSz}mm² verde/amarelo (NBR §5.4.4)</div>
+        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px">
+          ${(r.checks||[]).map(c=>{
+            const clr=c.status==="PASS"?"var(--ok)":c.status==="WARN"?"var(--wn)":"var(--er)";
+            const ic=c.status==="PASS"?"✓":c.status==="WARN"?"⚠":"✗";
+            return`<span title="${c.label}: ${c.detail}" style="font-size:9px;font-family:var(--mono);color:${clr};border:1px solid ${clr};border-radius:8px;padding:1px 6px;cursor:help">${ic} ${c.label.split("(")[0].trim()}</span>`;
+          }).join("")}
+        </div>
         <div class="prot-row">
           <div class="prot-box"><div class="prot-icon" style="color:var(--wn)"><i class="fa-solid fa-plug-circle-bolt"></i></div><div class="prot-lbl">MCB</div><div class="prot-val">${r.mcb}A/${r.curve}</div></div>
           <div class="prot-box"><div class="prot-icon" style="color:var(--inf)"><i class="fa-solid fa-shield-halved"></i></div><div class="prot-lbl">DR/IDR</div><div class="prot-val">${r.mcb}A/${r.dr}mA</div></div>
@@ -2833,40 +2794,24 @@ function renderQDF(res){
     requestAnimationFrame(()=>{gf.style.width=score+"%"});
   }
 
-  // ── Feeder calculation with demand factor NBR 5410 Table 29 ──
-  const totalPower=res.reduce((s,r)=>s+r.l.power,0);
-  const df=totalPower<5000?1.0:totalPower<10000?0.85:totalPower<20000?0.75:0.65;
-  const demandedPower=totalPower*df;
-  let feederIb;
-  if(st==="trifasico") feederIb=demandedPower/(Math.sqrt(3)*Vll*0.92);
-  else if(st==="bifasico") feederIb=demandedPower/(Vll*0.92);
-  else feederIb=demandedPower/(Vfn*0.92);
-  const feederNc=st==="trifasico"?3:2;
-  let feederSz=selCond(feederIb,"C",1.0,1.0,"PVC",feederNc);
-  // Disjuntor geral coordenado com o alimentador adotado: Ib ≤ In ≤ Iz
-  const DG_RATINGS=[25,32,40,50,63,80,100,125,160];
-  let feederIz=gIz("C",feederSz,"PVC",feederNc);
-  let feederMCBVal=null;
-  for(const v of DG_RATINGS){if(v>=feederIb&&v<=feederIz)feederMCBVal=v}
-  if(feederMCBVal===null){
-    const minIn=DG_RATINGS.find(v=>v>=feederIb)||160;
-    for(const ts of NBR.sizes){
-      if(ts<=feederSz)continue;
-      const iz=gIz("C",ts,"PVC",feederNc);
-      if(minIn<=iz){feederSz=ts;feederIz=iz;break}
-    }
-    feederMCBVal=minIn;
-  }
+  // ── Alimentador + disjuntor geral — motor NBR5410 (fonte única) ──
+  // Demanda diversificada por categoria (não é soma de disjuntores),
+  // correntes por fase, cabo com margem de expansão e In coordenado.
+  const qdf=_qdfResult||NBR5410.sizeFeederAndMain(loads,buildSite());
+  _qdfResult=qdf;
+  const totalPower=qdf.demand.installedVA;
+  const df=qdf.demand.overallFactor;
+  const demandedPower=qdf.demand.demandVA;
+  const feederIb=qdf.IbFeeder;
+  const feederSz=qdf.feeder.section;
+  const gMCBVal=qdf.main.In;
 
-  // ── ΔV global check (NBR 5410 §6.2.7.2 — limite 7%) ──
+  // ── ΔV global (NBR 5410 §6.2.7 — 5% p/ rede pública de BT) ──
   const maxCircVd=res.length?Math.max(...res.map(r=>parseFloat(r.vd.pct))):0;
-  const feederDv=(st==="trifasico"?Math.sqrt(3):st==="bifasico"?1:2)*NBR.rho*15*feederIb/feederSz;
-  const feederDvPct=(feederDv/(st==="monofasico"?Vfn:Vll)*100);
+  const feederDvPct=qdf.feeder.drop.dropPct;
   const globalDv=maxCircVd+feederDvPct;
-  const globalDvWarn=globalDv>7;
-
-  // ── General breaker (legacy fallback) ──
-  const gMCBVal=feederMCBVal;
+  const globalDvLimit=NBR5410.TABLES.VOLTAGE_DROP_LIMITS.totalGridSupply;
+  const globalDvWarn=globalDv>globalDvLimit;
 
   // ── Poles label by supply type ──
   const dgPoles=st==="trifasico"?"3P":st==="bifasico"?"2P":"1P";
@@ -2936,11 +2881,20 @@ function renderQDF(res){
   const globalDvAlert=globalDvWarn
     ?`<div style="background:var(--erb);border:1px solid var(--er);border-radius:var(--r);padding:7px 12px;font-size:11px;color:var(--er);display:flex;align-items:center;gap:7px;margin:6px 0">
         <i class="fa-solid fa-triangle-exclamation"></i>
-        <strong>Queda Global ${globalDv.toFixed(1)}% > 7%!</strong> (alimentador ${feederDvPct.toFixed(1)}% + maior circuito ${maxCircVd.toFixed(1)}%) — NBR 5410 §6.2.7.2
+        <strong>Queda Global ${globalDv.toFixed(1)}% > ${globalDvLimit}%!</strong> (alimentador ${feederDvPct.toFixed(1)}% + maior circuito ${maxCircVd.toFixed(1)}%) — NBR 5410 §6.2.7 (rede pública BT)
       </div>`
     :`<div style="background:var(--okb);border:1px solid var(--ok);border-radius:var(--r);padding:5px 12px;font-size:10px;color:var(--ok);display:flex;align-items:center;gap:6px;margin:4px 0">
-        <i class="fa-solid fa-check-circle"></i> ΔV global ${globalDv.toFixed(1)}% ≤ 7% (alimentador ${feederDvPct.toFixed(1)}% + circuito ${maxCircVd.toFixed(1)}%) — NBR 5410 §6.2.7.2 OK
+        <i class="fa-solid fa-check-circle"></i> ΔV global ${globalDv.toFixed(1)}% ≤ ${globalDvLimit}% (alimentador ${feederDvPct.toFixed(1)}% + circuito ${maxCircVd.toFixed(1)}%) — NBR 5410 §6.2.7 OK
       </div>`;
+
+  // ── Validação do QDF (PASS/WARN/ERROR do motor) ──
+  const qdfChecksHtml=(qdf.checks||[]).map(c=>{
+    const clr=c.status==="PASS"?"var(--ok)":c.status==="WARN"?"var(--wn)":"var(--er)";
+    const ic=c.status==="PASS"?"fa-check-circle":c.status==="WARN"?"fa-triangle-exclamation":"fa-circle-exclamation";
+    return`<div style="display:flex;align-items:center;gap:6px;font-size:10px;color:${clr};padding:2px 0">
+      <i class="fa-solid ${ic}"></i> <strong>${c.label}</strong> — ${c.detail}</div>`;
+  }).join("");
+  const fmtI=v=>v.toFixed(1);
 
   const html=`
     <div class="qdf-header">
@@ -2951,27 +2905,30 @@ function renderQDF(res){
     <div class="qdf-feeder">
       <div class="qdf-feeder-info">
         <div>VEM DO MEDIDOR</div>
-        <div>${sysLabel} — ${feederSz}mm² (calculado)</div>
+        <div>${sysLabel} — ${feederSz}mm² (${qdf.feeder.method}, +${(qdf.feeder.expansionMargin*100).toFixed(0)}% expansão)</div>
       </div>
       <div style="font-size:10px;font-family:var(--mono);color:var(--t3);text-align:center">
-        <div>Pd=${(demandedPower/1000).toFixed(1)}kW</div>
-        <div>Fd=${(df*100).toFixed(0)}% (Tab.29)</div>
-        <div>Ib=${feederIb.toFixed(1)}A</div>
+        <div>Pinst=${(totalPower/1000).toFixed(1)}kW → Pd=${(demandedPower/1000).toFixed(1)}kW (Fd=${(df*100).toFixed(0)}%)</div>
+        <div>I fases: A=${fmtI(qdf.Iphase.A)} B=${fmtI(qdf.Iphase.B)} C=${fmtI(qdf.Iphase.C)} A</div>
+        <div>Ib alim = máx fase = ${feederIb.toFixed(1)}A | ΔV=${feederDvPct.toFixed(2)}% (${qdf.feeder.lengthM}m)</div>
       </div>
       <div class="qdf-feeder-terminals">
-        <div class="qdf-terminal"><div class="t-lbl">TERRA</div><div class="t-val">${Math.max(10,feederSz/2)}mm²</div></div>
-        <div class="qdf-terminal"><div class="t-lbl">NEUTRO</div><div class="t-val">${feederSz}mm²</div></div>
+        <div class="qdf-terminal"><div class="t-lbl">TERRA</div><div class="t-val">${qdf.feeder.pe}mm²</div></div>
+        <div class="qdf-terminal"><div class="t-lbl">NEUTRO</div><div class="t-val">${qdf.feeder.neutral}mm²</div></div>
       </div>
     </div>
     <div class="qdf-disjgeral">
-      <div class="qdf-dg-box">
+      <div class="qdf-dg-box" title="Menor In comercial com Ib(${feederIb.toFixed(1)}A) ≤ In ≤ Izc(${qdf.feeder.Izc}A) — NBR 5410 §5.3.4">
         <i class="fa-solid fa-plug-circle-bolt"></i>
-        DISJUNTOR GERAL — ${gMCBVal}A — Curva C — ${dgPoles}
+        DISJUNTOR GERAL — ${gMCBVal}A — Curva C — ${dgPoles} — Icn ≥ ${qdf.main.icnRequiredA?(qdf.main.icnRequiredA/1000)+"kA":">10kA"}
       </div>
     </div>
     <div class="qdf-prot-row">
-      <div class="qdf-prot-cell"><i class="fa-solid fa-shield-halved"></i> DR GERAL ${Math.max(...res.map(r=>r.mcb),40)}A / 30mA</div>
-      <div class="qdf-prot-cell"><i class="fa-solid fa-explosion"></i> DPS Classe II — 40kA — Clamper</div>
+      <div class="qdf-prot-cell"><i class="fa-solid fa-shield-halved"></i> DR GERAL ${qdf.rcd.In}A / ${qdf.rcd.sensitivityMa}mA</div>
+      <div class="qdf-prot-cell"><i class="fa-solid fa-explosion"></i> DPS Classe ${qdf.dps.class} — ${qdf.dps.imaxKA}kA — Uc≥${qdf.dps.ucV}V — ${qdf.dps.poles}P</div>
+    </div>
+    <div style="padding:6px 12px;border-bottom:1px solid var(--br)">
+      ${qdfChecksHtml}
     </div>
     ${busbarHtml}
     <div class="qdf-schedule">
@@ -3087,13 +3044,18 @@ function renderBOM(res){
   res.forEach(r=>{
     const mlen=Math.ceil(r.l.distance*1.2*(r.wt==="A+B+C"?4:r.phases.length===2?3:2));
     const br=NBR.brands.cond[r.sz]||"Prysmian";
+    // Polaridade do disjuntor segue a fiação; Icn segue a Icc presumida
+    const poles=r.wt==="A+B+C"?"Tripolar":r.phases.length===2?"Bipolar":"Monopolar";
+    const icn=r.icnReq?`${r.icnReq/1000}kA`:">10kA";
+    const drIn=r.eng?.rcd?.In||r.mcb;
     add("c_"+r.sz,`Cabo Cu ${r.sz}mm²`,`Cobre ${r.sz}mm² PVC 750V NBR NM 247-3`,br,mlen,"m","NBR NM 247-3","cabo_"+r.sz+"mm");
-    add("m_"+r.mcb+"_"+r.curve,`MCB ${r.mcb}A Curva ${r.curve}`,`Monopolar ${r.mcb}A curva ${r.curve} 3kA`,NBR.brands.mcb,1,"un","NBR IEC 60898-1","mcb_"+r.mcb+"A_"+r.curve);
-    add("d_"+r.mcb+"_"+r.dr,`DR/IDR ${r.mcb}A/${r.dr}mA`,`Bipolar ${r.mcb}A ${r.dr}mA 220V`,NBR.brands.dr,1,"un","NBR IEC 61008-1","dr_"+r.dr+"mA");
+    add("m_"+r.mcb+"_"+r.curve,`MCB ${r.mcb}A Curva ${r.curve}`,`${poles} ${r.mcb}A curva ${r.curve} Icn ${icn}`,NBR.brands.mcb,1,"un","NBR IEC 60898-1","mcb_"+r.mcb+"A_"+r.curve);
+    add("d_"+drIn+"_"+r.dr,`DR/IDR ${drIn}A/${r.dr}mA`,`${r.phases.length>1?"Tetrapolar":"Bipolar"} ${drIn}A ${r.dr}mA`,NBR.brands.dr,1,"un","NBR IEC 61008-1","dr_"+r.dr+"mA");
     add("e_B1",`Eletroduto PVC 3/4"`,`PVC corrugado 3/4" NBR 15465`,NBR.brands.elet,Math.ceil(r.l.distance*1.1),"m","NBR 15465","eletroduto_pvc");
   });
   const totL=Math.ceil(res.reduce((s,r)=>s+r.l.distance,0)*1.1);
-  add("dps","DPS Classe II 40kA","Tipo 2 Uc≥275V Imax 40kA 8/20µs 2P","Clamper",1,"un","IEC 61643-11","dps_classeII");
+  const dpsSpec=_qdfResult?`Tipo 2 Uc≥${_qdfResult.dps.ucV}V Imax ${_qdfResult.dps.imaxKA}kA 8/20µs ${_qdfResult.dps.poles}P`:"Tipo 2 Uc≥275V Imax 40kA 8/20µs 2P";
+  add("dps","DPS Classe II 40kA",dpsSpec,"Clamper",1,"un","IEC 61643-11","dps_classeII");
   add("pe","Cabo PE verde/amarelo 2.5mm²","Proteção 2.5mm² verde/amarelo",NBR.brands.pe,totL,"m","NBR 5410 §6.3","cabo_2.5mm");
   add("qdf",`QDF ${res.length+3} disjuntores`,`Embutir/sobrepor ${res.length+3}P IP40`,NBR.brands.qdf,1,"un","NBR IEC 60439-3","qdf_box");
 
@@ -3176,11 +3138,29 @@ function renderMemo(res,g){
     const fIb=r.wtype==="tri"?`P/(√3×Vll×FP) = ${r.l.power}/(1.732×${r.V}×${r.l.pf})`:
               r.wtype==="bi"?`P/(Vll×FP) = ${r.l.power}/(${r.V}×${r.l.pf})`:
               `P/(Vfn×FP) = ${r.l.power}/(${r.V}×${r.l.pf})`;
-    const fDv=r.wtype==="tri"?`√3×ρ×L×Ib/S = 1.732×${NBR.rho}×${r.l.distance}×${r.Ib}/${r.sz}`:
-              `2×ρ×L×Ib/S = 2×${NBR.rho}×${r.l.distance}×${r.Ib}/${r.sz}`;
+    const rho=NBR5410.resistivity(r.ins).toFixed(5);
+    const fDv=r.wtype==="tri"?`√3×L×Ib×(ρ·cosφ/S + x·senφ) — ρ=${rho} (${r.ins} ${r.ins==="XLPE"?"90":"70"}°C)`:
+              `2×L×Ib×(ρ·cosφ/S + x·senφ) — ρ=${rho} (${r.ins} ${r.ins==="XLPE"?"90":"70"}°C)`;
     const secOk=parseFloat(r.Izc)>=parseFloat(r.Ib);
     const dvOk=pct<=r.maxDp;
-    const allOk=secOk&&dvOk&&r.mcbOk;
+    const allOk=r.status!=="err";
+    // Auditoria da seleção do disjuntor: candidatos comerciais avaliados
+    const cands=(r.eng?.breaker?.candidates||[]);
+    const firstOkIdx=cands.findIndex(c=>c.ok);
+    const candStr=cands
+      .filter((c,i)=>firstOkIdx<0||i<=firstOkIdx+1)
+      .map(c=>c.ok?`<span class="ok-span">${c.In}A ✅</span>`:`<span class="er-span" title="${c.reason}">${c.In}A ❌</span>`)
+      .join(" · ");
+    // Trilha de dimensionamento do condutor (seções reprovadas e por quê)
+    const condSteps=(r.eng?.conductor?.steps||[])
+      .map(s=>s.ok?`${s.section}mm² ✅ ${s.reason}`:`${s.section}mm² ❌ ${s.reason}`)
+      .join("<br>&nbsp;&nbsp;");
+    // Validação PASS/WARN/ERROR
+    const checksHtml=(r.checks||[]).map(c=>{
+      const cls=c.status==="PASS"?"ok-span":c.status==="WARN"?"ac-span":"er-span";
+      const tag=c.status==="PASS"?"PASS":c.status==="WARN"?"WARN":"ERRO";
+      return`&nbsp;&nbsp;<span class="${cls}">[${tag}]</span> ${c.label} — ${c.detail}`;
+    }).join("<br>");
     return`<details class="memo-sec"${i===0?" open":""}>
     <summary>
       <span class="memo-sec-id">C${String(r.idx).padStart(2,"0")}</span>
@@ -3199,10 +3179,14 @@ P=${r.l.power}W | L=${r.l.distance}m | Met.${r.l.method} | FP=${r.l.pf}<br>
 <strong>Consumo estimado</strong>: <span class="ac-span">${(r.l.power*(NBR.usageH[r.l.type]||4)*30/1000).toFixed(1)} kWh/mês</span> (uso típico ${NBR.usageH[r.l.type]||4}h/dia)<br>
 <strong>Ib</strong> = ${fIb} = <span class="ac-span">${r.Ib} A</span><br>
 <strong>Ft</strong>=${g.Ft} (Tab.40,Ta=${g.Ta}°C) | <strong>Fg</strong>=${g.Fg} (Tab.42,n=${g.nC})<br>
-<strong>Condutor adotado</strong>: <span class="ac-span">${r.sz} mm² ${r.ins}</span> | Min.NBR=${NBR.minS[r.l.type]}mm² | Iz=${r.Iz}A (Tab.${r.ins==="XLPE"?"37":"36"}, ${r.l.method}) | <strong>Izc</strong>=${r.Iz}×${g.Ft}×${g.Fg}=<span class="ok-span">${r.Izc}A</span> ≥ Ib ${secOk?"✓ OK":"✗ FALHA!"}<br>
+<strong>Condutor adotado</strong>: <span class="ac-span">${r.sz} mm² ${r.ins}</span> | Min.NBR=${NBR.minS[r.l.type]}mm² (Tab.47) | Iz=${r.Iz}A (Tab.${r.ins==="XLPE"?"37":"36"}, ${r.l.method}) | <strong>Izc</strong>=${r.Iz}×${g.Ft}×${g.Fg}=<span class="ok-span">${r.Izc}A</span> ≥ Ib ${secOk?"✓ OK":"✗ FALHA!"} | critério dominante: ${r.eng?.conductor?.governedBy||"—"}<br>
+<strong>Seleção da seção (menor que atende tudo)</strong>:<br>&nbsp;&nbsp;${condSteps}<br>
 <strong>ΔV</strong>=${fDv}=${r.vd.dv}V=<span class="${pct>r.maxDp?"er-span":"ok-span"}">${r.vd.pct}%</span> ${pct>r.maxDp?"EXCEDE "+r.maxDp+"%!":"≤"+r.maxDp+"% OK"} | Vfinal=${r.vd.fin}V<br>
-<strong>Disjuntor (coordenado ao condutor)</strong>: <span class="ac-span">${r.mcb}A curva ${r.curve}</span> | maior In padrão com Ib(${r.Ib}A) ≤ In ≤ Izc(${r.Izc}A) ${r.mcbOk?"✓ OK":"✗ FALHA"} — NBR 5410 §5.3.4<br>
-<strong>DR/IDR</strong>: ${r.mcb}A/${r.dr}mA | <strong>PE</strong>: ${r.peSz}mm² | <strong>Icc</strong>=${r.icc}A
+<strong>Disjuntores comerciais avaliados</strong>: ${candStr||"—"}<br>
+<strong>Seleção final</strong>: <span class="ac-span">${r.mcb}A curva ${r.curve}</span> — menor In padrão com Ib(${r.Ib}A) ≤ In(${r.mcb}A) ≤ Izc(${r.Izc}A) ${r.mcbOk?"✓ Conforme NBR 5410 §5.3.4":"✗ FALHA de coordenação"}<br>
+<strong>Curto-circuito</strong>: Icc quadro=${r.iccBoard}A → Icn mín ${r.icnReq?(r.icnReq/1000)+"kA":"&gt;10kA (industrial!)"} | Icc fim=${r.icc}A | verificação adiabática §5.3.5.4 ${r.eng?.shortCircuit?.adiabatic?.ok?"✓":"✗"}<br>
+<strong>DR/IDR</strong>: ${r.eng?.rcd?.In||r.mcb}A/${r.dr}mA | <strong>PE</strong>: ${r.peSz}mm² (Tab.58)<br>
+<strong>Validação de engenharia</strong>:<br>${checksHtml}
     </div>
   </details>`;
   }).join("");
@@ -3231,7 +3215,7 @@ function clearRes(){
 }
 
 // ================================================================
-// QA TESTS — 22 tests
+// QA TESTS — fórmulas, motor NBR5410, QDF e comportamento
 // ================================================================
 function runQATests(){
   const R={passed:0,failed:0,tests:[]};
@@ -3268,8 +3252,38 @@ function runQATests(){
   test("[EE] Tab.36 3 carregados < 2 carregados (B1 6mm²: 36A < 41A)",()=>{
     return gIz("B1",6,"PVC",3)===36&&gIz("B1",6,"PVC",3)<gIz("B1",6,"PVC",2);
   });
-  test("[EE] Coordenação In×condutor: Ib=15A, 4mm² Izc=22.4A → In=20A",()=>{
-    return selMCBCoord(15,32*0.7)===20;
+  test("[EE] Coordenação In×condutor: Ib=15A, 4mm² Izc=22.4A → In=16A (MENOR In)",()=>{
+    return selMCBCoord(15,32*0.7)===16;
+  });
+  test("[EE] MCB nunca excede Izc: Ib=17A, Izc=17.5A → nenhum In cabe",()=>{
+    return selMCBCoord(17,17.5)===null;
+  });
+  test("[EE] Ft por isolação (Tab.40): 40°C PVC=0.87, XLPE=0.91",()=>{
+    return NBR5410.tempCorrectionFactor(40,"PVC")===0.87&&NBR5410.tempCorrectionFactor(40,"XLPE")===0.91;
+  });
+  test("[EE] Fg Tab.42 completa: 10→0.50, 15→0.45, 20→0.38",()=>{
+    return gFg(10)===0.50&&gFg(15)===0.45&&gFg(20)===0.38;
+  });
+  test("[QDF] Disjuntor geral ≠ soma dos parciais (demanda diversificada)",()=>{
+    const house=[
+      {power:660,pf:0.95,type:"iluminacao",wiringType:"A+N"},
+      {power:1500,pf:0.92,type:"tomadas",wiringType:"B+N"},
+      {power:5500,pf:1,type:"aquecimento",wiringType:"A+B"},
+      {power:5500,pf:1,type:"aquecimento",wiringType:"B+C"},
+      {power:1800,pf:0.85,type:"climatizacao",wiringType:"C+N"}
+    ];
+    const q=NBR5410.sizeFeederAndMain(house,{Vfn:127,Vll:220,Ta:30,supplyType:"trifasico"});
+    return q.demand.demandVA<q.demand.installedVA&&q.IbFeeder<=q.main.In&&q.main.In<=q.feeder.Izc;
+  });
+  test("[QDF] Ib do alimentador = máxima corrente de FASE (não potência/3)",()=>{
+    const q=NBR5410.sizeFeederAndMain([{power:5500,pf:1,type:"aquecimento",wiringType:"A+B"}],
+      {Vfn:127,Vll:220,Ta:30,supplyType:"trifasico"});
+    return Math.abs(q.Iphase.A-25)<0.1&&Math.abs(q.IbFeeder-25)<0.1;
+  });
+  test("[VAL] Pipeline de validação emite PASS/WARN/ERROR por circuito",()=>{
+    const r=NBR5410.sizeCircuit({power:5500,pf:1,distance:12,type:"aquecimento",method:"B1",wiringType:"A+B"},
+      {Vfn:127,Vll:220,Ta:30,insulation:"PVC",groupedCircuits:3,maxDropPct:4});
+    return Array.isArray(r.checks)&&r.checks.length>=7&&r.checks.every(c=>["PASS","WARN","ERROR"].includes(c.status));
   });
   test("[EE] Chuveiro 25A agrupado (Fg=0.7): cabo 6mm² + In=25A",()=>{
     const sz=selCond(25,"B1",1.0,0.70,"PVC",2);
@@ -3548,8 +3562,10 @@ function exportToPDF(){
 
     // ── Summary Page ──────────────────────────────────────────────
     doc.addPage();
-    const totalPow=results.reduce((s,r)=>s+r.l.power,0);
-    const df=totalPow<5000?1.0:totalPow<10000?0.85:totalPow<20000?0.75:0.65;
+    // Demanda: mesmos valores do QDF (motor NBR5410 — diversificada)
+    const qdfPdf=_qdfResult||NBR5410.sizeFeederAndMain(loads,buildSite());
+    const totalPow=qdfPdf.demand.installedVA;
+    const df=qdfPdf.demand.overallFactor;
     const phPow={A:0,B:0,C:0};
     results.forEach(r=>{
       const ph=phUsed(r.wt);const sh=r.l.power/ph.length;
@@ -3758,9 +3774,11 @@ function buildUnifilarSVG(){
   const{Vfn,Vll}=getSysVoltages();
   const date=new Date().toLocaleDateString("pt-BR");
 
-  // Main breaker: 60% diversity factor
-  const mainIb=results.reduce((s,r)=>s+parseFloat(r.Ib),0)*0.6;
-  const mainMCB=[25,32,40,50,63,80,100,125,160].find(v=>v>=mainIb)||63;
+  // Disjuntor geral e alimentador: MESMOS valores do QDF (motor
+  // NBR5410 — demanda diversificada + coordenação Ib ≤ In ≤ Izc),
+  // nunca soma de disjuntores nem fator arbitrário.
+  const qdf=_qdfResult||NBR5410.sizeFeederAndMain(loads,buildSite());
+  const mainMCB=qdf.main.In;
 
   // Layout
   const PW=1122,RH=30;
@@ -3841,7 +3859,7 @@ function buildUnifilarSVG(){
   // ── TERRA busbar (left) ──────────────────────────────────────
   s+=rc(0,83,40,PH_TOT-83,'fill="#e8f5e8" stroke="#2d862d" stroke-width="1.5"');
   s+=tx(20,96,"TERRA",'text-anchor="middle" font-size="8" font-weight="bold" fill="#2d862d"');
-  s+=tx(20,107,"10mm²",'text-anchor="middle" font-size="7" fill="#2d862d"');
+  s+=tx(20,107,`${qdf.feeder.pe}mm²`,'text-anchor="middle" font-size="7" fill="#2d862d"');
   const GY=PH_TOT-22;
   s+=ln(20,115,20,GY,'stroke="#2d862d" stroke-width="1.5"');
   s+=ln(10,GY,30,GY,'stroke="#2d862d" stroke-width="2"');
@@ -3851,14 +3869,14 @@ function buildUnifilarSVG(){
   // ── NEUTRO busbar (right) ────────────────────────────────────
   s+=rc(NX,83,40,PH_TOT-83,'fill="#e8e8f5" stroke="#223399" stroke-width="1.5"');
   s+=tx(NX+20,96,"NEUTRO",'text-anchor="middle" font-size="8" font-weight="bold" fill="#223399"');
-  s+=tx(NX+20,107,"10mm²",'text-anchor="middle" font-size="7" fill="#223399"');
+  s+=tx(NX+20,107,`${qdf.feeder.neutral}mm²`,'text-anchor="middle" font-size="7" fill="#223399"');
 
   // ── Feeder box ───────────────────────────────────────────────
   s+=rc(FX,FY,FW,FH,'fill="#fff0f0" stroke="#cc2200" stroke-width="2.5" rx="4"');
   s+=tx(FX+FW/2,FY+15,"VEM DO MEDIDOR",
     'text-anchor="middle" font-size="12" font-weight="bold" fill="#cc2200"');
   const _svgSysLbl=(()=>{const _t=getSupplyType();return _t==="monofasico"?`${Vfn}V (1F+N)`:_t==="bifasico"?`${Vfn}/${Vll}V (2F+N)`:`${Vll}/${Vfn}V (3F+N+T)`;})();
-  s+=tx(FX+FW/2,FY+31,`${_svgSysLbl}   16mm²`,
+  s+=tx(FX+FW/2,FY+31,`${_svgSysLbl}   ${qdf.feeder.section}mm²`,
     'text-anchor="middle" font-size="10" fill="#000"');
 
   const svgSt=getSupplyType();
