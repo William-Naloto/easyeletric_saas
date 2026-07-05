@@ -811,6 +811,26 @@ nav {
   font-size:10px; color:var(--pu); background:var(--pub);
   border:1px solid var(--pu); padding:1px 6px; border-radius:7px; font-family:var(--mono);
 }
+/* BOM category group header rows */
+.bom-group td {
+  background:var(--bgi); color:var(--t2);
+  font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.8px;
+  padding:7px 12px; border-bottom:1px solid var(--br);
+}
+.bom-group td i { color:var(--ac); margin-right:6px }
+.bom-group .bom-group-count { color:var(--t3); font-weight:500; margin-left:6px; text-transform:none; letter-spacing:0 }
+/* BOM search field */
+.bom-search {
+  display:flex; align-items:center; gap:7px;
+  background:var(--bgi); border:1px solid var(--br); border-radius:var(--r);
+  padding:5px 10px; min-width:220px;
+}
+.bom-search i { color:var(--t3); font-size:11px }
+.bom-search input {
+  background:none; border:none; outline:none; color:var(--t1);
+  font-size:12px; font-family:inherit; width:100%;
+}
+.bom-search:focus-within { border-color:var(--brf); box-shadow:0 0 0 3px var(--acg) }
 
 /* ============================================================
    MEMORIAL / FORMULAS
@@ -1570,9 +1590,15 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
 
       <!-- BOM -->
       <div id="panel-bom" style="display:none">
-        <div class="sh" style="margin-bottom:12px">
+        <div class="sh" style="margin-bottom:12px;flex-wrap:wrap;gap:8px">
           <div style="font-size:13px;font-weight:600;color:var(--t2);display:flex;align-items:center;gap:7px">
             <i class="fa-solid fa-boxes-stacked" style="color:var(--ac)"></i> Lista de Materiais
+            <span class="badge b-ac" id="bomCount" style="display:none"></span>
+          </div>
+          <div class="bom-search">
+            <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+            <input type="search" id="bomSearch" placeholder="Filtrar materiais…"
+                   aria-label="Filtrar lista de materiais" oninput="filterBOM(this.value)">
           </div>
         </div>
         <div class="bom-wrap">
@@ -2964,7 +2990,21 @@ function renderBOM(res){
   add("pe","Cabo PE verde/amarelo 2.5mm²","Proteção 2.5mm² verde/amarelo",NBR.brands.pe,totL,"m","NBR 5410 §6.3","cabo_2.5mm");
   add("qdf",`QDF ${res.length+3} disjuntores`,`Embutir/sobrepor ${res.length+3}P IP40`,NBR.brands.qdf,1,"un","NBR IEC 60439-3","qdf_box");
 
-  document.getElementById("bomBody").innerHTML=Object.entries(bom).map(([k,it],i)=>{
+  // ── Group items by engineering category (ERP-style) ──
+  const CAT_ORDER=[
+    ["qdf","Quadro de Distribuição","fa-table-cells"],
+    ["mcb","Proteção — Disjuntores","fa-plug-circle-bolt"],
+    ["dr","Proteção — DR / IDR","fa-shield-halved"],
+    ["dps","Proteção — DPS","fa-explosion"],
+    ["cabo","Condutores","fa-bacon"],
+    ["infra","Infraestrutura","fa-circle-nodes"]
+  ];
+  const catOf=k=>k.startsWith("m_")?"mcb":k.startsWith("d_")?"dr":k==="dps"?"dps"
+    :k.startsWith("c_")||k==="pe"?"cabo":k==="qdf"?"qdf":"infra";
+
+  let rowIdx=0;
+  const mkRow=(catLabel)=>([k,it])=>{
+    rowIdx++;
     const affLnk=getAffLink(it.affId||"");
     let cell;
     if(affLnk){
@@ -2974,8 +3014,8 @@ function renderBOM(res){
       cell=`<span class="buy-btn-disabled" title="Link não cadastrado no Dev Panel">
         <i class="fa-solid fa-lock"></i> Sem link</span>`;
     }
-    return`<tr>
-      <td style="font-family:var(--mono);color:var(--t3);font-size:10px">${String(i+1).padStart(2,"0")}</td>
+    return`<tr data-search="${(it.name+" "+it.spec+" "+it.brand+" "+catLabel).toLowerCase()}">
+      <td style="font-family:var(--mono);color:var(--t3);font-size:10px">${String(rowIdx).padStart(2,"0")}</td>
       <td style="font-weight:500;font-size:12px">${it.name}</td>
       <td style="font-size:11px;color:var(--t3)">${it.spec}</td>
       <td><span class="brand-tag">${it.brand}</span></td>
@@ -2984,7 +3024,40 @@ function renderBOM(res){
       <td><span class="badge b-pu" style="font-size:10px">${it.nbr}</span></td>
       <td>${cell}</td>
     </tr>`;
+  };
+
+  const entries=Object.entries(bom);
+  document.getElementById("bomBody").innerHTML=CAT_ORDER.map(([cat,label,icon])=>{
+    const items=entries.filter(([k])=>catOf(k)===cat);
+    if(!items.length)return"";
+    return`<tr class="bom-group"><td colspan="8"><i class="fa-solid ${icon}"></i>${label}<span class="bom-group-count">· ${items.length} ${items.length===1?"item":"itens"}</span></td></tr>`
+      +items.map(mkRow(label)).join("");
   }).join("");
+
+  const cnt=document.getElementById("bomCount");
+  if(cnt){cnt.style.display="";cnt.textContent=`${entries.length} itens`}
+  const bs=document.getElementById("bomSearch");
+  if(bs&&bs.value)filterBOM(bs.value);
+}
+
+// Live BOM filter — hides non-matching rows and empty group headers
+function filterBOM(q){
+  q=(q||"").trim().toLowerCase();
+  const body=document.getElementById("bomBody");
+  let visible=0,lastGroup=null,groupHasRows=false;
+  [...body.rows].forEach(tr=>{
+    if(tr.classList.contains("bom-group")){
+      if(lastGroup)lastGroup.style.display=groupHasRows?"":"none";
+      lastGroup=tr;groupHasRows=false;
+    } else {
+      const hit=!q||tr.dataset.search.includes(q);
+      tr.style.display=hit?"":"none";
+      if(hit){visible++;groupHasRows=true}
+    }
+  });
+  if(lastGroup)lastGroup.style.display=groupHasRows?"":"none";
+  const cnt=document.getElementById("bomCount");
+  if(cnt)cnt.textContent=q?`${visible} de ${body.querySelectorAll("tr[data-search]").length} itens`:`${body.querySelectorAll("tr[data-search]").length} itens`;
 }
 
 // ================================================================
