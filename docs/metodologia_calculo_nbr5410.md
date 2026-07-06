@@ -1,4 +1,4 @@
-# Metodologia de Cálculo — Motor NBR 5410 (v3.2)
+# Metodologia de Cálculo — Motor NBR 5410 (v3.3)
 
 Documento de engenharia do motor de dimensionamento
 (`scripts/nbr5410_engine.js`). Todo cálculo é **determinístico,
@@ -177,18 +177,90 @@ queda de tensão · capacidade de interrupção · disparo magnético ·
 adiabática · DR · viabilidade. No QDF: coordenação do geral · queda do
 alimentador · equilíbrio de fases · capacidade de interrupção.
 
-## 11. Testes
+## 11. Módulos de engenharia (`scripts/engineering/`) — v3.3
+
+Serviços independentes, sem DOM, testados em Node e carregados no
+navegador como globais. Nenhum duplica lógica do motor central — todos
+consomem `nbr5410_engine.js` como fonte única de fórmulas e tabelas.
+
+### 11.1 Balanceamento de fases (`phase_balance.js` → `EEPhaseBalance`)
+
+- **Análise por corrente sob demanda diversificada** (mesmo fator por
+  categoria do QDF), nunca por potência instalada crua;
+- **Corrente de neutro por soma fasorial** (fases a 120°):
+  3F+N: `In = √(Ia²+Ib²+Ic² − IaIb − IbIc − IcIa)`;
+  2F+N: `In = √(Ia²+Ib² − IaIb)`; 1F+N: `In = Ia`;
+- **Balance Score 0–100** = `100 − desequilíbrio% − 0,15·(In/Imax)·100`
+  — penaliza neutro carregado mesmo com módulos de fase próximos;
+- **Otimizador determinístico**: LPT (maiores correntes primeiro na
+  fase menos carregada, empates por índice e ordem A<B<C) + busca local
+  por movimento simples até convergir (máx. 50 passadas). Só realoca
+  circuitos F+N; F+F e 3F são fixos pela topologia. Retorna relatório
+  ANTES/DEPOIS e a lista de movimentos; a aplicação é opt-in
+  (`applyTo`), sem mutação implícita da entrada.
+
+### 11.2 Seleção de DR (`rcd.js` → `EERcd`)
+
+- Obrigatoriedade 30 mA por circuito (§5.1.3.2.2) com razão explícita;
+- **Tipo por natureza da fuga** (IEC 62423): AC resistiva pura,
+  A eletrônica pulsante, F inverter monofásico, B VFD trifásico —
+  hierarquia B > F > A > AC;
+- Corrente nominal comercial ≥ In do disjuntor a montante (o DR não
+  tem disparo térmico próprio);
+- **DR geral seletivo (tipo S, 300 mA)** quando há DRs terminais de
+  30 mA; caso contrário 30 mA geral (proteção de pessoas da instalação).
+
+### 11.3 Seleção de DPS (`spd.js` → `EESpd`)
+
+- Classe I (10/350 µs, Iimp 12,5 kA) com SPDA ou linha aérea muito
+  exposta; Classe II (8/20 µs, In 20 kA / Imax 40 kA) na entrada padrão;
+  Classe III recomendado em ponto de uso sensível a > 10 m do quadro;
+- `Uc ≥ 1,1·U0` com valores comerciais (127→175 V; 220→275 V; 380→460 V);
+- `Up` limitado pela suportabilidade da categoria II (Tab. 31);
+- Conexão **"N+1" com centelhador N-PE em TT** (neutro não
+  equipotencializado na edificação); modo comum em TN.
+
+### 11.4 Aterramento (`grounding.js` → `EEGrounding`)
+
+- Esquemas TT / TN-S / TN-C-S / IT com requisitos próprios (TT: DR
+  obrigatório para seccionamento; TN-C-S: PEN ≥ 10 mm² e nunca
+  seccionado; IT: supervisor de isolamento);
+- PE pela Tabela 58 (delegado ao motor central, arredondado à seção
+  comercial); condutor de aterramento ≥ 6 mm²;
+- Eletrodo: ≥ 3 hastes 2,4 m Ø 5/8", meta ≤ 10 Ω (a norma prioriza a
+  equipotencialização, não um valor de resistência);
+- BEP ≥ PE/2 (mín. 6, teto exigível 25 mm²) e equipotencialização
+  suplementar em áreas molhadas.
+
+### 11.5 Registro de Decisões (`decision_log.js` → `EEDecisionLog`)
+
+Traduz os resultados do motor no formato único auditável
+`{decision, reason, rejected[{option, reason}], reference}` — inclusive
+alternativas **viáveis porém não mínimas** (ex.: disjuntor 32 A que
+atende a janela mas não é o menor). Nenhum cálculo é refeito: apenas a
+trilha de auditoria do motor é formatada. Alimenta o memorial (registro
+por circuito + seção do QDF).
+
+## 12. Testes
 
 ```
-node scripts/test_nbr5410_engine.js   # 55 casos (Node, sem dependências)
+node scripts/test_all.js              # suíte completa (6 suítes, 145 casos)
+node scripts/test_nbr5410_engine.js   # motor central (55 casos)
+node scripts/engineering/test_phase_balance.js   # 24 casos
+node scripts/engineering/test_rcd.js             # 20 casos
+node scripts/engineering/test_spd.js             # 17 casos
+node scripts/engineering/test_grounding.js       # 17 casos
+node scripts/engineering/test_decision_log.js    # 12 casos
 ```
 
 Cobrem iluminação, tomadas, TUE, chuveiro, ar-condicionado, trifásico,
 alta demanda, QDF, queda de tensão, correções, curto-circuito,
-casos-limite e regressões de determinismo. A QA in-app (Dev Panel,
-`Ctrl+Shift+D`) roda 28 verificações adicionais no navegador.
+balanceamento (neutro fasorial, otimizador, determinismo), DR/DPS/
+aterramento, decision log, casos-limite e regressões de determinismo.
+A QA in-app (Dev Panel, `Ctrl+Shift+D`) roda 28 verificações adicionais
+no navegador.
 
-## 12. Premissas documentadas (resumo)
+## 13. Premissas documentadas (resumo)
 
 | Premissa | Valor | Justificativa |
 |---|---|---|

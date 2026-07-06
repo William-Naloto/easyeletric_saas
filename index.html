@@ -1852,6 +1852,11 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
 </div>
 
 <script src="scripts/nbr5410_engine.js"></script>
+<script src="scripts/engineering/phase_balance.js"></script>
+<script src="scripts/engineering/rcd.js"></script>
+<script src="scripts/engineering/spd.js"></script>
+<script src="scripts/engineering/grounding.js"></script>
+<script src="scripts/engineering/decision_log.js"></script>
 <script>
 // ================================================================
 // NBR 5410:2023 — camada de integração com o motor de cálculo
@@ -2770,29 +2775,34 @@ function renderQDF(res){
   });
   const cardC=document.getElementById("pbC")?.closest(".pb-card");
   if(cardC)cardC.style.display=st==="bifasico"?"none":"";
-  // Imbalance over the phases actually available in this supply
-  const phasesInUse=st==="bifasico"?[pA,pB]:[pA,pB,pC];
-  const maxP=Math.max(...phasesInUse),minP=Math.min(...phasesInUse);
-  const imbalance=st==="monofasico"?0:maxP>0?(maxP-minP)/maxP*100:0;
+
+  // ── Motor de balanceamento: análise por CORRENTE sob demanda
+  //    diversificada (não por potência instalada) + neutro fasorial ──
+  const bal=EEPhaseBalance.analyze(loads,buildSite());
+  const imbalance=st==="monofasico"?0:bal.imbalancePct;
   const bw=document.getElementById("balanceWarn");
-  if(imbalance>20){bw.style.display="flex";document.getElementById("balanceWarnMsg").textContent=`Desequilíbrio: ${imbalance.toFixed(0)}%. Clique em "Balancear Fases"!`}
+  if(imbalance>20){bw.style.display="flex";document.getElementById("balanceWarnMsg").textContent=`Desequilíbrio de corrente: ${imbalance.toFixed(0)}%. Clique em "Balancear Fases"!`}
   else{bw.style.display="none"}
 
-  // Balance score 0-100 with qualitative grade
-  const score=Math.max(0,Math.round(100-imbalance));
-  const grade=imbalance<=5?["Excelente","var(--ok)"]
-             :imbalance<=10?["Bom","var(--ok)"]
-             :imbalance<=20?["Aceitável","var(--wn)"]
-             :["Crítico — balanceie as fases","var(--er)"];
+  // Balance Score do motor (penaliza também neutro carregado)
+  const score=st==="monofasico"?100:bal.score;
+  const gradeColor=imbalance<=10?"var(--ok)":imbalance<=20?"var(--wn)":"var(--er)";
   const scoreEl=document.getElementById("pbScore");
   if(scoreEl){
     scoreEl.textContent=score;
-    scoreEl.style.color=grade[1];
-    document.getElementById("pbScoreLbl").textContent=`${grade[0]} · desequilíbrio ${imbalance.toFixed(0)}%`;
+    scoreEl.style.color=gradeColor;
+    document.getElementById("pbScoreLbl").textContent=
+      st==="monofasico"?"Sistema monofásico"
+      :`${bal.grade} · deseq. ${imbalance.toFixed(0)}% · IN≈${bal.neutralA.toFixed(1)}A`;
     const gf=document.getElementById("pbGaugeFill");
-    gf.style.background=grade[1];
+    gf.style.background=gradeColor;
     requestAnimationFrame(()=>{gf.style.width=score+"%"});
   }
+  // Corrente por fase (demanda diversificada) sob cada card de potência
+  ["A","B","C"].forEach(ph=>{
+    const el=document.getElementById("pb"+ph+"pct");
+    if(el&&st!=="monofasico")el.textContent+=` · ${bal.Iphase[ph].toFixed(1)}A`;
+  });
 
   // ── Alimentador + disjuntor geral — motor NBR5410 (fonte única) ──
   // Demanda diversificada por categoria (não é soma de disjuntores),
@@ -2952,58 +2962,55 @@ function renderQDF(res){
 // ================================================================
 // PHASE BALANCER
 // ================================================================
+// Otimizador do motor EEPhaseBalance: LPT + busca local sobre as
+// CORRENTES sob demanda diversificada (não potência instalada).
+// Determinístico, com relatório antes/depois.
 function balancePhases(){
   if(!results.length){toast("Calcule os circuitos primeiro.","err");return}
   const st=getSupplyType();
-  const mono=loads.filter(l=>l.phaseSystem==="monofasico");
-  if(!mono.length){toast("Nenhum circuito monofásico para balancear.","info");return}
-
-  if(st==="monofasico"){
-    // Monofásico: todos os circuitos ficam em A+N — nada a balancear
-    mono.forEach(l=>l.wiringType="A+N");
-    renderLoads();calculateAll("qdf");
-    toast("Sistema monofásico — todos os circuitos em A+N.","info");
-    return;
+  if(!loads.some(l=>l.phaseSystem==="monofasico")){
+    toast("Nenhum circuito monofásico (F+N) para realocar.","info");return
   }
 
-  // Bifásico: usa apenas A+B e A+C (sem fase C individual em sistema 2F)
-  const availPhases=st==="bifasico"?["A","B"]:["A","B","C"];
-  const wtMap={A:"A+N",B:"B+N",C:"C+N"};
-
-  // Iniciar com carga já comprometida por bifásicos/trifásicos (divisão proporcional)
-  const phPow={A:0,B:0,C:0};
-  loads.filter(l=>l.phaseSystem!=="monofasico").forEach(l=>{
-    const ph=phUsed(l.wiringType);
-    const share=l.power/ph.length;
-    ph.forEach(p=>{ if(phPow[p]!==undefined) phPow[p]+=share; });
-  });
-
-  // Greedy desc: atribui cada monofásico à fase disponível com menor carga
-  mono.sort((a,b)=>b.power-a.power);
-  mono.forEach(l=>{
-    const ph=availPhases.sort((a,b)=>phPow[a]-phPow[b])[0];
-    l.wiringType=wtMap[ph];
-    phPow[ph]+=l.power;
-  });
-
+  const opt=EEPhaseBalance.optimize(loads,buildSite());
+  if(!opt.moves.length){
+    toast(`Distribuição já ótima — score ${opt.before.score}/100 (${opt.before.grade}).`,"info");
+    return;
+  }
+  opt.applyTo(loads);
   renderLoads();
   calculateAll("qdf");
-  const msg=st==="bifasico"
-    ?`Fases balanceadas — A:${(phPow.A/1000).toFixed(1)}kW  B:${(phPow.B/1000).toFixed(1)}kW`
-    :`Fases balanceadas — A:${(phPow.A/1000).toFixed(1)}kW  B:${(phPow.B/1000).toFixed(1)}kW  C:${(phPow.C/1000).toFixed(1)}kW`;
-  toast(msg,"ok");
+
+  if(st==="monofasico"){
+    toast("Sistema monofásico — todos os circuitos em A+N.","info");return
+  }
+  toast(`${opt.moves.length} circuito(s) realocado(s) — score ${opt.before.score}→${opt.after.score} · desequilíbrio ${opt.before.imbalancePct.toFixed(0)}%→${opt.after.imbalancePct.toFixed(0)}% · neutro ${opt.before.neutralA.toFixed(1)}A→${opt.after.neutralA.toFixed(1)}A`,"ok");
 }
 
 // ================================================================
 // DPS
 // ================================================================
+// Motor EESpd: classe por exposição, Uc ≥ 1,1·U0, Up pela Tab. 31,
+// conexão "N+1" p/ esquema TT (padrão de entrada residencial BR).
 function renderDPS(res){
-  const{Vfn}=getSysVoltages();const uc=Vfn===127?275:440;
-  document.getElementById("dpsSpecs").innerHTML=[
-    ["Tipo","Classe II (Tipo 2)"],["Onda","8/20 µs"],["Imax","40 kA"],
-    ["Uc","≥"+uc+"V"],["Up max","≤1.5 kV"],["Polos","2P F+N"],
-    ["Norma","IEC 61643-11"],["Marca","Clamper/ABB"]
-  ].map(([k,v])=>`<div style="font-size:11px;color:var(--t3)">${k}: <span style="color:var(--t1);font-weight:500;font-family:var(--mono)">${v}</span></div>`).join("");
+  const{Vfn}=getSysVoltages();
+  const spd=EESpd.selectEntranceSPD({
+    Vfn,supplyType:getSupplyType(),
+    groundingScheme:"TT",serviceEntry:"aerea"
+  });
+  const p=spd.params;
+  const specs=[
+    ["Tipo",`Classe ${spd.class} (Tipo ${spd.class==="I"?"1":spd.class==="II"?"2":"3"})`],
+    ["Onda",p.waveform],
+    [spd.class==="I"?"Iimp":"In / Imax",spd.class==="I"?`${p.iimpKA} kA`:`${p.inKA} / ${p.imaxKA} kA`],
+    ["Uc",`≥${spd.ucV}V`],["Up max",`≤${spd.upKV} kV`],
+    ["Conexão",`${spd.poles} módulos · ${spd.connection}`],
+    ["Norma",spd.standard],
+    ["Status",spd.required?"Obrigatório (§6.3.5.2)":"Recomendado"]
+  ];
+  const why=spd.decisions.map(d=>`• ${d.decision} — ${d.reason} [${d.reference}]`).join("\n");
+  document.getElementById("dpsSpecs").innerHTML=specs
+    .map(([k,v])=>`<div style="font-size:11px;color:var(--t3)" title="${why.replace(/"/g,"&quot;")}">${k}: <span style="color:var(--t1);font-weight:500;font-family:var(--mono)">${v}</span></div>`).join("");
   document.getElementById("dpsCard").style.display="block";
 }
 
@@ -3132,8 +3139,17 @@ function filterBOM(q){
 // ================================================================
 // MEMORIAL
 // ================================================================
+// Registro de Decisões de Engenharia (EEDecisionLog) em HTML:
+// decisão + razão + alternativas rejeitadas + referência normativa.
+function decisionLogHtml(entries){
+  return entries.map(e=>{
+    const rej=(e.rejected||[]).map(x=>
+      `&nbsp;&nbsp;&nbsp;&nbsp;<span class="er-span">✗ ${x.option}</span> — ${x.reason}`).join("<br>");
+    return `&nbsp;&nbsp;<span class="ok-span">✔</span> <strong>${e.topic}</strong>: ${e.decision} — ${e.reason} <span style="color:var(--t3)">[${e.reference}]</span>${rej?"<br>"+rej:""}`;
+  }).join("<br>");
+}
 function renderMemo(res,g){
-  document.getElementById("memoContent").innerHTML=res.map((r,i)=>{
+  const circuitsHtml=res.map((r,i)=>{
     const pct=parseFloat(r.vd.pct);
     const fIb=r.wtype==="tri"?`P/(√3×Vll×FP) = ${r.l.power}/(1.732×${r.V}×${r.l.pf})`:
               r.wtype==="bi"?`P/(Vll×FP) = ${r.l.power}/(${r.V}×${r.l.pf})`:
@@ -3187,9 +3203,29 @@ P=${r.l.power}W | L=${r.l.distance}m | Met.${r.l.method} | FP=${r.l.pf}<br>
 <strong>Curto-circuito</strong>: Icc quadro=${r.iccBoard}A → Icn mín ${r.icnReq?(r.icnReq/1000)+"kA":"&gt;10kA (industrial!)"} | Icc fim=${r.icc}A | verificação adiabática §5.3.5.4 ${r.eng?.shortCircuit?.adiabatic?.ok?"✓":"✗"}<br>
 <strong>DR/IDR</strong>: ${r.eng?.rcd?.In||r.mcb}A/${r.dr}mA | <strong>PE</strong>: ${r.peSz}mm² (Tab.58)<br>
 <strong>Validação de engenharia</strong>:<br>${checksHtml}
+<details style="margin-top:8px"><summary style="cursor:pointer;color:var(--ac);font-size:11px">Registro de Decisões de Engenharia (decisão · razão · alternativas rejeitadas · norma)</summary>
+<div style="margin-top:6px">${decisionLogHtml(EEDecisionLog.fromCircuit(r.eng))}</div>
+</details>
     </div>
   </details>`;
   }).join("");
+
+  // ── Seção do QDF/alimentador: decisões de demanda, cabo e geral ──
+  const qdf=_qdfResult;
+  const qdfHtml=qdf?`<details class="memo-sec">
+    <summary>
+      <span class="memo-sec-id">QDF</span>
+      <span class="memo-sec-name">Alimentador e Disjuntor Geral — Decisões de Engenharia</span>
+      <span class="memo-sec-meta">
+        <span class="badge b-inf">${qdf.feeder.section}mm²</span>
+        <span class="badge b-gr">${qdf.main.In}A/${qdf.main.curve}</span>
+        <span class="badge ${qdf.status!=="ERROR"?"b-ok":"b-er"}">${qdf.status!=="ERROR"?"✓ Conforme":"✗ Verificar"}</span>
+        <i class="fa-solid fa-chevron-down chevron"></i>
+      </span>
+    </summary>
+    <div class="memo-sec-body">${decisionLogHtml(EEDecisionLog.fromFeeder(qdf))}</div>
+  </details>`:"";
+  document.getElementById("memoContent").innerHTML=circuitsHtml+qdfHtml;
 }
 function memoToggleAll(open){
   document.querySelectorAll("#memoContent .memo-sec").forEach(d=>{d.open=open});

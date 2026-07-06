@@ -1,5 +1,23 @@
 # Changelog
 
+## v3.3 — 2026-07-06
+
+Serviços modulares de engenharia (`scripts/engineering/`): balanceamento de fases com otimizador, motores dedicados de DR, DPS e aterramento, e Registro de Decisões de Engenharia unificado. Todos independentes, sem DOM, testados em Node e sem duplicação de lógica com o motor central.
+
+### Added
+- **Motor de balanceamento de fases** `engineering/phase_balance.js` — análise por **corrente sob demanda diversificada** (não potência instalada), **corrente de neutro por soma fasorial** (fases a 120°), Balance Score 0–100 com penalidade de neutro carregado, e **otimizador determinístico** (LPT + busca local) que sugere realocação de circuitos F+N com relatório antes/depois e lista de movimentos (24 testes).
+- **Motor de seleção de DR** `engineering/rcd.js` — obrigatoriedade 30 mA por circuito (§5.1.3.2.2), **tipo pela natureza da fuga** (IEC 62423: AC/A/F/B — inverter → F, VFD trifásico → B), corrente comercial ≥ In do disjuntor e **DR geral seletivo tipo S 300 mA** quando há DRs terminais (20 testes).
+- **Motor de seleção de DPS** `engineering/spd.js` — classe I/II/III por exposição (SPDA, entrada aérea/subterrânea), Uc ≥ 1,1·U0 comercial, Up pela Tab. 31 (categoria II), Iimp/In/Imax por classe, **conexão "N+1" com centelhador N-PE em esquema TT** e recomendação de Tipo III por distância de proteção (17 testes).
+- **Módulo de aterramento** `engineering/grounding.js` — esquemas TT/TN-S/TN-C-S/IT com requisitos próprios (TT: DR obrigatório; PEN ≥ 10 mm² e não seccionável; IT: DSI), PE pela Tab. 58, eletrodo (≥3 hastes 2,4 m, meta ≤10 Ω), BEP e equipotencialização suplementar (17 testes).
+- **Registro de Decisões de Engenharia** `engineering/decision_log.js` — formato único `{decisão, razão, alternativas rejeitadas, referência normativa}` gerado da trilha de auditoria do motor (sem refazer cálculos), incluindo alternativas viáveis porém não mínimas (12 testes).
+- **Runner unificado** `scripts/test_all.js` — 6 suítes, 145 casos.
+
+### Changed
+- **"Balancear Fases" usa o otimizador do motor**: realocação determinística por corrente sob demanda (antes: greedy por potência instalada) com toast antes/depois (score, desequilíbrio e neutro).
+- **Painel de equilíbrio do QDF**: score e desequilíbrio calculados por corrente (motor), corrente por fase exibida ao lado da potência e **corrente de neutro estimada** no card do score.
+- **Card de DPS gerado pelo motor EESpd** (antes hardcoded classe II 2P): classe por exposição, Uc comercial, conexão por esquema de aterramento e justificativas nas tooltips.
+- **Memorial**: novo bloco colapsável "Registro de Decisões de Engenharia" por circuito e nova seção "QDF / Alimentador" com as decisões de demanda, cabo e disjuntor geral (inclusive a rejeição explícita de "Σ In dos disjuntores parciais").
+
 ## v3.2 — 2026-07-05
 
 Redesenho do motor de dimensionamento: sequência normativa completa (condutor antes do disjuntor), QDF por demanda diversificada e pipeline de validação. Metodologia, fórmulas e premissas documentadas em `docs/metodologia_calculo_nbr5410.md`.
