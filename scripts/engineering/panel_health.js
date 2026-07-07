@@ -169,7 +169,10 @@
     const balanceStatus = model.summary.phasesInUse.length < 2 ? "PASS"
       : imbalance > 20 ? "ERROR" : imbalance > 10 ? "WARN" : "PASS";
 
-    const demandStatus = statusOfTypes(model, ["panel", "feeder"]);
+    // Demanda: indicador informativo — o equilíbrio e a queda já têm
+    // indicadores próprios; aqui interessa a viabilidade do alimentador
+    // dimensionado para a demanda diversificada (checks do feeder).
+    const demandStatus = feeder && feeder.validation ? feeder.validation.status : "PASS";
 
     const indicators = [
       {

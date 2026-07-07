@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="description" content="EasyEletric SaaS v3.4 - Projetista elétrico residencial NBR 5410:2023. Dimensionamento automático por cômodos, QDF unifilar, mono/bi/trifásico.">
+<meta name="description" content="EasyEletric SaaS v3.5 - Projetista elétrico residencial NBR 5410:2023. Smart Distribution Board interativo, dimensionamento automático, mono/bi/trifásico.">
 <meta name="keywords" content="dimensionador elétrico,NBR 5410,calcular disjuntor,QDF residencial,DR DPS,projeto elétrico">
 <meta name="robots" content="index,follow">
 <meta property="og:title" content="EasyEletric SaaS | Projetista Elétrico NBR 5410:2023">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://william-naloto.github.io/easyeletric_saas/">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src https://fonts.gstatic.com https://cdnjs.cloudflare.com; connect-src 'none'; frame-ancestors 'none';">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' blob: data:; connect-src 'none'; frame-ancestors 'none';">
 <meta http-equiv="X-Frame-Options" content="DENY">
 <title>EasyEletric SaaS | Projetista Elétrico — NBR 5410:2023</title>
 <link rel="manifest" href="manifest.json">
@@ -616,166 +616,80 @@ nav {
 .ph-badge-c { background:rgba(34,197,94,.15);   color:var(--ph-c); border:1px solid var(--ph-c) }
 
 /* ============================================================
-   QDF — UNIFILAR STYLE (panel schedule)
+   QDF — SMART DISTRIBUTION BOARD (engineering workspace)
    ============================================================ */
-.qdf-wrapper {
-  background:var(--bg2); border:2px solid var(--br);
-  border-radius:var(--rl); overflow:hidden;
+/* Engineering Health strip */
+.qx-health {
+  display:grid; grid-template-columns:repeat(auto-fit,minmax(148px,1fr));
+  gap:10px; margin-bottom:12px;
 }
-.qdf-header {
-  background:var(--bgi); border-bottom:2px solid var(--br);
-  padding:12px 16px; text-align:center;
+.qx-hi {
+  background:var(--bgc); border:1px solid var(--br); border-radius:var(--rm);
+  padding:10px 12px; min-width:0;
 }
-.qdf-header h3 {
-  font-size:14px; font-weight:800; font-family:var(--mono);
-  letter-spacing:1px; color:var(--t1);
+.qx-hi-lbl {
+  font-size:9.5px; font-weight:700; letter-spacing:.6px; text-transform:uppercase;
+  color:var(--t3); margin-bottom:4px;
 }
-.qdf-header p { font-size:11px; color:var(--t3); font-family:var(--mono); margin-top:3px }
+.qx-hi-val { font-size:16px; font-weight:800; font-variant-numeric:tabular-nums }
+.qx-hi-sub {
+  font-size:9.5px; color:var(--t3); margin-top:3px; line-height:1.35;
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+}
+.qx-score .qx-hi-val { font-size:26px }
 
-.qdf-feeder {
-  background:var(--bgc); border-bottom:1px solid var(--br);
-  padding:10px 16px;
-  display:flex; align-items:center; justify-content:space-between; gap:12px;
+/* Workspace: toolbar + canvas + inspector */
+.qx-toolbar {
+  display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;
+  padding:8px 10px; background:var(--bgc);
+  border:1px solid var(--br); border-bottom:none;
+  border-radius:var(--rl) var(--rl) 0 0;
 }
-.qdf-feeder-info {
-  background:var(--erb); border:1px solid var(--er);
-  border-radius:var(--r); padding:7px 14px;
-  font-size:11px; font-weight:700; color:var(--er);
-  font-family:var(--mono); text-align:center;
+#qxZoomLbl {
+  min-width:44px; text-align:center;
+  font-family:var(--mono); font-size:11px; color:var(--t2);
 }
-.qdf-feeder-terminals {
-  display:flex; gap:8px;
+.qx-wrap {
+  display:flex; height:600px;
+  border:1px solid var(--br); border-radius:0 0 var(--rl) var(--rl);
+  overflow:hidden; background:var(--bg2);
 }
-.qdf-terminal {
+#qxCanvas {
+  flex:1; position:relative; overflow:hidden;
+  background:
+    radial-gradient(circle, var(--br) 1px, transparent 1px) 0 0/26px 26px,
+    var(--bg);
+  cursor:grab;
+}
+#qxCanvas.dragging { cursor:grabbing }
+#qxViewport { transform-origin:0 0; will-change:transform; width:max-content }
+#qxViewport svg { display:block }
+#qxTooltip {
+  position:absolute; z-index:40; pointer-events:none; display:none;
+  max-width:280px; padding:8px 11px;
+  background:var(--bg2); border:1px solid var(--brf); border-radius:var(--rm);
+  box-shadow:var(--sh-sm); font-size:11px; line-height:1.45; color:var(--t1);
+}
+#qxTooltip .tt-sub { color:var(--t3); font-family:var(--mono); font-size:10px }
+#qxInspector {
+  width:300px; flex-shrink:0; overflow-y:auto;
+  border-left:1px solid var(--br); background:var(--bgc);
+  padding:14px 16px;
+}
+@media(max-width:900px){ #qxInspector { display:none } }
+
+/* Otimizador do painel (recomendações) */
+.qx-rec {
+  display:flex; gap:10px; align-items:flex-start;
   background:var(--bgi); border:1px solid var(--br);
-  border-radius:var(--r); padding:6px 12px;
-  text-align:center; font-size:10px; font-family:var(--mono);
+  border-radius:var(--rm); padding:11px 13px; margin-bottom:9px;
+  font-size:11.5px; line-height:1.5;
 }
-.qdf-terminal .t-lbl { color:var(--t3); font-size:9px }
-.qdf-terminal .t-val { color:var(--ok); font-weight:700; font-size:12px }
-.qdf-disjgeral {
-  text-align:center; padding:8px 16px;
-  border-bottom:1px solid var(--br); background:var(--bgc);
-}
-.qdf-dg-box {
-  display:inline-flex; align-items:center; gap:10px;
-  background:var(--wnb); border:2px solid var(--wn);
-  border-radius:var(--rm); padding:8px 20px;
-  font-family:var(--mono); font-size:13px; font-weight:700; color:var(--wn);
-}
-
-/* Phase bus */
-.qdf-busbar-row {
-  display:flex; align-items:center; gap:0;
-  border-bottom:2px solid var(--br);
-  background:var(--bg);
-}
-.qdf-bus-ph {
-  flex:1; padding:6px 8px; text-align:center;
-  font-size:11px; font-weight:700; font-family:var(--mono);
-  border-right:1px solid var(--br);
-}
-.qdf-bus-ph:last-child { border-right:none }
-.bus-a { color:var(--ph-a); background:rgba(30,144,255,.06) }
-.bus-b { color:var(--ph-b); background:rgba(249,115,22,.06) }
-.bus-c { color:var(--ph-c); background:rgba(34,197,94,.06) }
-.bus-n { color:var(--ph-n); background:var(--bgi) }
-.bus-t { color:var(--ok);   background:rgba(34,197,94,.04) }
-
-/* Panel schedule table */
-.qdf-schedule {
-  display:grid;
-  grid-template-columns:1fr 6px 1fr;
-  min-height:100px;
-}
-.qdf-col { padding:0 }
-.qdf-divider { background:var(--br); width:2px }
-.qdf-row-item {
-  display:grid;
-  grid-template-columns:36px 40px 36px minmax(0,1fr) 26px;
-  align-items:center; gap:0;
-  border-bottom:1px solid var(--br);
-  padding:0;
-  min-height:38px;
-  transition:background .15s;
-}
-.qdf-row-item:hover { background:var(--bgh) }
-.qdf-row-item.qdf-reserved { opacity:.45 }
-.qdf-row-item.ph-a-row { border-left:3px solid var(--ph-a) }
-.qdf-row-item.ph-b-row { border-left:3px solid var(--ph-b) }
-.qdf-row-item.ph-c-row { border-left:3px solid var(--ph-c) }
-.qdf-cell {
-  padding:5px 6px; font-size:10px;
-  font-family:var(--mono); border-right:1px solid var(--br);
-  text-align:center; height:100%;
-  display:flex; align-items:center; justify-content:center;
-}
-.qdf-cell-desc {
-  padding:5px 8px; font-size:11px; font-weight:500;
-  text-align:left; height:100%;
-  display:flex; align-items:center;
-  overflow:hidden;
-  border-right:1px solid var(--br);
-}
-.qdf-cell-num  { color:var(--t3); font-size:10px }
-.qdf-cell-mcb  { font-weight:700; color:var(--wn) }
-.qdf-cell-sz   { color:var(--inf) }
-.qdf-cell-dot  { border-right:none }
-
-/* DR dot */
-.dr-dot {
-  width:8px; height:8px; border-radius:50%;
-  background:var(--inf); margin:auto;
-  title:"DR instalado";
-}
-.dr-dot-none { background:var(--br) }
-
-/* Protection row (DR/DPS) */
-.qdf-prot-row {
-  display:flex; align-items:center; gap:0;
-  border-bottom:1px solid var(--br); background:var(--pub);
-  border-left:3px solid var(--pu);
-}
-.qdf-prot-cell {
-  flex:1; padding:7px 10px; font-size:10px;
-  font-family:var(--mono); border-right:1px solid var(--br);
-  text-align:center; color:var(--pu); font-weight:700;
-}
-.qdf-prot-cell:last-child { border-right:none }
-
-.qdf-col-header {
-  display:grid;
-  grid-template-columns:36px 40px 36px minmax(0,1fr) 26px;
-  background:var(--bgh); border-bottom:2px solid var(--br);
-}
-.qdf-ch {
-  padding:5px 6px; font-size:9px; font-weight:700;
-  text-transform:uppercase; letter-spacing:.4px;
-  color:var(--t3); text-align:center;
-  border-right:1px solid var(--br);
-}
-.qdf-ch-desc { text-align:left; padding:5px 8px; border-right:1px solid var(--br) }
-
-/* ── QDF interactivity ─────────────────────────────────────────
-   Hovering a circuit dims unrelated rows and lights its phase bus.
-   Clicking a phase bus toggles persistent focus on that phase.   */
-.qdf-bus-ph[data-phase] { cursor:pointer; transition:filter .15s, box-shadow .15s }
-.qdf-bus-ph[data-phase]:hover { filter:brightness(1.35) }
-#qdfBoard[data-hl] .qdf-row-item:not(.qdf-reserved),
-#qdfBoard[data-focus] .qdf-row-item:not(.qdf-reserved) { opacity:.28; transition:opacity .18s }
-#qdfBoard[data-hl~="A"] .qdf-row-item[data-phases~="A"],
-#qdfBoard[data-hl~="B"] .qdf-row-item[data-phases~="B"],
-#qdfBoard[data-hl~="C"] .qdf-row-item[data-phases~="C"],
-#qdfBoard[data-focus="A"] .qdf-row-item[data-phases~="A"],
-#qdfBoard[data-focus="B"] .qdf-row-item[data-phases~="B"],
-#qdfBoard[data-focus="C"] .qdf-row-item[data-phases~="C"] { opacity:1 }
-#qdfBoard[data-hl~="A"] .bus-a, #qdfBoard[data-focus="A"] .bus-a { box-shadow:inset 0 -3px 0 var(--ph-a); filter:brightness(1.35) }
-#qdfBoard[data-hl~="B"] .bus-b, #qdfBoard[data-focus="B"] .bus-b { box-shadow:inset 0 -3px 0 var(--ph-b); filter:brightness(1.35) }
-#qdfBoard[data-hl~="C"] .bus-c, #qdfBoard[data-focus="C"] .bus-c { box-shadow:inset 0 -3px 0 var(--ph-c); filter:brightness(1.35) }
-#qdfBoard[data-focus="A"] .bus-a::after,
-#qdfBoard[data-focus="B"] .bus-b::after,
-#qdfBoard[data-focus="C"] .bus-c::after { content:" ◉ FOCO" ; font-size:8px }
-.qdf-row-item { cursor:default }
+.qx-rec-ic { font-size:13px; margin-top:1px; flex-shrink:0 }
+.qx-rec-title { font-weight:700; color:var(--t1) }
+.qx-rec-detail { color:var(--t2); margin-top:2px }
+.qx-rec-ref { color:var(--t3); font-family:var(--mono); font-size:9.5px; margin-top:4px }
+.qx-rec .btn { margin-left:auto; flex-shrink:0 }
 
 /* Phase balance panel */
 .phase-balance {
@@ -1262,7 +1176,7 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
   <div class="nav-logo" onclick="gotoSection('hero')">
     <div class="logo-icon"><i class="fa-solid fa-bolt"></i></div>
     <span>EasyEletric</span>
-    <span class="logo-badge">SaaS v3.4</span>
+    <span class="logo-badge">SaaS v3.5</span>
   </div>
   <div class="nav-links">
     <button class="nav-link" onclick="gotoSection('features')">Recursos</button>
@@ -1339,7 +1253,7 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
      FEATURES
      ============================================================ -->
 <section class="section" id="features">
-  <div class="sec-lbl"><i class="fa-solid fa-star"></i> Recursos v3.4</div>
+  <div class="sec-lbl"><i class="fa-solid fa-star"></i> Recursos v3.5</div>
   <h2 class="sec-h2">Projetista Assistido Residencial</h2>
   <p class="sec-sub">Duas formas de uso: informe cômodos e áreas para geração automática, ou adicione cargas manualmente.</p>
   <div class="feat-grid">
@@ -1351,9 +1265,9 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
     </div>
     <div class="fc-card">
       <div class="fc-icon" style="background:var(--acg);color:var(--acl)"><i class="fa-solid fa-table-cells"></i></div>
-      <h3>QDF Unifilar Profissional</h3>
-      <p>Diagrama no estilo de quadro real: barramento trifásico, circuitos numerados, cabo, disjuntor, DR e DPS por bloco.</p>
-      <span class="ftt">Estilo QGBT</span>
+      <h3>Smart Distribution Board</h3>
+      <p>Painel elétrico realista e interativo: barramentos de cobre, trilhos DIN, Engineering Health, inspetor de decisões e otimizador com um clique.</p>
+      <span class="ftt ftt-ok">NOVO v3.5</span>
     </div>
     <div class="fc-card">
       <div class="fc-icon" style="background:var(--wnb);color:var(--wn)"><i class="fa-solid fa-scale-balanced"></i></div>
@@ -1638,18 +1552,50 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
         </div>
       </div>
 
-      <!-- QDF -->
+      <!-- QDF — SMART DISTRIBUTION BOARD -->
       <div id="panel-qdf" role="tabpanel" aria-labelledby="tab-qdf" style="display:none">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
           <div style="font-size:13px;font-weight:600;color:var(--t2);display:flex;align-items:center;gap:7px">
-            <i class="fa-solid fa-table-cells" style="color:var(--ac)"></i> Quadro de Distribuição (QDF)
+            <i class="fa-solid fa-table-cells" style="color:var(--ac)"></i> Smart Distribution Board — QDF
           </div>
-          <button class="btn btn-wn" style="font-size:12px;padding:6px 13px" onclick="balancePhases()">
-            <i class="fa-solid fa-scale-balanced"></i> Balancear Fases
-          </button>
+          <div class="toolbar-group">
+            <button class="btn btn-pu" style="font-size:12px;padding:6px 13px" onclick="openOptimizePanel()" title="Analisar o quadro e sugerir otimizações (nada é aplicado sem aprovação)">
+              <i class="fa-solid fa-wand-magic-sparkles"></i> Otimizar Painel
+            </button>
+            <button class="btn btn-wn" style="font-size:12px;padding:6px 13px" onclick="balancePhases()">
+              <i class="fa-solid fa-scale-balanced"></i> Balancear Fases
+            </button>
+          </div>
         </div>
-        <div class="qdf-wrapper" id="qdfBoard">
-          <div class="empty-st"><i class="fa-solid fa-table-cells"></i><p>Calcule os circuitos para visualizar o QDF</p></div>
+        <div class="qx-health" id="qxHealth" style="display:none"></div>
+        <div class="qx-toolbar" id="qxToolbar" style="display:none">
+          <div class="tw-tb-group" role="group" aria-label="Zoom do quadro">
+            <button class="tw-tb-btn" onclick="qxZoom(-1)" title="Reduzir zoom" aria-label="Reduzir zoom"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
+            <span id="qxZoomLbl">100%</span>
+            <button class="tw-tb-btn" onclick="qxZoom(1)" title="Ampliar zoom" aria-label="Ampliar zoom"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
+            <button class="tw-tb-btn" onclick="qxFit()" title="Ajustar à tela"><i class="fa-solid fa-expand"></i> Ajustar</button>
+            <div class="tw-tb-sep"></div>
+            <span style="font-size:9.5px;color:var(--t3);font-weight:700;letter-spacing:.5px">OVERLAYS</span>
+            <button class="tw-tb-btn on" id="qxOv-current" onclick="qxToggleOverlay('current',this)" title="Correntes, utilização e reserva dos barramentos"><i class="fa-solid fa-bolt"></i> Corrente</button>
+            <button class="tw-tb-btn on" id="qxOv-drop" onclick="qxToggleOverlay('drop',this)" title="Queda de tensão por circuito"><i class="fa-solid fa-arrow-trend-down"></i> ΔV</button>
+            <button class="tw-tb-btn" id="qxOv-icc" onclick="qxToggleOverlay('icc',this)" title="Curto-circuito e capacidade de interrupção"><i class="fa-solid fa-explosion"></i> Icc</button>
+            <button class="tw-tb-btn on" id="qxOv-validation" onclick="qxToggleOverlay('validation',this)" title="Status de validação (verde/amarelo/vermelho)"><i class="fa-solid fa-circle-check"></i> Validação</button>
+          </div>
+          <div class="tw-tb-group">
+            <button class="btn btn-o" style="font-size:11px;padding:5px 10px" onclick="exportQdfSVG()" title="Exportar SVG vetorial (tema de impressão)"><i class="fa-solid fa-file-code"></i> SVG</button>
+            <button class="btn btn-o" style="font-size:11px;padding:5px 10px" onclick="exportQdfPNG()" title="Exportar PNG em alta resolução"><i class="fa-solid fa-image"></i> PNG</button>
+            <button class="btn btn-p" style="font-size:11px;padding:5px 10px" onclick="exportQdfPDF()" title="Imprimir / salvar PDF com carimbo técnico"><i class="fa-solid fa-file-pdf"></i> PDF</button>
+          </div>
+        </div>
+        <div class="qx-wrap" id="qxWrap" style="display:none">
+          <div id="qxCanvas">
+            <div id="qxViewport"></div>
+            <div id="qxTooltip"></div>
+          </div>
+          <aside id="qxInspector" aria-label="Inspetor de engenharia do quadro"></aside>
+        </div>
+        <div id="qxEmpty">
+          <div class="empty-st"><i class="fa-solid fa-table-cells"></i><p>Calcule os circuitos para visualizar o quadro</p></div>
         </div>
         <div class="phase-balance" id="phaseBalance" style="display:none">
           <div class="pb-card pb-score-card">
@@ -1682,7 +1628,7 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
           <span id="balanceWarnMsg"></span>
         </div>
         <p style="font-size:11px;color:var(--t3);margin-top:10px">
-          <i class="fa-solid fa-circle-info"></i> Representação lógica. Fases:
+          <i class="fa-solid fa-circle-info"></i> Passe o mouse para iluminar a cadeia de proteção; clique em qualquer componente para inspecionar cálculos, validação NBR 5410 e decisões de engenharia. Fases:
           <span style="color:var(--ph-a)">A=azul</span>
           <span style="color:var(--ph-b)">B=laranja</span>
           <span style="color:var(--ph-c)">C=verde</span>
@@ -1831,12 +1777,12 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
       <div class="footer-col">
         <h4>Sobre</h4>
         <a href="https://github.com/William-Naloto/easyeletric_saas" target="_blank">GitHub</a>
-        <a href="CHANGELOG.md">Changelog v3.4</a>
+        <a href="CHANGELOG.md">Changelog v3.5</a>
         <a href="README.md">Documentação</a>
       </div>
     </div>
     <div class="footer-bottom">
-      <p>EasyEletric SaaS v3.4 &copy; 2025 William Naloto &bull; Sem coleta de PII &bull;
+      <p>EasyEletric SaaS v3.5 &copy; 2025 William Naloto &bull; Sem coleta de PII &bull;
         <a href="https://github.com/William-Naloto/easyeletric_saas" target="_blank">GitHub Pages</a><br>
         <strong>Aviso:</strong> Ferramenta de pré-dimensionamento. Não substitui projeto elétrico, ART/RRT, consulta NBR 5410 oficial e catálogos de fabricantes.
       </p>
@@ -1844,7 +1790,7 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
         <span class="fbadge">NBR 5410</span>
         <span class="fbadge">Offline</span>
         <span class="fbadge">No PII</span>
-        <span class="fbadge">v3.4</span>
+        <span class="fbadge">v3.5</span>
       </div>
     </div>
   </div>
@@ -1893,6 +1839,20 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
   </div>
 </div>
 
+<!-- OPTIMIZE PANEL MODAL -->
+<div class="modal-ov" id="optimizeModal">
+  <div class="modal-box" style="max-width:760px">
+    <div class="modal-hdr">
+      <h2><i class="fa-solid fa-wand-magic-sparkles" style="color:var(--pu)"></i> Otimizar Painel</h2>
+      <button class="modal-close" aria-label="Fechar otimizador" onclick="closeModal('optimizeModal')"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+    </div>
+    <p style="font-size:12px;color:var(--t3);margin-bottom:14px">
+      O motor analisa equilíbrio de fases, dimensionamento, queda de tensão, utilização dos barramentos e capacidade futura, e gera recomendações explicáveis com referência normativa. <strong>Nada é aplicado sem a sua aprovação.</strong>
+    </p>
+    <div id="qxRecList"></div>
+  </div>
+</div>
+
 <!-- ============================================================
      DEV PANEL
      ============================================================ -->
@@ -1929,14 +1889,16 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
   </div>
 </div>
 
-<script src="scripts/nbr5410_engine.js?v=3.4.2"></script>
-<script src="scripts/engineering/phase_balance.js?v=3.4.2"></script>
-<script src="scripts/engineering/rcd.js?v=3.4.2"></script>
-<script src="scripts/engineering/spd.js?v=3.4.2"></script>
-<script src="scripts/engineering/grounding.js?v=3.4.2"></script>
-<script src="scripts/engineering/decision_log.js?v=3.4.2"></script>
-<script src="scripts/engineering/project_model.js?v=3.4.2"></script>
-<script src="scripts/engineering/unifilar_twin.js?v=3.4.2"></script>
+<script src="scripts/nbr5410_engine.js?v=3.5.0"></script>
+<script src="scripts/engineering/phase_balance.js?v=3.5.0"></script>
+<script src="scripts/engineering/rcd.js?v=3.5.0"></script>
+<script src="scripts/engineering/spd.js?v=3.5.0"></script>
+<script src="scripts/engineering/grounding.js?v=3.5.0"></script>
+<script src="scripts/engineering/decision_log.js?v=3.5.0"></script>
+<script src="scripts/engineering/project_model.js?v=3.5.0"></script>
+<script src="scripts/engineering/unifilar_twin.js?v=3.5.0"></script>
+<script src="scripts/engineering/panel_health.js?v=3.5.0"></script>
+<script src="scripts/engineering/qdf_twin.js?v=3.5.0"></script>
 <script>
 // ================================================================
 // NBR 5410:2023 — camada de integração com o motor de cálculo
@@ -2830,13 +2792,12 @@ function renderCircuits(res,Ft,Fg){
 }
 
 // ================================================================
-// RENDER QDF — Unifilar panel-schedule style
+// RENDER QDF — Smart Distribution Board (EEQdfTwin + EEPanelHealth)
 // ================================================================
 function renderQDF(res){
   const st=getSupplyType();
   // Balance panel only makes sense with 2+ phases
   document.getElementById("phaseBalance").style.display=st==="monofasico"?"none":"grid";
-  const{Vfn,Vll}=getSysVoltages();
 
   // Phase power balance — bifásico divide entre as duas fases, trifásico divide por 3
   const phPowMap={A:0,B:0,C:0};
@@ -2889,12 +2850,6 @@ function renderQDF(res){
   // correntes por fase, cabo com margem de expansão e In coordenado.
   const qdf=_qdfResult||NBR5410.sizeFeederAndMain(loads,buildSite());
   _qdfResult=qdf;
-  const totalPower=qdf.demand.installedVA;
-  const df=qdf.demand.overallFactor;
-  const demandedPower=qdf.demand.demandVA;
-  const feederIb=qdf.IbFeeder;
-  const feederSz=qdf.feeder.section;
-  const gMCBVal=qdf.main.In;
 
   // ── ΔV global (NBR 5410 §6.2.7 — 5% p/ rede pública de BT) ──
   const maxCircVd=res.length?Math.max(...res.map(r=>parseFloat(r.vd.pct))):0;
@@ -2903,140 +2858,21 @@ function renderQDF(res){
   const globalDvLimit=NBR5410.TABLES.VOLTAGE_DROP_LIMITS.totalGridSupply;
   const globalDvWarn=globalDv>globalDvLimit;
 
-  // ── Poles label by supply type ──
-  const dgPoles=st==="trifasico"?"3P":st==="bifasico"?"2P":"1P";
-  const sysLabel=st==="monofasico"?`${Vfn}V (1F+N)`:st==="bifasico"?`${Vfn}/${Vll}V (2F+N)`:`${Vfn}/${Vll}V (3F+N+T)`;
-
-  // Split circuits into left (odd) and right (even)
-  const left=res.filter((_,i)=>i%2===0);
-  const right=res.filter((_,i)=>i%2!==0);
-  const maxRows=Math.max(left.length,right.length);
-
-  const phRowClass=wt=>wt.startsWith("A")?"ph-a-row":wt.startsWith("B")?"ph-b-row":"ph-c-row";
-
-  const mkRows=(arr,side)=>{
-    let html="";
-    for(let i=0;i<maxRows;i++){
-      const r=arr[i];
-      if(!r){html+=`<div class="qdf-row-item qdf-reserved">
-        <div class="qdf-cell qdf-cell-num" style="color:var(--t3)">—</div>
-        <div class="qdf-cell"><span style="font-size:9px;color:var(--t3)">RES</span></div>
-        <div class="qdf-cell"><span style="font-size:9px;color:var(--t3)">—</span></div>
-        <div class="qdf-cell-desc" style="color:var(--t3);font-size:10px">Reserva</div>
-        <div class="qdf-cell qdf-cell-dot"><div class="dr-dot dr-dot-none"></div></div>
-      </div>`;continue;}
-      const hasDR=r.dr===30;
-      html+=`<div class="qdf-row-item ${phRowClass(r.wt)}" data-phases="${(r.phases||[]).join(" ")}" title="${r.l.name} | Ib=${r.Ib}A | ${r.wt}">
-        <div class="qdf-cell qdf-cell-num">${String(r.idx).padStart(2,"0")}</div>
-        <div class="qdf-cell qdf-cell-mcb">${r.mcb}A<br><span style="font-size:8px;color:var(--t3)">${r.curve}</span></div>
-        <div class="qdf-cell qdf-cell-sz">${r.sz}<br><span style="font-size:8px;color:var(--t3)">mm²</span></div>
-        <div class="qdf-cell-desc">${r.l.name.length>22?r.l.name.substring(0,20)+"…":r.l.name}</div>
-        <div class="qdf-cell qdf-cell-dot"><div class="dr-dot ${hasDR?"":"dr-dot-none"}" title="${hasDR?"DR 30mA instalado":"Sem DR"}"></div></div>
-      </div>`;
-    }
-    return html;
-  };
-
-  const colHeader=()=>`<div class="qdf-col-header">
-    <div class="qdf-ch">Nº</div>
-    <div class="qdf-ch">DISJ.</div>
-    <div class="qdf-ch">CABO</div>
-    <div class="qdf-ch qdf-ch-desc">EQUIPAMENTO</div>
-    <div class="qdf-ch">DR</div>
-  </div>`;
-
-  // Busbar HTML conditional on supply type
-  const busTitle="Clique para focar os circuitos desta fase";
-  const busbarHtml=st==="monofasico"
-    ?`<div class="qdf-busbar-row">
-        <div class="qdf-bus-ph bus-a" data-phase="A" title="${busTitle}" style="flex:2">FASE A — ${Vfn}V</div>
-        <div class="qdf-bus-ph bus-n">NEUTRO</div>
-        <div class="qdf-bus-ph bus-t">TERRA PE</div>
-      </div>`
-    :st==="bifasico"
-    ?`<div class="qdf-busbar-row">
-        <div class="qdf-bus-ph bus-a" data-phase="A" title="${busTitle}">FASE A — ${Vfn}V</div>
-        <div class="qdf-bus-ph bus-b" data-phase="B" title="${busTitle}">FASE B — ${Vfn}V</div>
-        <div class="qdf-bus-ph bus-n">NEUTRO</div>
-        <div class="qdf-bus-ph bus-t">TERRA PE</div>
-      </div>`
-    :`<div class="qdf-busbar-row">
-        <div class="qdf-bus-ph bus-a" data-phase="A" title="${busTitle}">FASE A (R) — ${Vfn}V</div>
-        <div class="qdf-bus-ph bus-b" data-phase="B" title="${busTitle}">FASE B (S) — ${Vfn}V</div>
-        <div class="qdf-bus-ph bus-c" data-phase="C" title="${busTitle}">FASE C (T) — ${Vfn}V</div>
-        <div class="qdf-bus-ph bus-n">NEUTRO</div>
-        <div class="qdf-bus-ph bus-t">TERRA PE</div>
-      </div>`;
-
-  const globalDvAlert=globalDvWarn
-    ?`<div style="background:var(--erb);border:1px solid var(--er);border-radius:var(--r);padding:7px 12px;font-size:11px;color:var(--er);display:flex;align-items:center;gap:7px;margin:6px 0">
-        <i class="fa-solid fa-triangle-exclamation"></i>
-        <strong>Queda Global ${globalDv.toFixed(1)}% > ${globalDvLimit}%!</strong> (alimentador ${feederDvPct.toFixed(1)}% + maior circuito ${maxCircVd.toFixed(1)}%) — NBR 5410 §6.2.7 (rede pública BT)
-      </div>`
-    :`<div style="background:var(--okb);border:1px solid var(--ok);border-radius:var(--r);padding:5px 12px;font-size:10px;color:var(--ok);display:flex;align-items:center;gap:6px;margin:4px 0">
-        <i class="fa-solid fa-check-circle"></i> ΔV global ${globalDv.toFixed(1)}% ≤ ${globalDvLimit}% (alimentador ${feederDvPct.toFixed(1)}% + circuito ${maxCircVd.toFixed(1)}%) — NBR 5410 §6.2.7 OK
-      </div>`;
-
-  // ── Validação do QDF (PASS/WARN/ERROR do motor) ──
-  const qdfChecksHtml=(qdf.checks||[]).map(c=>{
-    const clr=c.status==="PASS"?"var(--ok)":c.status==="WARN"?"var(--wn)":"var(--er)";
-    const ic=c.status==="PASS"?"fa-check-circle":c.status==="WARN"?"fa-triangle-exclamation":"fa-circle-exclamation";
-    return`<div style="display:flex;align-items:center;gap:6px;font-size:10px;color:${clr};padding:2px 0">
-      <i class="fa-solid ${ic}"></i> <strong>${c.label}</strong> — ${c.detail}</div>`;
-  }).join("");
-  const fmtI=v=>v.toFixed(1);
-
-  const html=`
-    <div class="qdf-header">
-      <h3>QGBT — DIAGRAMA ELÉTRICO UNIFILAR</h3>
-      <p>Sistema ${sysLabel} | ${res.length} circuitos | NBR 5410:2023</p>
-    </div>
-    ${globalDvAlert}
-    <div class="qdf-feeder">
-      <div class="qdf-feeder-info">
-        <div>VEM DO MEDIDOR</div>
-        <div>${sysLabel} — ${feederSz}mm² (${qdf.feeder.method}, +${(qdf.feeder.expansionMargin*100).toFixed(0)}% expansão)</div>
-      </div>
-      <div style="font-size:10px;font-family:var(--mono);color:var(--t3);text-align:center">
-        <div>Pinst=${(totalPower/1000).toFixed(1)}kW → Pd=${(demandedPower/1000).toFixed(1)}kW (Fd=${(df*100).toFixed(0)}%)</div>
-        <div>I fases: A=${fmtI(qdf.Iphase.A)} B=${fmtI(qdf.Iphase.B)} C=${fmtI(qdf.Iphase.C)} A</div>
-        <div>Ib alim = máx fase = ${feederIb.toFixed(1)}A | ΔV=${feederDvPct.toFixed(2)}% (${qdf.feeder.lengthM}m)</div>
-      </div>
-      <div class="qdf-feeder-terminals">
-        <div class="qdf-terminal"><div class="t-lbl">TERRA</div><div class="t-val">${qdf.feeder.pe}mm²</div></div>
-        <div class="qdf-terminal"><div class="t-lbl">NEUTRO</div><div class="t-val">${qdf.feeder.neutral}mm²</div></div>
-      </div>
-    </div>
-    <div class="qdf-disjgeral">
-      <div class="qdf-dg-box" title="Menor In comercial com Ib(${feederIb.toFixed(1)}A) ≤ In ≤ Izc(${qdf.feeder.Izc}A) — NBR 5410 §5.3.4">
-        <i class="fa-solid fa-plug-circle-bolt"></i>
-        DISJUNTOR GERAL — ${gMCBVal}A — Curva C — ${dgPoles} — Icn ≥ ${qdf.main.icnRequiredA?(qdf.main.icnRequiredA/1000)+"kA":">10kA"}
-      </div>
-    </div>
-    <div class="qdf-prot-row">
-      <div class="qdf-prot-cell"><i class="fa-solid fa-shield-halved"></i> DR GERAL ${qdf.rcd.In}A / ${qdf.rcd.sensitivityMa}mA</div>
-      <div class="qdf-prot-cell"><i class="fa-solid fa-explosion"></i> DPS Classe ${qdf.dps.class} — ${qdf.dps.imaxKA}kA — Uc≥${qdf.dps.ucV}V — ${qdf.dps.poles}P</div>
-    </div>
-    <div style="padding:6px 12px;border-bottom:1px solid var(--br)">
-      ${qdfChecksHtml}
-    </div>
-    ${busbarHtml}
-    <div class="qdf-schedule">
-      <div class="qdf-col">
-        ${colHeader()}
-        ${mkRows(left,"left")}
-      </div>
-      <div class="qdf-divider"></div>
-      <div class="qdf-col">
-        ${colHeader()}
-        ${mkRows(right,"right")}
-      </div>
-    </div>
-    <div style="padding:8px 12px;font-size:9px;color:var(--t3);font-family:var(--mono);border-top:1px solid var(--br)">
-      • Ponto azul = DR 30mA instalado &nbsp;|&nbsp; RES = posição reserva &nbsp;|&nbsp; Fases: <span style="color:var(--ph-a)">A</span>/<span style="color:var(--ph-b)">B</span>/<span style="color:var(--ph-c)">C</span>
-    </div>`;
-
-  document.getElementById("qdfBoard").innerHTML=html;
+  // ── Smart Distribution Board: modelo → saúde → SVG interativo ──
+  // (EEProjectModel = fonte única · EEQdfTwin = painel realista ·
+  //  EEPanelHealth = health score/indicadores — nada recalculado)
+  _qxModel=buildTwinModel();
+  _qxHealth=EEPanelHealth.assess(_qxModel);
+  renderQdfHealth(_qxHealth,{value:globalDv,limit:globalDvLimit,warn:globalDvWarn,feederPct:feederDvPct,circuitPct:maxCircVd});
+  document.getElementById("qxHealth").style.display="grid";
+  document.getElementById("qxToolbar").style.display="flex";
+  document.getElementById("qxWrap").style.display="flex";
+  document.getElementById("qxEmpty").style.display="none";
+  // Seleção anterior pode não existir mais após recálculo
+  if(_qxState.selected&&!_qxModel.byId[_qxState.selected])_qxState.selected=null;
+  qxRender();
+  if(!_qxState.fitted)requestAnimationFrame(()=>{_qxState.fitted=qxFit()});
+  if(_qxState.selected)qxInspector(_qxState.selected);else qxInspectorHome();
 }
 
 // ================================================================
@@ -3593,7 +3429,7 @@ function exportToExcel(){
   const{Vfn,Vll}=getSysVoltages();
   const wb=XLSX.utils.book_new();
   const sum=[
-    ["EasyEletric SaaS v3.4 — NBR 5410:2023"],[""],
+    ["EasyEletric SaaS v3.5 — NBR 5410:2023"],[""],
     ["Projeto","EasyEletric"],["Data",new Date().toLocaleDateString("pt-BR")],
     ["Circuitos",results.length],["Potência Total (W)",results.reduce((s,r)=>s+r.l.power,0)],
     ["Maior Queda (%)",Math.max(...results.map(r=>parseFloat(r.vd.pct))).toFixed(2)],
@@ -3792,8 +3628,9 @@ function toggleTheme(){
   const d=document.documentElement,dark=d.getAttribute("data-theme")==="dark";
   d.setAttribute("data-theme",dark?"light":"dark");
   document.getElementById("themeLbl").textContent=dark?"Escuro":"Claro";
-  // Gêmeo digital acompanha o tema do app quando aberto
+  // Gêmeos digitais acompanham o tema do app
   if(typeof _twModel!=="undefined"&&_twModel&&document.getElementById("unifilarModal").classList.contains("open"))twRender();
+  if(typeof _qxModel!=="undefined"&&_qxModel)qxRender();
 }
 function toggleColl(id){
   const b=document.getElementById(id+"Body"),ch=document.getElementById(id+"Chev");
@@ -3811,6 +3648,9 @@ function showTab(id){
     tab.setAttribute("aria-selected",active?"true":"false");
     if(active)tab.removeAttribute("tabindex");else tab.setAttribute("tabindex","-1");
   });
+  // Primeiro ajuste do Smart Board só é possível com a aba visível
+  if(id==="qdf"&&typeof _qxModel!=="undefined"&&_qxModel&&!_qxState.fitted)
+    requestAnimationFrame(()=>{_qxState.fitted=qxFit()});
 }
 // Roving arrow-key navigation inside the result tablist (WAI-ARIA APG)
 document.querySelector(".app-tabs")?.addEventListener("keydown",e=>{
@@ -3827,27 +3667,6 @@ document.querySelector(".app-tabs")?.addEventListener("keydown",e=>{
   showTab(order[next]);
   document.getElementById("tab-"+order[next]).focus();
 });
-// QDF interactivity — hover a circuit to light its phase bus and dim
-// unrelated rows; click a phase bus to toggle persistent focus.
-(function(){
-  const board=document.getElementById("qdfBoard");
-  if(!board)return;
-  board.addEventListener("mouseover",e=>{
-    const row=e.target.closest(".qdf-row-item[data-phases]");
-    if(row&&row.dataset.phases)board.setAttribute("data-hl",row.dataset.phases);
-  });
-  board.addEventListener("mouseout",e=>{
-    if(e.target.closest(".qdf-row-item"))board.removeAttribute("data-hl");
-  });
-  board.addEventListener("click",e=>{
-    const bus=e.target.closest(".qdf-bus-ph[data-phase]");
-    if(!bus)return;
-    const ph=bus.dataset.phase;
-    if(board.getAttribute("data-focus")===ph){board.removeAttribute("data-focus")}
-    else{board.setAttribute("data-focus",ph);toast(`Foco na Fase ${ph} — clique novamente para liberar`,"info")}
-  });
-})();
-
 function openModal(id){document.getElementById(id).classList.add("open")}
 function closeModal(id){document.getElementById(id).classList.remove("open")}
 document.querySelectorAll(".modal-ov").forEach(m=>m.addEventListener("click",e=>{if(e.target===m)m.classList.remove("open")}));
@@ -3895,7 +3714,7 @@ function twRender(){
   if(!_twModel)return;
   document.getElementById("twViewport").innerHTML=EEUnifilarTwin.render(_twModel,{
     theme:twTheme(),overlays:_twState.overlays,
-    projectName:"EasyEletric SaaS v3.4",
+    projectName:"EasyEletric SaaS v3.5",
     date:new Date().toLocaleDateString("pt-BR")
   });
   twApplyTransform();
@@ -3935,64 +3754,68 @@ function twToggleOverlay(k,btn){
   twRender();
 }
 
-// ── Interatividade: hover ilumina a cadeia de proteção ─────────
-function twSvg(){return document.querySelector("#twViewport svg")}
-function twHighlight(id){
-  const svg=twSvg();if(!svg||!_twModel)return;
-  const rel=new Set(_twModel.relatedOf(id));
-  svg.classList.add("tw-has-focus");
-  svg.querySelectorAll(".tw-node").forEach(g=>g.classList.toggle("tw-hl",rel.has(g.getAttribute("data-node"))));
+// ── Interatividade: infraestrutura GENÉRICA de workspace ───────
+// Compartilhada pelo unifilar (modal) e pelo Smart Distribution
+// Board (aba QDF): hover ilumina a cadeia de proteção completa
+// (relatedOf), clique seleciona e abre o inspetor, arrasto faz pan
+// e a roda do mouse faz zoom. `prefix` = classe dos nós no SVG
+// ("tw" no unifilar, "qtw" no quadro).
+function twinHighlight(svg,model,prefix,id){
+  if(!svg||!model)return;
+  const rel=new Set(model.relatedOf(id));
+  svg.classList.add(prefix+"-has-focus");
+  svg.querySelectorAll("."+prefix+"-node").forEach(g=>g.classList.toggle(prefix+"-hl",rel.has(g.getAttribute("data-node"))));
 }
-function twClearHighlight(){
-  const svg=twSvg();if(!svg)return;
-  svg.classList.remove("tw-has-focus");
-  svg.querySelectorAll(".tw-node.tw-hl").forEach(g=>g.classList.remove("tw-hl"));
+function twinClearHighlight(svg,prefix){
+  if(!svg)return;
+  svg.classList.remove(prefix+"-has-focus");
+  svg.querySelectorAll("."+prefix+"-node."+prefix+"-hl").forEach(g=>g.classList.remove(prefix+"-hl"));
 }
-function twMarkSelected(id){
-  const svg=twSvg();if(!svg)return;
-  svg.querySelectorAll(".tw-node.tw-selected").forEach(g=>g.classList.remove("tw-selected"));
-  const g=svg.querySelector(`.tw-node[data-node="${id}"]`);
-  if(g)g.classList.add("tw-selected");
+function twinMarkSelected(svg,prefix,id){
+  if(!svg)return;
+  svg.querySelectorAll("."+prefix+"-node."+prefix+"-selected").forEach(g=>g.classList.remove(prefix+"-selected"));
+  const g=svg.querySelector("."+prefix+`-node[data-node="${id}"]`);
+  if(g)g.classList.add(prefix+"-selected");
 }
-function twSelect(id){
-  _twState.selected=id;
-  twMarkSelected(id);
-  twExplorer(id);
-}
-
-(function twBind(){
-  const canvas=document.getElementById("twCanvas");
+/** Liga zoom/pan/hover/tooltip/seleção em um canvas de workspace.
+ *  cfg={canvas,tooltip,prefix,svg(),model(),state(),apply(),zoom(),select()} */
+function twinBindCanvas(cfg){
+  const canvas=document.getElementById(cfg.canvas);
   if(!canvas)return;
-  const tip=document.getElementById("twTooltip");
+  const tip=document.getElementById(cfg.tooltip);
+  const nodeSel="."+cfg.prefix+"-node";
   let drag=null,moved=false;
   canvas.addEventListener("wheel",e=>{
     e.preventDefault();
     const r=canvas.getBoundingClientRect();
-    twZoom(e.deltaY<0?1:-1,e.clientX-r.left,e.clientY-r.top);
+    cfg.zoom(e.deltaY<0?1:-1,e.clientX-r.left,e.clientY-r.top);
   },{passive:false});
   canvas.addEventListener("mousedown",e=>{
-    drag={x:e.clientX,y:e.clientY,tx:_twState.tx,ty:_twState.ty};moved=false;
+    const st=cfg.state();
+    drag={x:e.clientX,y:e.clientY,tx:st.tx,ty:st.ty};moved=false;
     canvas.classList.add("dragging");
   });
   window.addEventListener("mousemove",e=>{
     if(!drag)return;
     const dx=e.clientX-drag.x,dy=e.clientY-drag.y;
     if(Math.abs(dx)+Math.abs(dy)>3)moved=true;
-    _twState.tx=drag.tx+dx;_twState.ty=drag.ty+dy;
-    twApplyTransform();
+    const st=cfg.state();
+    st.tx=drag.tx+dx;st.ty=drag.ty+dy;
+    cfg.apply();
   });
   window.addEventListener("mouseup",()=>{drag=null;canvas.classList.remove("dragging")});
   canvas.addEventListener("click",e=>{
     if(moved)return; // fim de arrasto, não é clique
-    const g=e.target.closest(".tw-node");
-    if(g)twSelect(g.getAttribute("data-node"));
+    const g=e.target.closest(nodeSel);
+    if(g)cfg.select(g.getAttribute("data-node"));
   });
   canvas.addEventListener("mouseover",e=>{
-    const g=e.target.closest(".tw-node");
-    if(!g||!_twModel)return;
+    const g=e.target.closest(nodeSel);
+    const model=cfg.model();
+    if(!g||!model)return;
     const id=g.getAttribute("data-node");
-    twHighlight(id);
-    const n=_twModel.byId[id];
+    twinHighlight(cfg.svg(),model,cfg.prefix,id);
+    const n=model.byId[id];
     if(n){
       const st=n.validation.status;
       const sc=st==="ERROR"?"var(--er)":st==="WARN"?"var(--wn)":"var(--ok)";
@@ -4009,11 +3832,24 @@ function twSelect(id){
     tip.style.top=(e.clientY-r.top+14)+"px";
   });
   canvas.addEventListener("mouseout",e=>{
-    if(e.target.closest(".tw-node")&&!(e.relatedTarget&&e.relatedTarget.closest(".tw-node"))){
-      twClearHighlight();tip.style.display="none";
+    if(e.target.closest(nodeSel)&&!(e.relatedTarget&&e.relatedTarget.closest(nodeSel))){
+      twinClearHighlight(cfg.svg(),cfg.prefix);tip.style.display="none";
     }
   });
-})();
+}
+
+function twSvg(){return document.querySelector("#twViewport svg")}
+function twMarkSelected(id){twinMarkSelected(twSvg(),"tw",id)}
+function twSelect(id){
+  _twState.selected=id;
+  twMarkSelected(id);
+  twExplorer(id);
+}
+twinBindCanvas({
+  canvas:"twCanvas",tooltip:"twTooltip",prefix:"tw",
+  svg:twSvg,model:()=>_twModel,state:()=>_twState,
+  apply:twApplyTransform,zoom:twZoom,select:twSelect
+});
 
 // ── Explorador de Engenharia (painel lateral) ──────────────────
 const TW_LABELS={In:"Corrente nominal In (A)",curve:"Curva",poles:"Polos",section:"Seção fase (mm²)",
@@ -4047,10 +3883,10 @@ const twBadge=st=>{
   return `<span class="twx-badge" style="background:var(--${sc}b);color:var(--${sc})">${txt}</span>`;
 };
 
-function twExplorerHome(){
-  if(!_twModel)return;
-  const s=_twModel.summary;
-  document.getElementById("twExplorer").innerHTML=`
+/** HTML da visão geral do projeto (compartilhado: unifilar + QDF). */
+function twinHomeHtml(model){
+  const s=model.summary;
+  return `
     <div class="twx-h">Projeto — Visão Geral</div>
     <div class="twx-sub">${s.circuits} circuitos · ${twEsc(s.supplyType)}</div>
     ${twBadge(s.status)}
@@ -4064,9 +3900,15 @@ function twExplorerHome(){
     </div>`;
 }
 
-function twExplorer(id){
-  const n=_twModel&&_twModel.byId[id];
-  if(!n){twExplorerHome();return}
+function twExplorerHome(){
+  if(!_twModel)return;
+  document.getElementById("twExplorer").innerHTML=twinHomeHtml(_twModel);
+}
+
+/** HTML do inspetor de um nó (compartilhado: unifilar + QDF). */
+function twinDetailHtml(model,id){
+  const n=model&&model.byId[id];
+  if(!n)return null;
   const checks=(n.validation.checks||[]).map(c=>{
     const clr=c.status==="PASS"?"var(--ok)":c.status==="WARN"?"var(--wn)":"var(--er)";
     const ic=c.status==="PASS"?"✓":c.status==="WARN"?"⚠":"✗";
@@ -4081,7 +3923,7 @@ function twExplorer(id){
         ${d.rejected.map(r=>`<div class="d-rej">• <strong>${twEsc(r.option)}</strong> — ${twEsc(r.reason)}</div>`).join("")}</details>`:""}
       ${d.reference?`<div class="d-ref">${twEsc(d.reference)}</div>`:""}
     </div>`).join("");
-  document.getElementById("twExplorer").innerHTML=`
+  return `
     <div class="twx-h">${twEsc(n.label)}</div>
     <div class="twx-sub">${twEsc(n.sub||n.type)} · id ${twEsc(n.id)}</div>
     ${twBadge(n.validation.status)}
@@ -4091,11 +3933,17 @@ function twExplorer(id){
     ${decs?`<div class="twx-sec">Decisões de Engenharia</div>${decs}`:""}`;
 }
 
+function twExplorer(id){
+  const html=twinDetailHtml(_twModel,id);
+  if(!html){twExplorerHome();return}
+  document.getElementById("twExplorer").innerHTML=html;
+}
+
 // ── Exportação (tema de impressão com carimbo técnico) ─────────
 function twPrintSVG(){
   return EEUnifilarTwin.render(_twModel,{
     theme:"print",overlays:_twState.overlays,
-    projectName:"EasyEletric SaaS v3.4",
+    projectName:"EasyEletric SaaS v3.5",
     date:new Date().toLocaleDateString("pt-BR")
   });
 }
@@ -4113,6 +3961,204 @@ function exportUnifilarPDF(){
 <style>*{margin:0;padding:0}body{background:#fff}svg{display:block;width:100%;height:auto}
 @page{size:A4 landscape;margin:5mm}@media print{body{margin:0}}</style></head>
 <body>${twPrintSVG()}<script>window.onload=function(){window.print()}<\/script></body></html>`);
+  w.document.close();
+  toast("Abrindo para impressão / salvar PDF…","info");
+}
+
+// ================================================================
+// SMART DISTRIBUTION BOARD — workspace do QDF
+// (EEProjectModel = fonte única · EEQdfTwin = painel realista ·
+//  EEPanelHealth = saúde/otimização · infraestrutura twin genérica)
+// ================================================================
+let _qxModel=null,_qxHealth=null,_qxRecs=null;
+const _qxState={scale:1,tx:0,ty:0,overlays:{current:true,drop:true,icc:false,validation:true},selected:null,fitted:false};
+
+function qxSvg(){return document.querySelector("#qxViewport svg")}
+
+function qxRender(){
+  if(!_qxModel)return;
+  document.getElementById("qxViewport").innerHTML=EEQdfTwin.render(_qxModel,{
+    theme:twTheme(),overlays:_qxState.overlays,
+    projectName:"EasyEletric SaaS v3.5",
+    date:new Date().toLocaleDateString("pt-BR")
+  });
+  qxApplyTransform();
+  if(_qxState.selected)twinMarkSelected(qxSvg(),"qtw",_qxState.selected);
+}
+
+// ── Zoom / Pan ──────────────────────────────────────────────────
+function qxApplyTransform(){
+  document.getElementById("qxViewport").style.transform=
+    `translate(${_qxState.tx}px,${_qxState.ty}px) scale(${_qxState.scale})`;
+  document.getElementById("qxZoomLbl").textContent=Math.round(_qxState.scale*100)+"%";
+}
+function qxZoom(dir,cx,cy){
+  const r=document.getElementById("qxCanvas").getBoundingClientRect();
+  cx=cx??r.width/2;cy=cy??r.height/2;
+  const ns=Math.min(4,Math.max(0.15,_qxState.scale*(dir>0?1.2:1/1.2)));
+  const f=ns/_qxState.scale;
+  _qxState.tx=cx-(cx-_qxState.tx)*f;
+  _qxState.ty=cy-(cy-_qxState.ty)*f;
+  _qxState.scale=ns;
+  qxApplyTransform();
+}
+function qxFit(){
+  const canvas=document.getElementById("qxCanvas");
+  const svg=qxSvg();if(!svg)return false;
+  const w=parseFloat(svg.getAttribute("width")),h=parseFloat(svg.getAttribute("height"));
+  const r=canvas.getBoundingClientRect();
+  if(r.width<50)return false; // aba oculta — mantém transform atual
+  const s=Math.min((r.width-24)/w,(r.height-24)/h,1.5);
+  _qxState.scale=s;
+  _qxState.tx=Math.max(12,(r.width-w*s)/2);
+  _qxState.ty=Math.max(12,(r.height-h*s)/2);
+  qxApplyTransform();
+  return true;
+}
+function qxToggleOverlay(k,btn){
+  _qxState.overlays[k]=!_qxState.overlays[k];
+  btn.classList.toggle("on",_qxState.overlays[k]);
+  qxRender();
+}
+
+// ── Seleção + Inspetor de Engenharia ────────────────────────────
+function qxSelect(id){
+  _qxState.selected=id;
+  twinMarkSelected(qxSvg(),"qtw",id);
+  qxInspector(id);
+}
+function qxInspectorHome(){
+  if(!_qxModel)return;
+  document.getElementById("qxInspector").innerHTML=twinHomeHtml(_qxModel);
+}
+function qxInspector(id){
+  const html=twinDetailHtml(_qxModel,id);
+  if(!html){qxInspectorHome();return}
+  document.getElementById("qxInspector").innerHTML=html;
+}
+twinBindCanvas({
+  canvas:"qxCanvas",tooltip:"qxTooltip",prefix:"qtw",
+  svg:qxSvg,model:()=>_qxModel,state:()=>_qxState,
+  apply:qxApplyTransform,zoom:qxZoom,select:qxSelect
+});
+
+// ── Engineering Health strip ────────────────────────────────────
+function renderQdfHealth(h,dv){
+  const clr=st=>st==="ERROR"?"var(--er)":st==="WARN"?"var(--wn)":"var(--ok)";
+  const mark=st=>st==="ERROR"?"✗":st==="WARN"?"⚠":"✓";
+  const scoreColor=h.healthPct>=90?"var(--ok)":h.healthPct>=75?"var(--acl)":h.healthPct>=50?"var(--wn)":"var(--er)";
+  document.getElementById("qxHealth").innerHTML=`
+    <div class="qx-hi qx-score">
+      <div class="qx-hi-lbl">Electrical Health</div>
+      <div class="qx-hi-val" style="color:${scoreColor}">${h.healthPct}%</div>
+      <div class="qx-hi-sub">${twEsc(h.grade)} · ${h.errorCount} violação(ões) · ${h.warningCount} aviso(s)</div>
+    </div>
+    ${h.indicators.map(i=>`
+    <div class="qx-hi" title="${twEsc(i.detail)}">
+      <div class="qx-hi-lbl">${twEsc(i.label)}</div>
+      <div class="qx-hi-val" style="color:${clr(i.status)}">${mark(i.status)} ${i.value!=null?i.value+"/100":i.status==="PASS"?"PASS":i.status==="WARN"?"ATENÇÃO":"FALHA"}</div>
+      <div class="qx-hi-sub">${twEsc(i.detail)}</div>
+    </div>`).join("")}
+    <div class="qx-hi" title="Folga entre a capacidade corrigida do alimentador (Izc) e a corrente de dimensionamento">
+      <div class="qx-hi-lbl">Capacidade Futura</div>
+      <div class="qx-hi-val" style="color:${h.futureCapacityPct>=20?"var(--ok)":"var(--wn)"}">${h.futureCapacityPct}%</div>
+      <div class="qx-hi-sub">Reserva do alimentador para expansão — NBR 5410 §4.2.1.4</div>
+    </div>
+    <div class="qx-hi" title="Alimentador ${dv.feederPct.toFixed(2)}% + maior circuito ${dv.circuitPct.toFixed(2)}%">
+      <div class="qx-hi-lbl">ΔV Global</div>
+      <div class="qx-hi-val" style="color:${dv.warn?"var(--er)":"var(--ok)"}">${dv.warn?"✗":"✓"} ${dv.value.toFixed(1)}%</div>
+      <div class="qx-hi-sub">Limite ${dv.limit}% (rede pública BT) — NBR 5410 §6.2.7</div>
+    </div>`;
+}
+
+// ── Otimizador do painel (nada aplicado sem aprovação) ──────────
+function openOptimizePanel(){
+  if(!results.length){toast("Calcule os circuitos primeiro.","err");return}
+  if(!_qxModel)_qxModel=buildTwinModel();
+  _qxRecs=EEPanelHealth.recommend(_qxModel,loads,buildSite());
+  const list=document.getElementById("qxRecList");
+  if(!_qxRecs.length){
+    list.innerHTML=`<div class="twx-empty">
+      <i class="fa-solid fa-circle-check" style="font-size:20px;color:var(--ok);display:block;margin-bottom:8px"></i>
+      Nenhuma otimização recomendada — o quadro está bem dimensionado, equilibrado e com reserva adequada.
+    </div>`;
+  }else{
+    const sevIcon={error:'<i class="fa-solid fa-circle-exclamation" style="color:var(--er)"></i>',
+      warn:'<i class="fa-solid fa-triangle-exclamation" style="color:var(--wn)"></i>',
+      info:'<i class="fa-solid fa-lightbulb" style="color:var(--inf)"></i>'};
+    list.innerHTML=_qxRecs.map((r,i)=>`
+      <div class="qx-rec">
+        <span class="qx-rec-ic">${sevIcon[r.severity]||sevIcon.info}</span>
+        <div style="min-width:0">
+          <div class="qx-rec-title">${twEsc(r.title)}</div>
+          <div class="qx-rec-detail">${twEsc(r.detail)}</div>
+          ${r.reference?`<div class="qx-rec-ref">${twEsc(r.reference)}</div>`:""}
+        </div>
+        ${r.action?`<button class="btn btn-ok" style="font-size:11px;padding:5px 11px" onclick="qxApplyRec(${i})">
+          <i class="fa-solid fa-check"></i> Aplicar</button>`:""}
+      </div>`).join("");
+  }
+  openModal("optimizeModal");
+}
+function qxApplyRec(i){
+  const r=_qxRecs&&_qxRecs[i];
+  if(!r||!r.action)return;
+  if(r.action.type==="phase-moves"){
+    r.action.moves.forEach(m=>{if(loads[m.index])loads[m.index].wiringType=m.toWiring});
+    renderLoads();
+    calculateAll("qdf");
+    closeModal("optimizeModal");
+    toast(`${r.action.moves.length} circuito(s) realocado(s) — score ${r.action.before.score}→${r.action.after.score} · desequilíbrio ${r.action.before.imbalancePct.toFixed(0)}%→${r.action.after.imbalancePct.toFixed(0)}%`,"ok");
+  }
+}
+
+// ── Exportação (SVG vetorial, PNG 2x, PDF com carimbo) ─────────
+function qxPrintSVG(){
+  return EEQdfTwin.render(_qxModel,{
+    theme:"print",overlays:_qxState.overlays,
+    projectName:"EasyEletric SaaS v3.5",
+    date:new Date().toLocaleDateString("pt-BR")
+  });
+}
+function exportQdfSVG(){
+  if(!_qxModel){toast("Calcule os circuitos primeiro.","err");return}
+  const blob=new Blob([qxPrintSVG()],{type:"image/svg+xml"});
+  const a=Object.assign(document.createElement("a"),{href:URL.createObjectURL(blob),download:"qdf_smart_distribution_board.svg"});
+  a.click();URL.revokeObjectURL(a.href);
+  toast("SVG exportado!","ok");
+}
+function exportQdfPNG(){
+  if(!_qxModel){toast("Calcule os circuitos primeiro.","err");return}
+  const svgStr=EEQdfTwin.render(_qxModel,{
+    theme:twTheme(),overlays:_qxState.overlays,
+    projectName:"EasyEletric SaaS v3.5",
+    date:new Date().toLocaleDateString("pt-BR")
+  });
+  const url=URL.createObjectURL(new Blob([svgStr],{type:"image/svg+xml"}));
+  const img=new Image();
+  img.onload=()=>{
+    const scale=2; // alta resolução
+    const c=document.createElement("canvas");
+    c.width=img.naturalWidth*scale;c.height=img.naturalHeight*scale;
+    const ctx=c.getContext("2d");
+    ctx.scale(scale,scale);ctx.drawImage(img,0,0);
+    URL.revokeObjectURL(url);
+    c.toBlob(b=>{
+      const a=Object.assign(document.createElement("a"),{href:URL.createObjectURL(b),download:"qdf_smart_distribution_board.png"});
+      a.click();URL.revokeObjectURL(a.href);
+      toast("PNG em alta resolução exportado!","ok");
+    },"image/png");
+  };
+  img.onerror=()=>{URL.revokeObjectURL(url);toast("Falha ao rasterizar o SVG.","err")};
+  img.src=url;
+}
+function exportQdfPDF(){
+  if(!_qxModel){toast("Calcule os circuitos primeiro.","err");return}
+  const w=window.open("","_blank");
+  w.document.write(`<!DOCTYPE html><html><head><title>QDF — Smart Distribution Board NBR 5410</title>
+<style>*{margin:0;padding:0}body{background:#fff}svg{display:block;width:100%;height:auto}
+@page{size:A4 landscape;margin:5mm}@media print{body{margin:0}}</style></head>
+<body>${qxPrintSVG()}<script>window.onload=function(){window.print()}<\/script></body></html>`);
   w.document.close();
   toast("Abrindo para impressão / salvar PDF…","info");
 }
