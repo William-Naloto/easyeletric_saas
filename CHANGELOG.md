@@ -1,5 +1,20 @@
 # Changelog
 
+## v3.4 — 2026-07-07 · Electrical Digital Twin
+
+A instalação elétrica passa a ser modelada como um **gêmeo digital**: um modelo canônico único alimenta todas as visualizações, e o unifilar deixa de ser um relatório estático para se tornar um workspace de engenharia interativo estilo CAD. Arquitetura documentada em `docs/digital_twin_v3_4.md`.
+
+### Added
+- **ElectricalProjectModel** `engineering/project_model.js` — fonte única de verdade do projeto: grafo de objetos de engenharia (rede → medidor → alimentador → QDF → disjuntor geral → DPS → DR geral → barramentos A/B/C/N/PE → disjuntores parciais → DR → condutores → cargas). Cada nó carrega `{id, parent, children, data, calc, validation, decisions, viz}`; validação PASS/WARN/ERROR e registro de decisões do motor são **distribuídos por componente** (coordenação/interrupção/disparo → disjuntor; ampacidade/queda/adiabática → condutor; DR → DR). Travessias `chainOf()` (cadeia de proteção até a origem, incluindo todos os barramentos de circuitos multipolares) e `relatedOf()` (cadeia + descendentes) alimentam a interatividade. Aceita resultados pré-calculados do pipeline principal — nada é recalculado (35 testes).
+- **Renderizador unifilar do gêmeo digital** `engineering/unifilar_twin.js` — SVG vetorial sem DOM (browser + Node) com biblioteca de símbolos IEC/NBR reutilizável (fonte, medidor kWh, disjuntor, DR, DPS, terra e ícones de carga por tipo), barramentos coloridos por fase com correntes, cadeia de proteção completa, overlays de engenharia opcionais (corrente, ΔV, Icc, validação), temas dark/light/print (impressão com carimbo técnico e aviso de ART/RRT) e `data-node` em cada objeto para interatividade sem re-render (21 testes).
+- **Workspace unifilar interativo no app** — zoom por roda/botões, pan por arrasto, ajustar à tela, chips de overlay na toolbar; **hover ilumina a cadeia de proteção inteira** (da rede à carga) esmaecendo o resto; tooltip com status normativo; **clique abre o Explorador de Engenharia**: propriedades, cálculos, verificações NBR 5410 coloridas e decisões auditáveis com alternativas rejeitadas e referência normativa. Diagrama acompanha o tema claro/escuro do app.
+- Runner unificado passa a 8 suítes / 201 casos (`node scripts/test_all.js`).
+
+### Changed
+- **Exportações SVG/PDF do unifilar** usam o renderizador do gêmeo digital em tema de impressão (carimbo técnico, símbolos vetoriais, overlays selecionados) — substitui o SVG estático tabular anterior (`buildUnifilarSVG` removido).
+- Unifilar, QDF e memorial consomem os MESMOS objetos do motor via modelo (`_qdfResult` + resultados por circuito reaproveitados na construção do modelo).
+- Branding atualizado para v3.4.
+
 ## v3.3 — 2026-07-06
 
 Serviços modulares de engenharia (`scripts/engineering/`): balanceamento de fases com otimizador, motores dedicados de DR, DPS e aterramento, e Registro de Decisões de Engenharia unificado. Todos independentes, sem DOM, testados em Node e sem duplicação de lógica com o motor central.

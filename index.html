@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="description" content="EasyEletric SaaS v3.3 - Projetista elétrico residencial NBR 5410:2023. Dimensionamento automático por cômodos, QDF unifilar, mono/bi/trifásico.">
+<meta name="description" content="EasyEletric SaaS v3.4 - Projetista elétrico residencial NBR 5410:2023. Dimensionamento automático por cômodos, QDF unifilar, mono/bi/trifásico.">
 <meta name="keywords" content="dimensionador elétrico,NBR 5410,calcular disjuntor,QDF residencial,DR DPS,projeto elétrico">
 <meta name="robots" content="index,follow">
 <meta property="og:title" content="EasyEletric SaaS | Projetista Elétrico NBR 5410:2023">
@@ -1262,7 +1262,7 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
   <div class="nav-logo" onclick="gotoSection('hero')">
     <div class="logo-icon"><i class="fa-solid fa-bolt"></i></div>
     <span>EasyEletric</span>
-    <span class="logo-badge">SaaS v3.3</span>
+    <span class="logo-badge">SaaS v3.4</span>
   </div>
   <div class="nav-links">
     <button class="nav-link" onclick="gotoSection('features')">Recursos</button>
@@ -1339,7 +1339,7 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
      FEATURES
      ============================================================ -->
 <section class="section" id="features">
-  <div class="sec-lbl"><i class="fa-solid fa-star"></i> Recursos v3.3</div>
+  <div class="sec-lbl"><i class="fa-solid fa-star"></i> Recursos v3.4</div>
   <h2 class="sec-h2">Projetista Assistido Residencial</h2>
   <p class="sec-sub">Duas formas de uso: informe cômodos e áreas para geração automática, ou adicione cargas manualmente.</p>
   <div class="feat-grid">
@@ -1831,12 +1831,12 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
       <div class="footer-col">
         <h4>Sobre</h4>
         <a href="https://github.com/William-Naloto/easyeletric_saas" target="_blank">GitHub</a>
-        <a href="CHANGELOG.md">Changelog v3.3</a>
+        <a href="CHANGELOG.md">Changelog v3.4</a>
         <a href="README.md">Documentação</a>
       </div>
     </div>
     <div class="footer-bottom">
-      <p>EasyEletric SaaS v3.3 &copy; 2025 William Naloto &bull; Sem coleta de PII &bull;
+      <p>EasyEletric SaaS v3.4 &copy; 2025 William Naloto &bull; Sem coleta de PII &bull;
         <a href="https://github.com/William-Naloto/easyeletric_saas" target="_blank">GitHub Pages</a><br>
         <strong>Aviso:</strong> Ferramenta de pré-dimensionamento. Não substitui projeto elétrico, ART/RRT, consulta NBR 5410 oficial e catálogos de fabricantes.
       </p>
@@ -1844,7 +1844,7 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
         <span class="fbadge">NBR 5410</span>
         <span class="fbadge">Offline</span>
         <span class="fbadge">No PII</span>
-        <span class="fbadge">v3.3</span>
+        <span class="fbadge">v3.4</span>
       </div>
     </div>
   </div>
@@ -3507,7 +3507,7 @@ function backupLinks(){
   const d={links:getAffLinks(),ts:new Date().toISOString(),version:"2.2"};
   const a=document.createElement("a");
   a.href=URL.createObjectURL(new Blob([JSON.stringify(d,null,2)],{type:"application/json"}));
-  a.download="backup_afiliados_v3.3.json";a.click();toast("Backup exportado!","ok");
+  a.download="backup_afiliados_v3.4.json";a.click();toast("Backup exportado!","ok");
 }
 function resetLinks(){saveAffLinksData({...DEFAULT_LINKS});toast("Links resetados","info")}
 
@@ -3593,7 +3593,7 @@ function exportToExcel(){
   const{Vfn,Vll}=getSysVoltages();
   const wb=XLSX.utils.book_new();
   const sum=[
-    ["EasyEletric SaaS v3.3 — NBR 5410:2023"],[""],
+    ["EasyEletric SaaS v3.4 — NBR 5410:2023"],[""],
     ["Projeto","EasyEletric"],["Data",new Date().toLocaleDateString("pt-BR")],
     ["Circuitos",results.length],["Potência Total (W)",results.reduce((s,r)=>s+r.l.power,0)],
     ["Maior Queda (%)",Math.max(...results.map(r=>parseFloat(r.vd.pct))).toFixed(2)],
