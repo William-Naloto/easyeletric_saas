@@ -188,7 +188,7 @@
       out += tx(L.width / 2, 80, `Sistema ${s.supplyType} · ${s.circuits} circuitos · Demanda ${fmt(s.demandVA / 1000, 2)} kVA`, 'text-anchor="middle" font-size="10" fill="#000"');
       out += tx(L.width - 14, 80, dateStr ? `Data: ${dateStr}` : "EasyEletric v3.4", 'text-anchor="end" font-size="10" fill="#000"');
     } else {
-      out += tx(20, 30, "DIAGRAMA UNIFILAR — GÊMEO DIGITAL", `font-size="15" font-weight="800" fill="${P.ink}" letter-spacing="2"`);
+      out += tx(20, 30, "DIAGRAMA UNIFILAR — DIGITAL TWIN", `font-size="15" font-weight="800" fill="${P.ink}" letter-spacing="2"`);
       out += tx(20, 48, `${proj} · NBR 5410:2023`, `font-size="10" fill="${P.dim}"`);
       const sc = statusColor(P, s.status);
       out += ci(L.width - 26, 26, 5, `fill="${sc}"`);
@@ -422,7 +422,7 @@
     out += `</g>`;
     if (theme === "print") {
       out += tx(20, L.height - 12,
-        "EasyEletric v3.4 — Gêmeo Digital Elétrico | ABNT NBR 5410:2023 | Pré-dimensionamento — não substitui projeto assinado com ART/RRT",
+        "EasyEletric v3.4 — Digital Twin | ABNT NBR 5410:2023 | Pré-dimensionamento — não substitui projeto assinado com ART/RRT",
         `font-size="7.5" fill="${P.dim}"`);
     }
     return out;
