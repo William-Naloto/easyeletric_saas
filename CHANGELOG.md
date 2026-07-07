@@ -1,5 +1,23 @@
 # Changelog
 
+## v3.5 — 2026-07-07 · Smart Distribution Board
+
+O QDF deixa de ser uma tabela e se torna o recurso-assinatura do EasyEletric: um **painel elétrico realista e interativo**, renderizado do gêmeo digital, com saúde de engenharia, inspetor por componente e otimizador auditável. Arquitetura documentada em `docs/smart_distribution_board_v3_5.md`.
+
+### Added
+- **Smart Distribution Board** `engineering/qdf_twin.js` — renderizador SVG sem DOM (browser + Node) que desenha o QDF como um painel real: gabinete com placa de montagem e parafusos, cabo alimentador entrando pelo topo, disjuntor geral, DPS com descida ao PE, DR geral, **barramentos de cobre por fase** (gradiente metálico, corrente, utilização % e reserva %), pentes de distribuição, **disjuntores parciais em trilhos DIN** (largura em módulos = nº de polos, abas coloridas por fase, LED de status), cabos de saída (seção, comprimento, Ib, ΔV), etiquetas de carga e **barras de Neutro/PE com terminais de parafuso**. Multi-trilho com quebra automática de fileiras, temas dark/light/print (carimbo técnico), overlays de corrente/ΔV/Icc/validação e `data-node` por objeto — os MESMOS ids do modelo — para interatividade sem re-render (25 testes).
+- **Motor de saúde do quadro** `engineering/panel_health.js` — agrega os checks PASS/WARN/ERROR do modelo (deduplicados) em um **Engineering Health Score 0–100** (70% conformidade + 30% equilíbrio), indicadores executivos (Proteção, Queda de Tensão, Aterramento, Equilíbrio, Demanda, DR/DPS), **utilização/reserva por barramento** (I fase / In do geral, alerta ≥80%), **capacidade futura do alimentador** (folga Izc vs. Ib dim.) e **recomendações de otimização auditáveis** com referência normativa — rebalanceamento de fases com movimentos e score antes/depois, correção de findings do motor, barramentos carregados, reserva de expansão <20% e circuitos próximos do limite de ΔV. Nada é aplicado automaticamente: cada recomendação carrega uma `action` declarativa aplicada só sob aprovação (17 testes).
+- **Workspace do QDF no app** — a aba QDF vira um workspace de engenharia: **faixa Engineering Health** (score, indicadores, capacidade futura e ΔV global §6.2.7), painel SVG com zoom/pan/ajustar e chips de overlay, **hover ilumina a cadeia de proteção completa** e **clique abre o Inspetor de Engenharia** lateral (propriedades, cálculos, validação NBR 5410 e decisões com alternativas rejeitadas — mesmo conteúdo do explorador do unifilar, agora compartilhado).
+- **Otimizar Painel** — modal de recomendações do motor de saúde com botão "Aplicar" por recomendação; o rebalanceamento de fases realoca os circuitos e recalcula todo o projeto em um clique (ex.: health 73% → 96%).
+- **Exportações do quadro** — SVG vetorial (tema de impressão), **PNG em alta resolução (2×)** rasterizado localmente e PDF com carimbo técnico via impressão do navegador.
+- **Infraestrutura genérica de workspace twin** — `twinBindCanvas`/`twinHighlight`/`twinMarkSelected` + `twinHomeHtml`/`twinDetailHtml` compartilhados entre o unifilar (modal) e o Smart Board (aba QDF), sem duplicação.
+- Runner unificado passa a 10 suítes / 248 casos (`node scripts/test_all.js`).
+
+### Changed
+- **QDF tabular removido** — a representação panel-schedule em HTML (e o CSS/interações associados) é substituída pelo painel SVG do gêmeo digital; todos os dados continuam vindo do MESMO `_qdfResult` + resultados por circuito, agora via `ElectricalProjectModel`.
+- CSP ganha `img-src 'self' blob: data:` para permitir a rasterização local do PNG.
+- Branding e cache-busting atualizados para v3.5.
+
 ## v3.4 — 2026-07-07 · Electrical Digital Twin
 
 A instalação elétrica passa a ser modelada como um **gêmeo digital**: um modelo canônico único alimenta todas as visualizações, e o unifilar deixa de ser um relatório estático para se tornar um workspace de engenharia interativo estilo CAD. Arquitetura documentada em `docs/digital_twin_v3_4.md`.
