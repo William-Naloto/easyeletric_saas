@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="description" content="EasyEletric SaaS v3.3 - Projetista elétrico residencial NBR 5410:2023. Dimensionamento automático por cômodos, QDF unifilar, mono/bi/trifásico.">
+<meta name="description" content="EasyEletric SaaS v3.4 - Projetista elétrico residencial NBR 5410:2023. Dimensionamento automático por cômodos, QDF unifilar, mono/bi/trifásico.">
 <meta name="keywords" content="dimensionador elétrico,NBR 5410,calcular disjuntor,QDF residencial,DR DPS,projeto elétrico">
 <meta name="robots" content="index,follow">
 <meta property="og:title" content="EasyEletric SaaS | Projetista Elétrico NBR 5410:2023">
@@ -1144,22 +1144,82 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
 .pts-sum-table .bi-row   td { color:var(--er) }
 
 /* ============================================================
-   UNIFILAR MODAL
+   UNIFILAR — WORKSPACE DO GÊMEO DIGITAL (estilo CAD)
    ============================================================ */
 .uni-modal-box {
   background:var(--bgc); border-radius:var(--rl);
-  width:96vw; max-width:1180px;
-  max-height:92vh; overflow:hidden;
+  width:97vw; height:94vh; overflow:hidden;
   display:flex; flex-direction:column;
   box-shadow:0 24px 64px rgba(0,0,0,.6);
 }
 .uni-toolbar {
-  display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;
-  padding:11px 16px; background:var(--bgc);
+  display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;
+  padding:9px 14px; background:var(--bgc);
   border-bottom:1px solid var(--br); flex-shrink:0;
 }
-#unifilarSVGContainer { overflow:auto; flex:1 }
-#unifilarSVGContainer svg { display:block; width:100%; height:auto; }
+.tw-tb-group { display:flex; align-items:center; gap:6px }
+.tw-tb-sep { width:1px; height:22px; background:var(--br) }
+.tw-tb-btn {
+  display:inline-flex; align-items:center; gap:5px;
+  padding:5px 9px; font-size:11px; font-weight:600; font-family:inherit;
+  background:var(--bgi); color:var(--t2);
+  border:1px solid var(--br); border-radius:var(--r); cursor:pointer;
+  transition:all .15s;
+}
+.tw-tb-btn:hover { border-color:var(--brf); color:var(--t1) }
+.tw-tb-btn.on { background:var(--acg); border-color:var(--ac); color:var(--acl) }
+#twZoomLbl {
+  min-width:44px; text-align:center;
+  font-family:var(--mono); font-size:11px; color:var(--t2);
+}
+.tw-body { display:flex; flex:1; min-height:0 }
+#twCanvas {
+  flex:1; position:relative; overflow:hidden;
+  background:
+    radial-gradient(circle, var(--br) 1px, transparent 1px) 0 0/26px 26px,
+    var(--bg);
+  cursor:grab;
+}
+#twCanvas.dragging { cursor:grabbing }
+#twViewport { transform-origin:0 0; will-change:transform; width:max-content }
+#twViewport svg { display:block }
+#twTooltip {
+  position:absolute; z-index:40; pointer-events:none; display:none;
+  max-width:280px; padding:8px 11px;
+  background:var(--bg2); border:1px solid var(--brf); border-radius:var(--rm);
+  box-shadow:var(--sh-sm); font-size:11px; line-height:1.45; color:var(--t1);
+}
+#twTooltip .tt-sub { color:var(--t3); font-family:var(--mono); font-size:10px }
+#twExplorer {
+  width:330px; flex-shrink:0; overflow-y:auto;
+  border-left:1px solid var(--br); background:var(--bgc);
+  padding:14px 16px;
+}
+.twx-h { font-size:13px; font-weight:700; color:var(--t1); margin-bottom:2px }
+.twx-sub { font-size:10.5px; color:var(--t3); font-family:var(--mono); margin-bottom:10px }
+.twx-badge {
+  display:inline-flex; align-items:center; gap:5px;
+  font-size:9.5px; font-weight:700; padding:2px 9px; border-radius:9px;
+  margin-bottom:10px;
+}
+.twx-sec {
+  font-size:9.5px; font-weight:700; letter-spacing:.8px; text-transform:uppercase;
+  color:var(--t3); margin:14px 0 6px; padding-bottom:4px;
+  border-bottom:1px solid var(--br);
+}
+.twx-kv { display:flex; justify-content:space-between; gap:10px; font-size:11px; padding:2.5px 0 }
+.twx-kv .k { color:var(--t3) }
+.twx-kv .v { color:var(--t1); font-family:var(--mono); text-align:right }
+.twx-check { display:flex; gap:7px; font-size:10.5px; padding:4px 0; line-height:1.4 }
+.twx-dec { margin:7px 0; padding:8px 10px; background:var(--bgi); border-radius:var(--r); font-size:10.5px; line-height:1.45 }
+.twx-dec .d-title { font-weight:700; color:var(--t1); margin-bottom:2px }
+.twx-dec .d-reason { color:var(--t2) }
+.twx-dec .d-ref { color:var(--t3); font-family:var(--mono); font-size:9.5px; margin-top:4px }
+.twx-dec details { margin-top:5px }
+.twx-dec summary { cursor:pointer; color:var(--acl); font-size:10px; font-weight:600 }
+.twx-dec .d-rej { color:var(--t3); padding:3px 0 0 10px }
+.twx-empty { text-align:center; color:var(--t3); font-size:11px; padding:28px 8px; line-height:1.7 }
+@media(max-width:900px){ #twExplorer { display:none } }
 
 /* ============================================================
    PRINT
@@ -1202,7 +1262,7 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
   <div class="nav-logo" onclick="gotoSection('hero')">
     <div class="logo-icon"><i class="fa-solid fa-bolt"></i></div>
     <span>EasyEletric</span>
-    <span class="logo-badge">SaaS v3.3</span>
+    <span class="logo-badge">SaaS v3.4</span>
   </div>
   <div class="nav-links">
     <button class="nav-link" onclick="gotoSection('features')">Recursos</button>
@@ -1279,7 +1339,7 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
      FEATURES
      ============================================================ -->
 <section class="section" id="features">
-  <div class="sec-lbl"><i class="fa-solid fa-star"></i> Recursos v3.3</div>
+  <div class="sec-lbl"><i class="fa-solid fa-star"></i> Recursos v3.4</div>
   <h2 class="sec-h2">Projetista Assistido Residencial</h2>
   <p class="sec-sub">Duas formas de uso: informe cômodos e áreas para geração automática, ou adicione cargas manualmente.</p>
   <div class="feat-grid">
@@ -1771,12 +1831,12 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
       <div class="footer-col">
         <h4>Sobre</h4>
         <a href="https://github.com/William-Naloto/easyeletric_saas" target="_blank">GitHub</a>
-        <a href="CHANGELOG.md">Changelog v3.3</a>
+        <a href="CHANGELOG.md">Changelog v3.4</a>
         <a href="README.md">Documentação</a>
       </div>
     </div>
     <div class="footer-bottom">
-      <p>EasyEletric SaaS v3.3 &copy; 2025 William Naloto &bull; Sem coleta de PII &bull;
+      <p>EasyEletric SaaS v3.4 &copy; 2025 William Naloto &bull; Sem coleta de PII &bull;
         <a href="https://github.com/William-Naloto/easyeletric_saas" target="_blank">GitHub Pages</a><br>
         <strong>Aviso:</strong> Ferramenta de pré-dimensionamento. Não substitui projeto elétrico, ART/RRT, consulta NBR 5410 oficial e catálogos de fabricantes.
       </p>
@@ -1784,7 +1844,7 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
         <span class="fbadge">NBR 5410</span>
         <span class="fbadge">Offline</span>
         <span class="fbadge">No PII</span>
-        <span class="fbadge">v3.3</span>
+        <span class="fbadge">v3.4</span>
       </div>
     </div>
   </div>
@@ -1796,22 +1856,40 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
 <div class="modal-ov" id="unifilarModal">
   <div class="uni-modal-box">
     <div class="uni-toolbar">
-      <div style="display:flex;align-items:center;gap:9px">
-        <i class="fa-solid fa-diagram-project" style="color:var(--inf);font-size:16px"></i>
-        <span style="font-weight:700;font-size:15px">Diagrama Unifilar Profissional</span>
-        <span style="font-size:10px;color:var(--t3);font-family:var(--mono)">NBR 5410 · SVG Vetorial</span>
+      <div class="tw-tb-group">
+        <i class="fa-solid fa-diagram-project" style="color:var(--inf);font-size:15px"></i>
+        <span style="font-weight:700;font-size:14px">Unifilar — Gêmeo Digital</span>
+        <span style="font-size:9.5px;color:var(--t3);font-family:var(--mono)">NBR 5410 · Interativo</span>
       </div>
-      <div style="display:flex;gap:6px;align-items:center">
-        <button class="btn btn-o" style="font-size:12px;padding:5px 11px" onclick="exportUnifilarSVG()">
-          <i class="fa-solid fa-file-code"></i> Exportar SVG
+      <div class="tw-tb-group" role="group" aria-label="Zoom">
+        <button class="tw-tb-btn" onclick="twZoom(-1)" title="Reduzir zoom" aria-label="Reduzir zoom"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
+        <span id="twZoomLbl">100%</span>
+        <button class="tw-tb-btn" onclick="twZoom(1)" title="Ampliar zoom" aria-label="Ampliar zoom"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
+        <button class="tw-tb-btn" onclick="twFit()" title="Ajustar à tela"><i class="fa-solid fa-expand"></i> Ajustar</button>
+        <div class="tw-tb-sep"></div>
+        <span style="font-size:9.5px;color:var(--t3);font-weight:700;letter-spacing:.5px">OVERLAYS</span>
+        <button class="tw-tb-btn on" id="twOv-current" onclick="twToggleOverlay('current',this)" title="Correntes de projeto e por fase"><i class="fa-solid fa-bolt"></i> Corrente</button>
+        <button class="tw-tb-btn on" id="twOv-drop" onclick="twToggleOverlay('drop',this)" title="Queda de tensão por trecho"><i class="fa-solid fa-arrow-trend-down"></i> ΔV</button>
+        <button class="tw-tb-btn" id="twOv-icc" onclick="twToggleOverlay('icc',this)" title="Curto-circuito e capacidade de interrupção"><i class="fa-solid fa-explosion"></i> Icc</button>
+        <button class="tw-tb-btn on" id="twOv-validation" onclick="twToggleOverlay('validation',this)" title="Status de validação (verde/amarelo/vermelho)"><i class="fa-solid fa-circle-check"></i> Validação</button>
+      </div>
+      <div class="tw-tb-group">
+        <button class="btn btn-o" style="font-size:11px;padding:5px 10px" onclick="exportUnifilarSVG()">
+          <i class="fa-solid fa-file-code"></i> SVG
         </button>
-        <button class="btn btn-p" style="font-size:12px;padding:5px 11px" onclick="exportUnifilarPDF()">
-          <i class="fa-solid fa-file-pdf"></i> Exportar PDF
+        <button class="btn btn-p" style="font-size:11px;padding:5px 10px" onclick="exportUnifilarPDF()">
+          <i class="fa-solid fa-file-pdf"></i> PDF
         </button>
         <button class="modal-close" aria-label="Fechar diagrama" onclick="closeModal('unifilarModal')"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
       </div>
     </div>
-    <div id="unifilarSVGContainer" style="padding:16px;background:#e8e8e8;overflow:auto"></div>
+    <div class="tw-body">
+      <div id="twCanvas">
+        <div id="twViewport"></div>
+        <div id="twTooltip"></div>
+      </div>
+      <aside id="twExplorer" aria-label="Explorador de engenharia"></aside>
+    </div>
   </div>
 </div>
 
@@ -1857,6 +1935,8 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
 <script src="scripts/engineering/spd.js"></script>
 <script src="scripts/engineering/grounding.js"></script>
 <script src="scripts/engineering/decision_log.js"></script>
+<script src="scripts/engineering/project_model.js"></script>
+<script src="scripts/engineering/unifilar_twin.js"></script>
 <script>
 // ================================================================
 // NBR 5410:2023 — camada de integração com o motor de cálculo
@@ -3427,7 +3507,7 @@ function backupLinks(){
   const d={links:getAffLinks(),ts:new Date().toISOString(),version:"2.2"};
   const a=document.createElement("a");
   a.href=URL.createObjectURL(new Blob([JSON.stringify(d,null,2)],{type:"application/json"}));
-  a.download="backup_afiliados_v3.3.json";a.click();toast("Backup exportado!","ok");
+  a.download="backup_afiliados_v3.4.json";a.click();toast("Backup exportado!","ok");
 }
 function resetLinks(){saveAffLinksData({...DEFAULT_LINKS});toast("Links resetados","info")}
 
@@ -3513,7 +3593,7 @@ function exportToExcel(){
   const{Vfn,Vll}=getSysVoltages();
   const wb=XLSX.utils.book_new();
   const sum=[
-    ["EasyEletric SaaS v3.3 — NBR 5410:2023"],[""],
+    ["EasyEletric SaaS v3.4 — NBR 5410:2023"],[""],
     ["Projeto","EasyEletric"],["Data",new Date().toLocaleDateString("pt-BR")],
     ["Circuitos",results.length],["Potência Total (W)",results.reduce((s,r)=>s+r.l.power,0)],
     ["Maior Queda (%)",Math.max(...results.map(r=>parseFloat(r.vd.pct))).toFixed(2)],
@@ -3712,6 +3792,8 @@ function toggleTheme(){
   const d=document.documentElement,dark=d.getAttribute("data-theme")==="dark";
   d.setAttribute("data-theme",dark?"light":"dark");
   document.getElementById("themeLbl").textContent=dark?"Escuro":"Claro";
+  // Gêmeo digital acompanha o tema do app quando aberto
+  if(typeof _twModel!=="undefined"&&_twModel&&document.getElementById("unifilarModal").classList.contains("open"))twRender();
 }
 function toggleColl(id){
   const b=document.getElementById(id+"Body"),ch=document.getElementById(id+"Chev");
@@ -3778,264 +3860,261 @@ function toast(msg,type="ok"){
 }
 
 // ================================================================
-// DIAGRAMA UNIFILAR — NBR 5410 · SVG vetorial
+// UNIFILAR — GÊMEO DIGITAL INTERATIVO
+// (EEProjectModel = fonte única · EEUnifilarTwin = renderização)
 // ================================================================
-function generateUnifilarDiagram(){
-  if(!results.length){toast("Calcule os circuitos primeiro.","err");return}
-  document.getElementById("unifilarSVGContainer").innerHTML=buildUnifilarSVG();
-  openModal("unifilarModal");
+// Zoom/pan/hover/seleção operam sobre o SVG via data-node SEM
+// re-renderizar; apenas overlays e troca de tema re-renderizam.
+let _twModel=null;
+const _twState={scale:1,tx:0,ty:0,overlays:{current:true,drop:true,icc:false,validation:true},selected:null};
+
+const twEsc=s=>EEUnifilarTwin.esc(s);
+const twTheme=()=>document.documentElement.getAttribute("data-theme")==="light"?"light":"dark";
+const twNum=v=>typeof v!=="number"?v:Number.isInteger(v)?String(v):v.toFixed(2).replace(".",",");
+
+function buildTwinModel(){
+  // Reaproveita os resultados já calculados pelo pipeline principal
+  // (mesmos objetos do motor) — nada é recalculado para o diagrama.
+  const opts={};
+  if(_qdfResult)opts.feeder=_qdfResult;
+  if(results.length&&results.length===loads.length)opts.circuits=results.map(r=>r.eng);
+  return EEProjectModel.build(loads,buildSite(),opts);
 }
 
-function exportUnifilarSVG(){
+function generateUnifilarDiagram(){
   if(!results.length){toast("Calcule os circuitos primeiro.","err");return}
-  const blob=new Blob([buildUnifilarSVG()],{type:"image/svg+xml"});
+  _twModel=buildTwinModel();
+  _twState.selected=null;
+  openModal("unifilarModal");
+  twRender();
+  requestAnimationFrame(()=>twFit());
+  twExplorerHome();
+}
+
+function twRender(){
+  if(!_twModel)return;
+  document.getElementById("twViewport").innerHTML=EEUnifilarTwin.render(_twModel,{
+    theme:twTheme(),overlays:_twState.overlays,
+    projectName:"EasyEletric SaaS v3.4",
+    date:new Date().toLocaleDateString("pt-BR")
+  });
+  twApplyTransform();
+  if(_twState.selected)twMarkSelected(_twState.selected);
+}
+
+// ── Zoom / Pan ──────────────────────────────────────────────────
+function twApplyTransform(){
+  document.getElementById("twViewport").style.transform=
+    `translate(${_twState.tx}px,${_twState.ty}px) scale(${_twState.scale})`;
+  document.getElementById("twZoomLbl").textContent=Math.round(_twState.scale*100)+"%";
+}
+function twZoom(dir,cx,cy){
+  const r=document.getElementById("twCanvas").getBoundingClientRect();
+  cx=cx??r.width/2;cy=cy??r.height/2;
+  const ns=Math.min(4,Math.max(0.15,_twState.scale*(dir>0?1.2:1/1.2)));
+  const f=ns/_twState.scale;
+  _twState.tx=cx-(cx-_twState.tx)*f;
+  _twState.ty=cy-(cy-_twState.ty)*f;
+  _twState.scale=ns;
+  twApplyTransform();
+}
+function twFit(){
+  const canvas=document.getElementById("twCanvas");
+  const svg=canvas.querySelector("svg");if(!svg)return;
+  const w=parseFloat(svg.getAttribute("width")),h=parseFloat(svg.getAttribute("height"));
+  const r=canvas.getBoundingClientRect();
+  const s=Math.min((r.width-28)/w,(r.height-28)/h,1.6);
+  _twState.scale=s;
+  _twState.tx=Math.max(14,(r.width-w*s)/2);
+  _twState.ty=Math.max(14,(r.height-h*s)/2);
+  twApplyTransform();
+}
+function twToggleOverlay(k,btn){
+  _twState.overlays[k]=!_twState.overlays[k];
+  btn.classList.toggle("on",_twState.overlays[k]);
+  twRender();
+}
+
+// ── Interatividade: hover ilumina a cadeia de proteção ─────────
+function twSvg(){return document.querySelector("#twViewport svg")}
+function twHighlight(id){
+  const svg=twSvg();if(!svg||!_twModel)return;
+  const rel=new Set(_twModel.relatedOf(id));
+  svg.classList.add("tw-has-focus");
+  svg.querySelectorAll(".tw-node").forEach(g=>g.classList.toggle("tw-hl",rel.has(g.getAttribute("data-node"))));
+}
+function twClearHighlight(){
+  const svg=twSvg();if(!svg)return;
+  svg.classList.remove("tw-has-focus");
+  svg.querySelectorAll(".tw-node.tw-hl").forEach(g=>g.classList.remove("tw-hl"));
+}
+function twMarkSelected(id){
+  const svg=twSvg();if(!svg)return;
+  svg.querySelectorAll(".tw-node.tw-selected").forEach(g=>g.classList.remove("tw-selected"));
+  const g=svg.querySelector(`.tw-node[data-node="${id}"]`);
+  if(g)g.classList.add("tw-selected");
+}
+function twSelect(id){
+  _twState.selected=id;
+  twMarkSelected(id);
+  twExplorer(id);
+}
+
+(function twBind(){
+  const canvas=document.getElementById("twCanvas");
+  if(!canvas)return;
+  const tip=document.getElementById("twTooltip");
+  let drag=null,moved=false;
+  canvas.addEventListener("wheel",e=>{
+    e.preventDefault();
+    const r=canvas.getBoundingClientRect();
+    twZoom(e.deltaY<0?1:-1,e.clientX-r.left,e.clientY-r.top);
+  },{passive:false});
+  canvas.addEventListener("mousedown",e=>{
+    drag={x:e.clientX,y:e.clientY,tx:_twState.tx,ty:_twState.ty};moved=false;
+    canvas.classList.add("dragging");
+  });
+  window.addEventListener("mousemove",e=>{
+    if(!drag)return;
+    const dx=e.clientX-drag.x,dy=e.clientY-drag.y;
+    if(Math.abs(dx)+Math.abs(dy)>3)moved=true;
+    _twState.tx=drag.tx+dx;_twState.ty=drag.ty+dy;
+    twApplyTransform();
+  });
+  window.addEventListener("mouseup",()=>{drag=null;canvas.classList.remove("dragging")});
+  canvas.addEventListener("click",e=>{
+    if(moved)return; // fim de arrasto, não é clique
+    const g=e.target.closest(".tw-node");
+    if(g)twSelect(g.getAttribute("data-node"));
+  });
+  canvas.addEventListener("mouseover",e=>{
+    const g=e.target.closest(".tw-node");
+    if(!g||!_twModel)return;
+    const id=g.getAttribute("data-node");
+    twHighlight(id);
+    const n=_twModel.byId[id];
+    if(n){
+      const st=n.validation.status;
+      const sc=st==="ERROR"?"var(--er)":st==="WARN"?"var(--wn)":"var(--ok)";
+      tip.innerHTML=`<strong>${twEsc(n.label)}</strong>`+
+        (n.sub?`<div class="tt-sub">${twEsc(n.sub)}</div>`:"")+
+        `<div style="color:${sc};font-size:10px;font-weight:700;margin-top:2px">${st==="PASS"?"✓ Conforme":st==="WARN"?"⚠ Atenção":"✗ Violação"} · clique para inspecionar</div>`;
+      tip.style.display="block";
+    }
+  });
+  canvas.addEventListener("mousemove",e=>{
+    if(tip.style.display!=="block")return;
+    const r=canvas.getBoundingClientRect();
+    tip.style.left=Math.min(e.clientX-r.left+16,r.width-300)+"px";
+    tip.style.top=(e.clientY-r.top+14)+"px";
+  });
+  canvas.addEventListener("mouseout",e=>{
+    if(e.target.closest(".tw-node")&&!(e.relatedTarget&&e.relatedTarget.closest(".tw-node"))){
+      twClearHighlight();tip.style.display="none";
+    }
+  });
+})();
+
+// ── Explorador de Engenharia (painel lateral) ──────────────────
+const TW_LABELS={In:"Corrente nominal In (A)",curve:"Curva",poles:"Polos",section:"Seção fase (mm²)",
+  pe:"Seção PE (mm²)",neutral:"Seção neutro (mm²)",lengthM:"Comprimento (m)",method:"Método de instalação",
+  insulation:"Isolação",Ib:"Corrente de projeto Ib (A)",Idim:"Ib de dimensionamento (A)",Iz:"Iz tabela (A)",
+  Izc:"Izc corrigida (A)",Ft:"Fator temperatura Ft",Fg:"Fator agrupamento Fg",dropPct:"Queda de tensão (%)",
+  dropV:"Queda de tensão (V)",finalV:"Tensão final (V)",maxDropPct:"Limite de queda (%)",
+  governedBy:"Critério governante",iccEndA:"Icc no fim (A)",iccBoardA:"Icc no quadro (A)",
+  icnRequiredA:"Icn mínima (A)",sensitivityMa:"Sensibilidade (mA)",powerVA:"Potência (VA)",pf:"Fator de potência",
+  wiring:"Fiação",loadType:"Tipo de carga",name:"Nome",circuit:"Circuito nº",voltage:"Tensão (V)",
+  phase:"Fase",currentA:"Corrente (A)",currentBalancedA:"Corrente (motor de balanceamento) (A)",
+  installedVA:"Potência instalada (VA)",demandVA:"Demanda diversificada (VA)",overallFactor:"Fator de demanda global",
+  imbalancePct:"Desequilíbrio (%)",balanceScore:"Balance Score",neutralA:"Corrente de neutro (A)",
+  Vfn:"Tensão fase-neutro (V)",Vll:"Tensão fase-fase (V)",supplyType:"Fornecimento",ikOriginA:"Icc presumida na origem (A)",
+  expansionMargin:"Reserva de expansão",class:"Classe",inKA:"In (kA)",imaxKA:"Imax (kA)",ucV:"Uc (V)",
+  standard:"Norma",circuits:"Circuitos",coordinated:"Coordenação Ib ≤ In ≤ Izc",magneticTripOk:"Disparo magnético",
+  adiabaticOk:"Suportabilidade adiabática",tripMultiple:"Múltiplo de disparo",system:"Sistema",V:"Tensão (V)",
+  iccOriginA:"Icc presumida (A)"};
+
+function twKV(obj){
+  return Object.entries(obj||{})
+    .filter(([k,v])=>v!==null&&v!==undefined&&typeof v!=="object"&&typeof v!=="function")
+    .map(([k,v])=>{
+      const val=typeof v==="boolean"?(v?"Sim":"Não"):twNum(v);
+      return `<div class="twx-kv"><span class="k">${twEsc(TW_LABELS[k]||k)}</span><span class="v">${twEsc(String(val))}</span></div>`;
+    }).join("");
+}
+const twBadge=st=>{
+  const sc=st==="ERROR"?"er":st==="WARN"?"wn":"ok";
+  const txt=st==="PASS"?"✓ CONFORME":st==="WARN"?"⚠ ATENÇÃO":"✗ VIOLAÇÃO";
+  return `<span class="twx-badge" style="background:var(--${sc}b);color:var(--${sc})">${txt}</span>`;
+};
+
+function twExplorerHome(){
+  if(!_twModel)return;
+  const s=_twModel.summary;
+  document.getElementById("twExplorer").innerHTML=`
+    <div class="twx-h">Projeto — Visão Geral</div>
+    <div class="twx-sub">${s.circuits} circuitos · ${twEsc(s.supplyType)}</div>
+    ${twBadge(s.status)}
+    <div class="twx-sec">Engenharia</div>
+    ${twKV({installedVA:s.installedVA,demandVA:s.demandVA,overallFactor:s.overallFactor,
+      Ib:s.IbFeeder,imbalancePct:s.imbalancePct,balanceScore:s.balanceScore,maxDropPct:s.maxDropPct})}
+    <div class="twx-empty">
+      <i class="fa-solid fa-arrow-pointer" style="font-size:18px;opacity:.35;display:block;margin-bottom:8px"></i>
+      Passe o mouse para iluminar a cadeia de proteção completa.<br>
+      Clique em qualquer componente para inspecionar propriedades, cálculos, validação NBR 5410 e decisões de engenharia.
+    </div>`;
+}
+
+function twExplorer(id){
+  const n=_twModel&&_twModel.byId[id];
+  if(!n){twExplorerHome();return}
+  const checks=(n.validation.checks||[]).map(c=>{
+    const clr=c.status==="PASS"?"var(--ok)":c.status==="WARN"?"var(--wn)":"var(--er)";
+    const ic=c.status==="PASS"?"✓":c.status==="WARN"?"⚠":"✗";
+    return `<div class="twx-check"><span style="color:${clr};font-weight:700">${ic}</span>
+      <span><strong style="color:${clr}">${twEsc(c.label)}</strong><br><span style="color:var(--t3)">${twEsc(c.detail)}</span></span></div>`;
+  }).join("");
+  const decs=(n.decisions||[]).map(d=>`
+    <div class="twx-dec">
+      <div class="d-title">${twEsc(d.topic)} → ${twEsc(d.decision)}</div>
+      <div class="d-reason">${twEsc(d.reason)}</div>
+      ${(d.rejected&&d.rejected.length)?`<details><summary>${d.rejected.length} alternativa(s) rejeitada(s)</summary>
+        ${d.rejected.map(r=>`<div class="d-rej">• <strong>${twEsc(r.option)}</strong> — ${twEsc(r.reason)}</div>`).join("")}</details>`:""}
+      ${d.reference?`<div class="d-ref">${twEsc(d.reference)}</div>`:""}
+    </div>`).join("");
+  document.getElementById("twExplorer").innerHTML=`
+    <div class="twx-h">${twEsc(n.label)}</div>
+    <div class="twx-sub">${twEsc(n.sub||n.type)} · id ${twEsc(n.id)}</div>
+    ${twBadge(n.validation.status)}
+    ${Object.keys(n.data||{}).length?`<div class="twx-sec">Propriedades</div>${twKV(n.data)}`:""}
+    ${Object.keys(n.calc||{}).length?`<div class="twx-sec">Cálculos</div>${twKV(n.calc)}`:""}
+    ${checks?`<div class="twx-sec">Validação NBR 5410</div>${checks}`:""}
+    ${decs?`<div class="twx-sec">Decisões de Engenharia</div>${decs}`:""}`;
+}
+
+// ── Exportação (tema de impressão com carimbo técnico) ─────────
+function twPrintSVG(){
+  return EEUnifilarTwin.render(_twModel,{
+    theme:"print",overlays:_twState.overlays,
+    projectName:"EasyEletric SaaS v3.4",
+    date:new Date().toLocaleDateString("pt-BR")
+  });
+}
+function exportUnifilarSVG(){
+  if(!_twModel){toast("Gere o diagrama primeiro.","err");return}
+  const blob=new Blob([twPrintSVG()],{type:"image/svg+xml"});
   const a=Object.assign(document.createElement("a"),{href:URL.createObjectURL(blob),download:"diagrama_unifilar_nbr5410.svg"});
   a.click();URL.revokeObjectURL(a.href);
   toast("SVG exportado!","ok");
 }
-
 function exportUnifilarPDF(){
-  if(!results.length){toast("Calcule os circuitos primeiro.","err");return}
+  if(!_twModel){toast("Gere o diagrama primeiro.","err");return}
   const w=window.open("","_blank");
-  const svg=buildUnifilarSVG();
   w.document.write(`<!DOCTYPE html><html><head><title>Diagrama Unifilar NBR 5410</title>
 <style>*{margin:0;padding:0}body{background:#fff}svg{display:block;width:100%;height:auto}
 @page{size:A4 landscape;margin:5mm}@media print{body{margin:0}}</style></head>
-<body>${svg}<script>window.onload=function(){window.print()}<\/script></body></html>`);
+<body>${twPrintSVG()}<script>window.onload=function(){window.print()}<\/script></body></html>`);
   w.document.close();
   toast("Abrindo para impressão / salvar PDF…","info");
-}
-
-function buildUnifilarSVG(){
-  const{Vfn,Vll}=getSysVoltages();
-  const date=new Date().toLocaleDateString("pt-BR");
-
-  // Disjuntor geral e alimentador: MESMOS valores do QDF (motor
-  // NBR5410 — demanda diversificada + coordenação Ib ≤ In ≤ Izc),
-  // nunca soma de disjuntores nem fator arbitrário.
-  const qdf=_qdfResult||NBR5410.sizeFeederAndMain(loads,buildSite());
-  const mainMCB=qdf.main.In;
-
-  // Layout
-  const PW=1122,RH=30;
-  const nRows=Math.max(Math.ceil(results.length/2),6);
-
-  // Bus positions (center area)
-  const BR=505,BS=532,BT=559; // R=phase A, S=phase B, T=phase C
-  const TE=42,NX=1082;        // TERRA end, NEUTRO start
-
-  // Left table right edge / right table left edge
-  const LR=475,RS=647;
-
-  // Left column x-coords (right→left from LR)
-  const L={
-    num :{x:LR-35, w:35},
-    disj:{x:LR-85, w:50},
-    cabo:{x:LR-130,w:45},
-    pot :{x:LR-190,w:60},
-    name:{x:TE,    w:LR-190-TE}
-  };
-  // Right column x-coords (left→right from RS)
-  const R={
-    num :{x:RS,    w:35},
-    disj:{x:RS+35, w:50},
-    cabo:{x:RS+85, w:45},
-    pot :{x:RS+130,w:60},
-    name:{x:RS+190,w:NX-(RS+190)}
-  };
-
-  const lCircs=results.filter((_,i)=>i%2===0);
-  const rCircs=results.filter((_,i)=>i%2===1);
-
-  // Helpers
-  const rc=(x,y,w,h,a="")=>`<rect x="${x}" y="${y}" width="${w}" height="${h}" ${a}/>`;
-  const ln=(x1,y1,x2,y2,a="")=>`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" ${a}/>`;
-  const tx=(x,y,t,a="")=>`<text x="${x}" y="${y}" ${a}>${t}</text>`;
-  const ci=(cx,cy,r,a="")=>`<circle cx="${cx}" cy="${cy}" r="${r}" ${a}/>`;
-  const brkr=(x,y)=>rc(x,y,18,14,'fill="white" stroke="#000" stroke-width="1.2"')+
-    ln(x,y+14,x+18,y,'stroke="#000" stroke-width="0.8"');
-  const trunc=(s,n)=>!s?"":s.length>n?s.slice(0,n-1)+"…":s;
-  const wtBus=wt=>{
-    if(!wt||wt.startsWith("A"))return BR;
-    if(wt.startsWith("B"))return BS;
-    return BT;
-  };
-
-  // Fixed Y positions for top section
-  const FX=377,FY=90,FW=310,FH=38;  // feeder box (centered on buses)
-  const PH_CY=146;                    // phase circle centres
-  const MB_Y=190,MB_H=28;            // main breaker box
-  const BUS_TOP=MB_Y+MB_H;           // buses start here
-  const TOP=235;                      // table header Y
-  const TH_H=24;
-  const ROW_Y0=TOP+TH_H;
-  const BUS_BOT=ROW_Y0+nRows*RH;
-  const PH_TOT=BUS_BOT+22;
-
-  let s=`<svg width="${PW}" height="${PH_TOT}" viewBox="0 0 ${PW} ${PH_TOT}" `+
-    `xmlns="http://www.w3.org/2000/svg" style="font-family:Arial,Helvetica,sans-serif;background:white;">`;
-
-  // Background + outer border
-  s+=rc(0,0,PW,PH_TOT,'fill="white" stroke="#000" stroke-width="2"');
-
-  // ── Header ──────────────────────────────────────────────────
-  s+=rc(0,0,PW,55,'fill="#111"');
-  s+=tx(PW/2,23,"QGBT",'text-anchor="middle" font-size="22" font-weight="bold" fill="white"');
-  s+=tx(PW/2,45,"DIAGRAMA ELÉTRICO UNIFILAR",
-    'text-anchor="middle" font-size="13" fill="#ccc" letter-spacing="3"');
-
-  // Info bar
-  s+=rc(0,55,PW,28,'fill="#f0f0f0" stroke="#ccc" stroke-width="0.5"');
-  s+=tx(12,74,"Projeto: EasyEletric SaaS v3.3",'font-size="10" fill="#333"');
-  s+=tx(PW/2,74,"ABNT NBR 5410:2023",
-    'text-anchor="middle" font-size="10" font-weight="bold" fill="#000"');
-  s+=tx(PW-12,74,`Data: ${date}`,'text-anchor="end" font-size="10" fill="#333"');
-  s+=ln(0,83,PW,83,'stroke="#000" stroke-width="1"');
-
-  // ── TERRA busbar (left) ──────────────────────────────────────
-  s+=rc(0,83,40,PH_TOT-83,'fill="#e8f5e8" stroke="#2d862d" stroke-width="1.5"');
-  s+=tx(20,96,"TERRA",'text-anchor="middle" font-size="8" font-weight="bold" fill="#2d862d"');
-  s+=tx(20,107,`${qdf.feeder.pe}mm²`,'text-anchor="middle" font-size="7" fill="#2d862d"');
-  const GY=PH_TOT-22;
-  s+=ln(20,115,20,GY,'stroke="#2d862d" stroke-width="1.5"');
-  s+=ln(10,GY,30,GY,'stroke="#2d862d" stroke-width="2"');
-  s+=ln(13,GY+4,27,GY+4,'stroke="#2d862d" stroke-width="1.5"');
-  s+=ln(16,GY+8,24,GY+8,'stroke="#2d862d" stroke-width="1"');
-
-  // ── NEUTRO busbar (right) ────────────────────────────────────
-  s+=rc(NX,83,40,PH_TOT-83,'fill="#e8e8f5" stroke="#223399" stroke-width="1.5"');
-  s+=tx(NX+20,96,"NEUTRO",'text-anchor="middle" font-size="8" font-weight="bold" fill="#223399"');
-  s+=tx(NX+20,107,`${qdf.feeder.neutral}mm²`,'text-anchor="middle" font-size="7" fill="#223399"');
-
-  // ── Feeder box ───────────────────────────────────────────────
-  s+=rc(FX,FY,FW,FH,'fill="#fff0f0" stroke="#cc2200" stroke-width="2.5" rx="4"');
-  s+=tx(FX+FW/2,FY+15,"VEM DO MEDIDOR",
-    'text-anchor="middle" font-size="12" font-weight="bold" fill="#cc2200"');
-  const _svgSysLbl=(()=>{const _t=getSupplyType();return _t==="monofasico"?`${Vfn}V (1F+N)`:_t==="bifasico"?`${Vfn}/${Vll}V (2F+N)`:`${Vll}/${Vfn}V (3F+N+T)`;})();
-  s+=tx(FX+FW/2,FY+31,`${_svgSysLbl}   ${qdf.feeder.section}mm²`,
-    'text-anchor="middle" font-size="10" fill="#000"');
-
-  const svgSt=getSupplyType();
-  const phCols=svgSt==="monofasico"?[BR]:svgSt==="bifasico"?[BR,BS]:[BR,BS,BT];
-  const phLabels=svgSt==="monofasico"?["(F)"]:svgSt==="bifasico"?["(A)","(B)"]:["(R)","(S)","(T)"];
-  const mcbW=(phCols.length-1)*(BS-BR)+16;
-  const mcbCX=phCols.reduce((a,b)=>a+b,0)/phCols.length;
-
-  // ── Phase circles ────────────────────────────────────────────
-  phCols.forEach((cx,i)=>{
-    s+=ln(cx,FY+FH,cx,PH_CY-9,'stroke="#000" stroke-width="2"');
-    s+=ci(cx,PH_CY,9,'fill="white" stroke="#000" stroke-width="1.5"');
-    s+=tx(cx,PH_CY+4,phLabels[i],
-      'text-anchor="middle" font-size="8" font-weight="bold" fill="#000"');
-  });
-
-  // ── Main breaker ─────────────────────────────────────────────
-  const dgLabel=svgSt==="monofasico"?"1P":svgSt==="bifasico"?"2P":"3P";
-  s+=tx(mcbCX-22,PH_CY+22,"DISJUNTOR",'font-size="9" font-weight="bold" fill="#000"');
-  s+=tx(mcbCX-22,PH_CY+34,`GERAL ${dgLabel}`,'font-size="9" font-weight="bold" fill="#000"');
-  phCols.forEach(cx=>s+=ln(cx,PH_CY+9,cx,MB_Y,'stroke="#000" stroke-width="2"'));
-  s+=rc(phCols[0]-8,MB_Y,mcbW,MB_H,'fill="white" stroke="#000" stroke-width="2"');
-  s+=tx(mcbCX,MB_Y+MB_H/2+5,`${mainMCB} A`,
-    'text-anchor="middle" font-size="11" font-weight="bold" fill="#000"');
-  s+=ln(phCols[0]-8,MB_Y+MB_H,phCols[phCols.length-1]+8,MB_Y,'stroke="#000" stroke-width="0.7"');
-
-  // ── Vertical phase buses ─────────────────────────────────────
-  // BR always drawn so wtBus() wiring lines connect; hidden buses shown dotted
-  phCols.forEach(cx=>s+=ln(cx,BUS_TOP,cx,BUS_BOT,'stroke="#000" stroke-width="2"'));
-  if(svgSt==="monofasico"){
-    [BS,BT].forEach(cx=>s+=ln(cx,BUS_TOP,cx,BUS_BOT,'stroke="#ddd" stroke-width="1" stroke-dasharray="4,3"'));
-  } else if(svgSt==="bifasico"){
-    s+=ln(BT,BUS_TOP,BT,BUS_BOT,'stroke="#ddd" stroke-width="1" stroke-dasharray="4,3"');
-  }
-
-  // ── Table header ─────────────────────────────────────────────
-  s+=rc(TE,TOP,LR-TE,TH_H,'fill="#222" stroke="#000" stroke-width="1"');
-  s+=rc(RS,TOP,NX-RS,TH_H,'fill="#222" stroke="#000" stroke-width="1"');
-  const hc='text-anchor="middle" font-size="8" font-weight="bold" fill="white"';
-  const hl='font-size="8" font-weight="bold" fill="white"';
-  s+=tx(L.name.x+3,TOP+16,"EQUIPAMENTO",hl);
-  s+=tx(L.pot.x+L.pot.w/2,TOP+16,"POT.(kVA)",hc);
-  s+=tx(L.cabo.x+L.cabo.w/2,TOP+16,"CABO(mm²)",hc);
-  s+=tx(L.disj.x+L.disj.w/2,TOP+16,"DISJ.(A)",hc);
-  s+=tx(L.num.x+L.num.w/2,TOP+16,"N°",hc);
-  s+=tx(R.num.x+R.num.w/2,TOP+16,"N°",hc);
-  s+=tx(R.disj.x+R.disj.w/2,TOP+16,"DISJ.(A)",hc);
-  s+=tx(R.cabo.x+R.cabo.w/2,TOP+16,"CABO(mm²)",hc);
-  s+=tx(R.pot.x+R.pot.w/2,TOP+16,"POT.(kVA)",hc);
-  s+=tx(R.name.x+3,TOP+16,"EQUIPAMENTO",hl);
-
-  // ── Circuit rows ─────────────────────────────────────────────
-  for(let i=0;i<nRows;i++){
-    const ry=ROW_Y0+i*RH, rcy=ry+RH/2, rty=ry+RH/2+4;
-    const bg=i%2===0?"#ffffff":"#f6f6f6";
-    s+=rc(TE,ry,LR-TE,RH,`fill="${bg}"`);
-    s+=rc(RS,ry,NX-RS,RH,`fill="${bg}"`);
-    // vertical col separators
-    [L.pot.x,L.cabo.x,L.disj.x,L.num.x].forEach(x=>
-      s+=ln(x,ry,x,ry+RH,'stroke="#bbb" stroke-width="0.5"'));
-    [R.disj.x,R.cabo.x,R.pot.x,R.name.x].forEach(x=>
-      s+=ln(x,ry,x,ry+RH,'stroke="#bbb" stroke-width="0.5"'));
-    // horizontal separator
-    s+=ln(TE,ry+RH,LR+20,ry+RH,'stroke="#bbb" stroke-width="0.5"');
-    s+=ln(RS-20,ry+RH,NX,ry+RH,'stroke="#bbb" stroke-width="0.5"');
-
-    const lNum=String(i*2+1).padStart(2,"0");
-    const rNum=String(i*2+2).padStart(2,"0");
-    const lc=lCircs[i], rc_=rCircs[i];
-    const tf9='font-size="9" fill="#000"';
-    const tf9b='font-size="9" font-weight="bold" fill="#000"';
-    const tf9c='text-anchor="middle" font-size="9" fill="#000"';
-    const tf9bc='text-anchor="middle" font-size="9" font-weight="bold" fill="#000"';
-
-    // LEFT circuit
-    if(lc){
-      const pot=lc.l.power>=100?(lc.l.power/1000).toFixed(2):"NI";
-      s+=tx(L.name.x+3,rty,trunc(lc.l.name,26),tf9);
-      s+=tx(L.pot.x+L.pot.w/2,rty,pot,tf9c);
-      s+=tx(L.cabo.x+L.cabo.w/2,rty,lc.sz,tf9c);
-      s+=tx(L.disj.x+L.disj.w/2,rty,lc.mcb,tf9bc);
-      s+=tx(L.num.x+L.num.w/2,rty,lNum,tf9bc);
-      s+=brkr(LR,rcy-7);
-      const bx=wtBus(lc.wt);
-      s+=ln(LR+18,rcy,bx,rcy,'stroke="#000" stroke-width="1"');
-      s+=ci(bx,rcy,3,'fill="#000"');
-    } else {
-      s+=tx(L.name.x+3,rty,"RESERVA",'font-size="9" fill="#bbb" font-style="italic"');
-      s+=tx(L.num.x+L.num.w/2,rty,lNum,'text-anchor="middle" font-size="9" fill="#ccc"');
-    }
-
-    // RIGHT circuit
-    if(rc_){
-      const pot=rc_.l.power>=100?(rc_.l.power/1000).toFixed(2):"NI";
-      s+=brkr(RS-18,rcy-7);
-      const bx=wtBus(rc_.wt);
-      s+=ln(bx,rcy,RS-18,rcy,'stroke="#000" stroke-width="1"');
-      s+=ci(bx,rcy,3,'fill="#000"');
-      s+=tx(R.num.x+R.num.w/2,rty,rNum,tf9bc);
-      s+=tx(R.disj.x+R.disj.w/2,rty,rc_.mcb,tf9bc);
-      s+=tx(R.cabo.x+R.cabo.w/2,rty,rc_.sz,tf9c);
-      s+=tx(R.pot.x+R.pot.w/2,rty,pot,tf9c);
-      s+=tx(R.name.x+3,rty,trunc(rc_.l.name,26),tf9);
-    } else {
-      s+=tx(R.name.x+3,rty,"RESERVA",'font-size="9" fill="#bbb" font-style="italic"');
-      s+=tx(R.num.x+R.num.w/2,rty,rNum,'text-anchor="middle" font-size="9" fill="#ccc"');
-    }
-  }
-
-  // Outer borders for both tables
-  s+=rc(TE,ROW_Y0,LR-TE,nRows*RH,'fill="none" stroke="#000" stroke-width="1.5"');
-  s+=rc(RS,ROW_Y0,NX-RS,nRows*RH,'fill="none" stroke="#000" stroke-width="1.5"');
-
-  // ── Footer ───────────────────────────────────────────────────
-  s+=rc(0,PH_TOT-18,PW,18,'fill="#f0f0f0"');
-  s+=ln(0,PH_TOT-18,PW,PH_TOT-18,'stroke="#ccc" stroke-width="0.5"');
-  s+=tx(10,PH_TOT-5,
-    `EasyEletric SaaS v3.3 | ABNT NBR 5410:2023 | Gerado em ${date} | `+
-    `Pré-dimensionamento — não substitui projeto assinado com ART/RRT`,
-    'font-size="7.5" fill="#888"');
-
-  s+="</svg>";
-  return s;
 }
 
 // ================================================================

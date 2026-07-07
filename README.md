@@ -1,10 +1,12 @@
 # EasyEletric SaaS
 
-Plataforma profissional de pré-dimensionamento elétrico residencial conforme **ABNT NBR 5410:2023** — dimensionamento automático por cômodos, QDF unifilar interativo, balanceamento trifásico, lista de materiais estilo ERP, memorial de cálculo e exportações XLSX/PDF/SVG.
+Plataforma profissional de pré-dimensionamento elétrico residencial conforme **ABNT NBR 5410:2023** — gêmeo digital da instalação, unifilar interativo estilo CAD, dimensionamento automático por cômodos, balanceamento trifásico, lista de materiais estilo ERP, memorial de cálculo e exportações XLSX/PDF/SVG.
 
 ## Versão atual
 
-**v3.2** — Motor de cálculo redesenhado (`scripts/nbr5410_engine.js`): pipeline normativo **condutor antes do disjuntor** (Ib → método → Ft×Fg → Izc → menor seção que atende tudo → menor In com Ib ≤ In ≤ Izc), QDF por **demanda diversificada** (fatores progressivos de iluminação+TUG, aquecimento por nº de aparelhos, correntes por fase), curto-circuito com verificação de capacidade de interrupção, pipeline de validação PASS/WARN/ERROR e memorial com auditoria completa de cada decisão. Metodologia em `docs/metodologia_calculo_nbr5410.md`.
+**v3.4 — Electrical Digital Twin** — a instalação passa a ser modelada como um **gêmeo digital**: o `ElectricalProjectModel` (`scripts/engineering/project_model.js`) é a fonte única de verdade — um grafo de objetos de engenharia (rede → medidor → alimentador → disjuntor geral → DPS → DR geral → barramentos → disjuntores → condutores → cargas), cada um com dados, cálculos, validação e registro de decisões. O **unifilar interativo** (`scripts/engineering/unifilar_twin.js` + workspace no app) consome esse modelo: zoom/pan, hover que ilumina a cadeia de proteção completa, overlays de engenharia (corrente, ΔV, Icc, validação), Explorador de Engenharia por componente e exportação SVG/PDF com carimbo técnico. Arquitetura em `docs/digital_twin_v3_4.md`.
+
+Motor de cálculo (`scripts/nbr5410_engine.js`): pipeline normativo **condutor antes do disjuntor** (Ib → método → Ft×Fg → Izc → menor seção que atende tudo → menor In com Ib ≤ In ≤ Izc), QDF por **demanda diversificada**, curto-circuito com verificação de capacidade de interrupção e validação PASS/WARN/ERROR. Metodologia em `docs/metodologia_calculo_nbr5410.md`.
 
 ## Publicação
 
@@ -22,6 +24,8 @@ Depois acesse `http://localhost:8080`.
 
 ## Recursos principais
 
+- **Gêmeo Digital Elétrico** — todo o projeto vive em um modelo canônico (`ElectricalProjectModel`); unifilar, QDF, memorial e relatórios consomem os MESMOS objetos de engenharia.
+- **Unifilar interativo estilo CAD** — símbolos IEC/NBR vetoriais, barramentos coloridos por fase, zoom/pan/ajustar, hover ilumina a cadeia de proteção da rede até a carga, clique abre o Explorador de Engenharia (propriedades, cálculos, validação NBR 5410 e decisões com alternativas rejeitadas), overlays de corrente/ΔV/Icc/validação e temas dark/light/impressão.
 - **Modo Automático por Cômodos** — informe ambientes e áreas; os circuitos de TUG e iluminação são gerados conforme NBR 5410 §9.
 - **Modo Manual** — cargas e circuitos definidos individualmente.
 - **QDF Unifilar interativo** — quadro no estilo QGBT com barramento trifásico; hover em um circuito ilumina suas fases, clique no barramento foca uma fase.
@@ -29,7 +33,7 @@ Depois acesse `http://localhost:8080`.
 - **Lista de Materiais (BOM)** — agrupada por categoria de engenharia, com busca em tempo real e links de afiliados fechados (sem fallback de busca).
 - **Memorial de Cálculo** — seções colapsáveis por circuito com selo de conformidade, fórmulas e referências de norma.
 - **Exportações** — XLSX (3 abas), PDF e diagrama unifilar SVG vetorial.
-- **QA Suite** — 28 verificações in-app no Dev Panel (`Ctrl+Shift+D`) + suíte de 55 testes do motor executável em Node: `node scripts/test_nbr5410_engine.js`.
+- **QA Suite** — 28 verificações in-app no Dev Panel (`Ctrl+Shift+D`) + 8 suítes Node (201 casos: motor, balanceamento, DR, DPS, aterramento, decisões, gêmeo digital e renderização do unifilar): `node scripts/test_all.js`.
 - **Offline-first** — 100% estático, sem backend; projetos salvos como `.json` local.
 
 ## Estrutura
@@ -38,7 +42,7 @@ Depois acesse `http://localhost:8080`.
 - `pages/`: landing pages para SEO/tráfego pago.
 - `releases/`: histórico dos HTMLs por versão.
 - `docs/`: histórico, decisões de design e planos.
-- `scripts/`: motor de cálculo (`nbr5410_engine.js`), suíte de testes (`test_nbr5410_engine.js`) e scripts de deploy local.
+- `scripts/`: motor de cálculo (`nbr5410_engine.js`), módulos de engenharia (`engineering/` — gêmeo digital, unifilar, balanceamento, DR, DPS, aterramento, decisões), runner de testes (`test_all.js`) e scripts de deploy local.
 - `.github/workflows/`: workflow GitHub Pages.
 
 ## Engenharia — regra de ouro
