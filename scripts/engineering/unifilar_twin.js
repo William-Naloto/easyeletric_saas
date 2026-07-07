@@ -116,11 +116,15 @@
       <g id="tw-sym-spd">${rc(-7, -12, 14, 24, s + ' rx="2"')}${pa("M 0 -12 L 0 -5 L -3.5 0 L 3.5 4 L 0 8 L 0 12", 'stroke="currentColor" stroke-width="1.5" fill="none"')}</g>
       <!-- Terra (aterramento funcional/proteção) -->
       <g id="tw-sym-ground">${ln(0, -8, 0, 0, s)}${ln(-8, 0, 8, 0, s)}${ln(-5, 4, 5, 4, s)}${ln(-2, 8, 2, 8, s)}</g>
-      <!-- Ícones de carga -->
+      <!-- Ícones de carga (equipamento inferido pelo nome) -->
       <g id="tw-ico-light">${ci(0, 0, 8, s)}${pa("M -5.6 -5.6 L 5.6 5.6 M -5.6 5.6 L 5.6 -5.6", s)}</g>
       <g id="tw-ico-socket">${ci(0, 0, 8, s)}${ln(-3, -2.5, -3, 2.5, s)}${ln(3, -2.5, 3, 2.5, s)}</g>
-      <g id="tw-ico-shower">${pa("M -6 -6 L -2 -6 Q 2 -6 2 -2 L 2 0", s)}${pa("M -2 3 L -2 5 M 1 3 L 1.6 5 M 4 3 L 5 5 M -5 3 L -5.6 5", 'stroke="currentColor" stroke-width="1.3"')}${pa("M -3 0 L 7 0 L 6 3 L -2 3 Z", s)}</g>
-      <g id="tw-ico-ac">${ln(0, -8, 0, 8, s)}${ln(-7, -4, 7, 4, s)}${ln(-7, 4, 7, -4, s)}</g>
+      <g id="tw-ico-shower">${pa("M -7 8 L -7 -6 Q -7 -9 -4 -9 L 1 -9", s)}${ci(4, -9, 2.6, s)}${pa("M 1.5 -5.5 L 6.5 -5.5", 'stroke="currentColor" stroke-width="1.3"')}${pa("M 2 -3 L 1.4 0 M 4 -3 L 4 0 M 6 -3 L 6.6 0", 'stroke="currentColor" stroke-width="1.2" stroke-linecap="round"')}</g>
+      <g id="tw-ico-fridge">${rc(-5.5, -9, 11, 18, s + ' rx="1.5"')}${ln(-5.5, -3, 5.5, -3, s)}${ln(3, -7.5, 3, -5.5, 'stroke="currentColor" stroke-width="1.3" stroke-linecap="round"')}${ln(3, -0.5, 3, 2.5, 'stroke="currentColor" stroke-width="1.3" stroke-linecap="round"')}</g>
+      <g id="tw-ico-microwave">${rc(-8.5, -6, 17, 12, s + ' rx="1.5"')}${rc(-5.5, -3, 8, 6, 'stroke="currentColor" stroke-width="1.2" fill="none"')}${ci(5.5, -1.5, 0.9, 'fill="currentColor"')}${ci(5.5, 1.5, 0.9, 'fill="currentColor"')}</g>
+      <g id="tw-ico-oven">${rc(-7.5, -7.5, 15, 15, s + ' rx="1.5"')}${ln(-7.5, -3.5, 7.5, -3.5, s)}${ci(-4.5, -5.5, 0.9, 'fill="currentColor"')}${ci(0, -5.5, 0.9, 'fill="currentColor"')}${ci(4.5, -5.5, 0.9, 'fill="currentColor"')}${rc(-4.5, -1, 9, 5.5, 'stroke="currentColor" stroke-width="1.2" fill="none"')}</g>
+      <g id="tw-ico-washer">${rc(-7.5, -8.5, 15, 17, s + ' rx="1.5"')}${ln(-7.5, -4.5, 7.5, -4.5, s)}${ci(-5, -6.5, 0.9, 'fill="currentColor"')}${ci(0, 1.5, 4.4, s)}${pa("M -3 1 Q 0 3 3 1", 'stroke="currentColor" stroke-width="1.1" fill="none"')}</g>
+      <g id="tw-ico-ac">${rc(-9, -7, 18, 8, s + ' rx="2"')}${ln(-6, -4.5, 6, -4.5, 'stroke="currentColor" stroke-width="1.1"')}${pa("M -5 3 Q -4 5 -5 7 M 0 3 Q 1 5 0 7 M 5 3 Q 6 5 5 7", 'stroke="currentColor" stroke-width="1.2" fill="none" stroke-linecap="round"')}</g>
       <g id="tw-ico-motor">${ci(0, 0, 8.5, s)}${tx(0, 3.4, "M", 'text-anchor="middle" font-size="9" font-weight="700" fill="currentColor" stroke="none"')}</g>
       <g id="tw-ico-generic">${pa("M 0 -8 L 0 2 M -4 -2 L 0 2 L 4 -2", s)}${ln(-6, 6, 6, 6, s)}</g>
     </defs>`;
@@ -128,7 +132,9 @@
 
   const ICON_ID = {
     light: "tw-ico-light", socket: "tw-ico-socket", shower: "tw-ico-shower",
-    ac: "tw-ico-ac", motor: "tw-ico-motor", generic: "tw-ico-generic"
+    fridge: "tw-ico-fridge", microwave: "tw-ico-microwave", oven: "tw-ico-oven",
+    washer: "tw-ico-washer", ac: "tw-ico-ac", motor: "tw-ico-motor",
+    generic: "tw-ico-generic"
   };
 
   function use(id, x, y, color, scale) {
@@ -142,7 +148,8 @@
     const phases = model.summary.phasesInUse;
     const n = Math.max(model.circuits.length, 1);
     const headerH = theme === "print" ? 96 : 64;
-    const srcY = headerH + 40;
+    const panelY = headerH + 32;      // bloco do QDF centralizado no topo
+    const srcY = headerH + 100;       // espinha começa abaixo do bloco
     const meterY = srcY + 62;
     const mainY = meterY + 84;
     const rcdY = mainY + 78;
@@ -154,12 +161,12 @@
     const brkY = busYEnd + 66;
     const cRcdY = brkY + 52;
     const cableY = cRcdY + 50;
-    const loadY = cableY + 58;
+    const loadY = cableY + 78;        // folga p/ até 5 linhas de rótulo do cabo
     const footY = loadY + 66;
     const width = Math.max(760, G.leftPad + n * G.colW + G.rightPad);
     const height = footY + (theme === "print" ? 46 : 30);
     const colX = i => G.leftPad + i * G.colW + G.colW / 2;
-    return { headerH, srcY, meterY, mainY, rcdY, busY, busIds, busYEnd, brkY, cRcdY, cableY, loadY, footY, width, height, colX, phases };
+    return { headerH, panelY, srcY, meterY, mainY, rcdY, busY, busIds, busYEnd, brkY, cRcdY, cableY, loadY, footY, width, height, colX, phases };
   }
 
   /* ==============================================================
@@ -259,16 +266,23 @@
     out += tx(X - 20, L.rcdY + 10, mrcd.sub, `text-anchor="end" ${lbl}`);
     out += `</g>`;
     out += ln(X, L.rcdY + 15, X, L.busY[L.phases[0]], wire);
+    return out;
+  }
 
-    // Demanda do quadro (nó panel — âncora à direita da espinha)
-    const p = by.panel;
-    out += `<g class="tw-node" data-node="panel" data-kind="panel">`;
-    out += tx(X + 30, L.rcdY - 4, p.label, val);
+  /** Bloco do QDF — centralizado no topo da folha (nó panel). */
+  function panelBlock(model, P, L, opts) {
+    const p = model.byId.panel;
+    const cx = L.width / 2, y = L.panelY;
+    const w = 460, h = 50, x = cx - w / 2;
+    const sc = statusColor(P, p.validation.status);
+    let out = `<g class="tw-node" data-node="panel" data-kind="panel">`;
+    out += rc(x, y - 16, w, h, `fill="${P.panel}" stroke="${opts.overlays.validation ? sc : P.panelStroke}" stroke-width="1.3" rx="9"`);
+    out += tx(cx, y - 1, p.label, `text-anchor="middle" font-size="11.5" font-weight="800" fill="${P.ink}"`);
     if (p.calc.installedVA != null) {
-      out += tx(X + 30, L.rcdY + 9, `Instalada ${fmt(p.calc.installedVA / 1000, 2)} kVA → Demanda ${fmt(p.calc.demandVA / 1000, 2)} kVA (Fd ${fmt(p.calc.overallFactor * 100, 0)}%)`, lbl);
-      out += tx(X + 30, L.rcdY + 21, `Desequilíbrio ${fmt(p.calc.imbalancePct, 0)}%${p.calc.balanceScore != null ? ` · score ${p.calc.balanceScore}/100` : ""}${p.calc.neutralA != null ? ` · IN ≈ ${fmt(p.calc.neutralA)} A` : ""}`, lbl);
+      out += tx(cx, y + 12, `Instalada ${fmt(p.calc.installedVA / 1000, 2)} kVA → Demanda ${fmt(p.calc.demandVA / 1000, 2)} kVA (Fd ${fmt(p.calc.overallFactor * 100, 0)}%)`, `text-anchor="middle" font-size="9" fill="${P.dim}"`);
+      out += tx(cx, y + 24, `Desequilíbrio ${fmt(p.calc.imbalancePct, 0)}%${p.calc.balanceScore != null ? ` · score ${p.calc.balanceScore}/100` : ""}${p.calc.neutralA != null ? ` · IN ≈ ${fmt(p.calc.neutralA)} A` : ""}`, `text-anchor="middle" font-size="9" fill="${P.dim}"`);
     }
-    if (opts.overlays.validation) out += ci(X + 22, L.rcdY - 8, 3.4, `class="tw-ov tw-ov-validation" fill="${statusColor(P, p.validation.status)}"`);
+    if (opts.overlays.validation) out += ci(x + 13, y - 2, 3.4, `class="tw-ov tw-ov-validation" fill="${sc}"`);
     out += `</g>`;
     return out;
   }
@@ -348,18 +362,27 @@
       yCursor = L.cRcdY + 14;
     }
 
-    // Condutor
+    // Condutor — rótulos empilhados dinamicamente (só overlays ativos),
+    // sempre dentro da coluna e sem invadir a caixa da carga
     out += `<g class="tw-node" data-node="${circ.conductorId}" data-kind="conductor">`;
     out += ln(x, yCursor, x, L.loadY - 24, `stroke="${P.ink}" stroke-width="1.6"`);
     out += pa(`M ${x - 5} ${L.cableY + 4} L ${x + 5} ${L.cableY - 4}`, `stroke="${P.ink}" stroke-width="1.3"`);
-    out += tx(x + 9, L.cableY - 1, `${cond.data.section} mm²`, `font-size="9" font-weight="700" fill="${P.ink}"`);
-    out += tx(x + 9, L.cableY + 10, `${cond.data.lengthM} m · ${cond.data.method}`, `font-size="8" fill="${P.dim}"`);
-    if (opts.overlays.current)
-      out += tx(x + 9, L.cableY + 21, `Ib ${fmt(cond.calc.Ib)} A`, `class="tw-ov tw-ov-current" font-size="8" fill="${P.accent}"`);
-    if (opts.overlays.drop)
-      out += tx(x + 9, L.cableY + 32, `ΔV ${fmt(cond.calc.dropPct, 2)}%`, `class="tw-ov tw-ov-drop" font-size="8" fill="${statusColor(P, cond.validation.status)}"`);
-    if (opts.overlays.icc)
-      out += tx(x + 9, L.cableY + 43, `Icc ${fmt(cond.calc.iccEndA / 1000, 2)} kA`, `class="tw-ov tw-ov-icc" font-size="8" fill="${P.dim}"`);
+    let ly = L.cableY - 1;
+    out += tx(x + 9, ly, `${cond.data.section} mm²`, `font-size="9" font-weight="700" fill="${P.ink}"`);
+    ly += 11;
+    out += tx(x + 9, ly, `${cond.data.lengthM} m · ${cond.data.method}`, `font-size="8" fill="${P.dim}"`);
+    if (opts.overlays.current) {
+      ly += 11;
+      out += tx(x + 9, ly, `Ib ${fmt(cond.calc.Ib)} A`, `class="tw-ov tw-ov-current" font-size="8" fill="${P.accent}"`);
+    }
+    if (opts.overlays.drop) {
+      ly += 11;
+      out += tx(x + 9, ly, `ΔV ${fmt(cond.calc.dropPct, 2)}%`, `class="tw-ov tw-ov-drop" font-size="8" fill="${statusColor(P, cond.validation.status)}"`);
+    }
+    if (opts.overlays.icc) {
+      ly += 11;
+      out += tx(x + 9, ly, `Icc ${fmt(cond.calc.iccEndA / 1000, 1)} kA`, `class="tw-ov tw-ov-icc" font-size="8" fill="${P.dim}"`);
+    }
     out += `</g>`;
 
     // Carga (caixa com ícone, nome e potência)
@@ -433,6 +456,7 @@
     s += symbolDefs(P);
     s += rc(0, 0, L.width, L.height, `fill="${P.bg}"`);
     s += header(model, P, L, opts);
+    s += panelBlock(model, P, L, opts);
     s += spine(model, P, L, opts);
     s += busbars(model, P, L, opts);
     model.circuits.forEach((c, i) => { s += circuitColumn(model, c, i, P, L, opts); });

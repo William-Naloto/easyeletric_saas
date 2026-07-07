@@ -61,6 +61,21 @@ test("Biblioteca de símbolos presente (disjuntor, DR, DPS, terra, medidor)", ()
 test("Ícones de carga corretos por tipo (luz, tomada, chuveiro, motor)", () =>
   ["tw-ico-light", "tw-ico-socket", "tw-ico-shower", "tw-ico-motor"]
     .every(id => svg.includes(`href="#${id}"`)));
+test("Ícones por equipamento: geladeira, micro-ondas, forno e lavadora desenhados", () => {
+  const appliances = [
+    { name: "Geladeira", power: 350, distance: 10, pf: 0.92, type: "tomadas", method: "B1", wiringType: "A+N" },
+    { name: "Micro-ondas", power: 1200, distance: 10, pf: 0.92, type: "aquecimento", method: "B1", wiringType: "B+N" },
+    { name: "Forno Elétrico", power: 1500, distance: 10, pf: 1, type: "aquecimento", method: "B1", wiringType: "C+N" },
+    { name: "Máq. de Lavar", power: 1200, distance: 10, pf: 0.92, type: "tomadas", method: "B1", wiringType: "A+N" }
+  ];
+  const s = U.render(M.build(appliances, SITE_TRI));
+  return ["tw-ico-fridge", "tw-ico-microwave", "tw-ico-oven", "tw-ico-washer"]
+    .every(id => s.includes(`id="${id}"`) && s.includes(`href="#${id}"`));
+});
+test("Bloco do QDF centralizado no topo (nó panel com moldura própria)", () => {
+  const m = svg.match(/<g class="tw-node" data-node="panel"[^>]*>([\s\S]*?)<\/g>/);
+  return m && m[1].includes("<rect") && m[1].includes("QDF");
+});
 
 /* ---------------- Barramentos e fases ---------------- */
 test("Barramentos das 3 fases com cores distintas do tema", () => {

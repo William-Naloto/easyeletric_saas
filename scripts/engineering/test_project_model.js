@@ -184,6 +184,22 @@ test("Projeto vazio: infraestrutura existe, zero circuitos", () => {
 test("byType('load') retorna todas as cargas", () =>
   model.byType("load").length === RESIDENTIAL.length);
 
+/* ---------------- Ícones por equipamento (inferência pelo nome) ---------------- */
+test("Ícone inferido pelo nome: chuveiro, geladeira, micro-ondas, forno, lavadora, ar, motor", () =>
+  M.inferLoadIcon("Chuveiro Elétrico — Banheiro", "aquecimento") === "shower" &&
+  M.inferLoadIcon("Geladeira — Cozinha", "tomadas") === "fridge" &&
+  M.inferLoadIcon("Micro-ondas", "aquecimento") === "microwave" &&
+  M.inferLoadIcon("Forno/Fritadeira", "aquecimento") === "oven" &&
+  M.inferLoadIcon("Máq. de Lavar", "tomadas") === "washer" &&
+  M.inferLoadIcon("Ar Condicionado Split", "climatizacao") === "ac" &&
+  M.inferLoadIcon("Portão Automático", "motor") === "motor");
+test("Nome sem equipamento conhecido cai no tipo (iluminação→light, ?→generic)", () =>
+  M.inferLoadIcon("Circuito 7", "iluminacao") === "light" &&
+  M.inferLoadIcon("Circuito 8", "uso_geral") === "generic");
+test("Nó de carga usa a inferência (Ar-Condicionado tipo climatização → ac)", () =>
+  model.byId["load-c5"].viz.icon === "ac" &&
+  model.byId["load-c4"].viz.icon === "shower");
+
 /* ---------------- Resultado ---------------- */
 console.log(`\n${passed} aprovados, ${failed} reprovados (${passed + failed} casos)`);
 process.exitCode = failed ? 1 : 0;

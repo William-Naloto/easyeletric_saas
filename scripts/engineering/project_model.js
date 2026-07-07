@@ -50,11 +50,35 @@
     trifasico: ["A", "B", "C"]
   };
 
-  // Ícone lógico por tipo de carga (a UI mapeia p/ símbolo/ícone real)
+  // Ícone lógico por tipo de carga (fallback quando o nome não
+  // identifica o equipamento)
   const LOAD_ICON = {
     iluminacao: "light", tomadas: "socket", climatizacao: "ac",
     aquecimento: "shower", motor: "motor", uso_geral: "generic"
   };
+
+  // Inferência do equipamento pelo NOME da carga (pt-BR, sem acentos)
+  // — ordem importa: da palavra mais específica para a mais genérica.
+  const ICON_RULES = [
+    [/chuveiro|ducha/, "shower"],
+    [/geladeira|freezer|frigobar|refrigerador/, "fridge"],
+    [/micro/, "microwave"],
+    [/forno|fritadeira|fogao|airfryer|cooktop/, "oven"],
+    [/lava|secadora|maquina/, "washer"],
+    [/ar[- ]?cond|split|climatiza/, "ac"],
+    [/aquecedor|torneira|boiler/, "shower"],
+    [/bomba|motor|portao|compressor/, "motor"],
+    [/ilumina|lampada|luz|led/, "light"],
+    [/tug|tomada/, "socket"]
+  ];
+
+  /** Ícone da carga: primeiro pelo nome do equipamento, depois pelo tipo. */
+  function inferLoadIcon(name, type) {
+    const s = String(name || "").toLowerCase()
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    for (const [re, icon] of ICON_RULES) if (re.test(s)) return icon;
+    return LOAD_ICON[type] || "generic";
+  }
 
   const STATUS_RANK = { PASS: 0, WARN: 1, ERROR: 2 };
 
@@ -371,7 +395,7 @@
         decisions: pickDecisions(decisions, ["ib"]),
         viz: {
           phases, kind: "load", circuit: n,
-          icon: LOAD_ICON[load.type || r.input.type] || "generic"
+          icon: inferLoadIcon(name, load.type || r.input.type)
         }
       });
 
@@ -458,5 +482,5 @@
     };
   }
 
-  return { build, PHASES_BY_SUPPLY, LOAD_ICON };
+  return { build, PHASES_BY_SUPPLY, LOAD_ICON, inferLoadIcon };
 });
