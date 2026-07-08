@@ -1,5 +1,20 @@
 # Changelog
 
+## v3.7 — 2026-07-08 · Painel Real: DPS em paralelo, TT/TN-S e cores NBR
+
+Layout do QDF redesenhado a partir de um quadro residencial real: DPS instalado corretamente EM PARALELO, escolha do esquema de aterramento TT/TN-S, cores de condutores conforme a norma e nomenclatura DR (geral) / IDR (por circuito).
+
+### Changed
+- **Layout do Smart Distribution Board** (`engineering/qdf_twin.js`) — agora segue a topologia de um painel real: **pente de cobre VERTICAL central**, colunas de disjuntores espelhadas (ímpares à esquerda, pares à direita), disjuntor geral no topo-direito recebendo o alimentador, **DR geral ao centro**, barras verticais de **Neutro (azul)** e **PE (verde)** nas duas bordas com terminais, trilhos DIN verticais e interior de gabinete claro e realista em todos os temas (a página muda com o tema; o painel parece um painel).
+- **DPS instalado EM PARALELO (derivação)** — NBR 5410 §6.3.5.2: banco de módulos DPS no topo-esquerdo derivado do barramento após o disjuntor geral (nunca em série no caminho principal), com descida ao PE e aviso normativo no desenho; em **TT** a conexão é **N+1** (módulo N–PE por **centelhador**, desenhado com símbolo de gap), em **TN-S** modo comum.
+- **Cores dos condutores conforme NBR 5410 §6.1.5.3** — fases **preto / vermelho / marrom** (A/B/C), neutro **azul-claro**, PE **verde** — aplicadas ao painel, ao unifilar (fase "preta" segue a convenção CAD no tema escuro), às cores de fase da UI, ao mapa do quadro e às camadas/cores ACI do DXF (A=7, B=1, C=34, N=5, PE=3); legendas passam a nomear as cores.
+- **Nomenclatura DR / IDR** — **DR = proteção diferencial GERAL** do quadro; **IDR = interruptor diferencial POR CIRCUITO**: modelo (`IDR C1…`), badges do painel, mapa do quadro e memorial.
+- **Lista de materiais** — cabos separados por FUNÇÃO/COR: um item por fase (preto/vermelho/marrom) + neutro azul-claro + **PE verde na seção da Tab. 58 por circuito** (antes um único item por seção + PE fixo 2,5 mm²); IDR por circuito nomeado como IDR; novo item **DR Geral**; DPS anotado como instalação em paralelo.
+
+### Added
+- **Seleção do esquema de aterramento no Sistema Elétrico** — **TT (padrão BR)** ou **TN-S** (NBR 5410 §5.1.2.2), persistida no projeto: reflete no motor de DPS (EESpd — conexão N+1 com centelhador em TT / modo comum em TN-S), no desenho do painel, no DXF e no carimbo de impressão; troca recalcula o projeto e explica a consequência normativa.
+- Runner unificado: 13 suítes / 291 casos (`node scripts/test_all.js`).
+
 ## v3.6 — 2026-07-08 · Engineering Workspace — roadmap concluído
 
 Conclui o roadmap do Smart Distribution Board: catálogo de fabricantes, mapa do quadro (panel schedule), exportação DXF para CAD, mini-mapa/grade no canvas e sugestões de seção de cabo quantificadas.

@@ -36,7 +36,8 @@
   const fmt = (v, d) => (v == null || isNaN(v)) ? "—"
     : Number(v).toFixed(d == null ? 1 : d).replace(".", ",");
 
-  const PH_COLORS = { A: "#1565c0", B: "#ea580c", C: "#0e9f6e" };
+  /* Cores dos condutores de fase — NBR 5410 §6.1.5.3 */
+  const PH_COLORS = { A: "#1a1f26", B: "#d92b2b", C: "#8a5a2b" };
 
   /* ==============================================================
    * build — dados estruturados do mapa do quadro
@@ -208,7 +209,7 @@
 <table>
   <thead><tr>
     <th>Nº</th><th style="width:22%">Descrição</th><th>Fases</th><th>Fiação</th>
-    <th>Pot. (VA)</th><th>Ib (A)</th><th>Disjuntor</th><th>DR</th>
+    <th>Pot. (VA)</th><th>Ib (A)</th><th>Disjuntor</th><th>IDR</th>
     <th>Cabo F/PE (mm²)</th><th>Compr. (m) · Mét.</th><th>ΔV</th>
     ${hasCat ? "<th>Referência</th>" : ""}<th>Status</th>
   </tr></thead>

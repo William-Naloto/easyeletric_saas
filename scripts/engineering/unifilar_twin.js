@@ -38,25 +38,28 @@
   /* ==============================================================
    * Temas (paletas de renderização)
    * ============================================================== */
+  /* Cores de condutor conforme NBR 5410 §6.1.5.3: fases PRETO /
+   * VERMELHO / MARROM, neutro AZUL-CLARO, PE VERDE. No tema dark a
+   * fase "preta" segue a convenção CAD (cor 7): renderiza clara. */
   const THEMES = {
     dark: {
       bg: "#0b1828", ink: "#e8f4fd", dim: "#7da3c0", faint: "#27415f",
       panel: "#101f36", panelStroke: "#2e5a8a",
-      phases: { A: "#4da8ff", B: "#fb923c", C: "#34d399", N: "#94a3b8", PE: "#4ade80" },
+      phases: { A: "#d7dee8", B: "#f87171", C: "#c9884b", N: "#60a5fa", PE: "#4ade80" },
       ok: "#22c55e", warn: "#f59e0b", err: "#ef4444",
       symbol: "#e8f4fd", accent: "#4da8ff"
     },
     light: {
       bg: "#ffffff", ink: "#0d1b2e", dim: "#4a6a8a", faint: "#d7e2f0",
       panel: "#f4f7fc", panelStroke: "#8fb0d4",
-      phases: { A: "#1565c0", B: "#ea580c", C: "#0e9f6e", N: "#6b7280", PE: "#16a34a" },
+      phases: { A: "#1a1f26", B: "#d92b2b", C: "#8a5a2b", N: "#2f6fde", PE: "#17984d" },
       ok: "#16a34a", warn: "#d97706", err: "#dc2626",
       symbol: "#0d1b2e", accent: "#1565c0"
     },
     print: {
       bg: "#ffffff", ink: "#000000", dim: "#444444", faint: "#cccccc",
       panel: "#f5f5f5", panelStroke: "#000000",
-      phases: { A: "#1565c0", B: "#ea580c", C: "#0e9f6e", N: "#555555", PE: "#16a34a" },
+      phases: { A: "#1a1f26", B: "#d92b2b", C: "#8a5a2b", N: "#2f6fde", PE: "#17984d" },
       ok: "#1a7f37", warn: "#b45309", err: "#b91c1c",
       symbol: "#000000", accent: "#000000"
     }
@@ -186,7 +189,7 @@
       out += tx(L.width / 2, 48, "ABNT NBR 5410:2023 — Instalações Elétricas de Baixa Tensão", 'text-anchor="middle" font-size="10" fill="#333"');
       out += tx(14, 80, `Projeto: ${proj}`, 'font-size="10" fill="#000"');
       out += tx(L.width / 2, 80, `Sistema ${s.supplyType} · ${s.circuits} circuitos · Demanda ${fmt(s.demandVA / 1000, 2)} kVA`, 'text-anchor="middle" font-size="10" fill="#000"');
-      out += tx(L.width - 14, 80, dateStr ? `Data: ${dateStr}` : "EasyEletric v3.6", 'text-anchor="end" font-size="10" fill="#000"');
+      out += tx(L.width - 14, 80, dateStr ? `Data: ${dateStr}` : "EasyEletric v3.7", 'text-anchor="end" font-size="10" fill="#000"');
     } else {
       out += tx(20, 30, "DIAGRAMA UNIFILAR — DIGITAL TWIN", `font-size="15" font-weight="800" fill="${P.ink}" letter-spacing="2"`);
       out += tx(20, 48, `${proj} · NBR 5410:2023`, `font-size="10" fill="${P.dim}"`);
@@ -410,19 +413,20 @@
       x += w;
     };
     item((ax, ay) => use("tw-sym-breaker", ax + 5, ay, P.symbol, 0.55), "Disjuntor", 78);
-    item((ax, ay) => use("tw-sym-rcd", ax + 5, ay, P.symbol, 0.55), "DR", 52);
+    item((ax, ay) => use("tw-sym-rcd", ax + 5, ay, P.symbol, 0.55), "DR/IDR", 66);
     item((ax, ay) => use("tw-sym-spd", ax + 5, ay, P.symbol, 0.5), "DPS", 56);
     item((ax, ay) => use("tw-sym-ground", ax + 5, ay - 2, P.phases.PE, 0.6), "Terra/PE", 74);
     Object.keys(P.phases).forEach(p => {
       if (p === "PE" || p === "N") return;
       out += ln(x, y, x + 12, y, `stroke="${P.phases[p]}" stroke-width="3"`);
-      out += tx(x + 16, y + 3, `Fase ${p}`, `font-size="8" fill="${P.dim}"`);
+      out += tx(x + 16, y + 3, `Fase ${p} — ${{A:"preto",B:"vermelho",C:"marrom"}[p]||p}`, `font-size="8" fill="${P.dim}"`);
+      x += 44;
       x += 62;
     });
     out += `</g>`;
     if (theme === "print") {
       out += tx(20, L.height - 12,
-        "EasyEletric v3.6 — Digital Twin | ABNT NBR 5410:2023 | Pré-dimensionamento — não substitui projeto assinado com ART/RRT",
+        "EasyEletric v3.7 — Digital Twin | ABNT NBR 5410:2023 | Pré-dimensionamento — não substitui projeto assinado com ART/RRT",
         `font-size="7.5" fill="${P.dim}"`);
     }
     return out;
