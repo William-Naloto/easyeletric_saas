@@ -140,10 +140,28 @@ e reserva, overlays, temas, sincronização com o motor, health score,
 indicadores, dedup de findings, capacidade futura, recomendações com ação
 não-mutante e casos vazios.
 
-## Roadmap (pensando no 5.0)
+## Roadmap — concluído na v3.6
 
-- Catálogo de fabricantes para os módulos (placeholder de marca já previsto);
-- Mini-mapa e snap/grade no canvas infinito;
-- Panel Schedule/relatório do quadro gerado do mesmo modelo;
-- DWG/DXF/IFC a partir do SVG paramétrico;
-- Score de otimização com sugestões de seção de cabo (hoje informativas).
+- ✅ **Catálogo de fabricantes** (`engineering/manufacturer_catalog.js`) —
+  WEG/Schneider/Siemens/ABB + genérico; série escolhida pela Icn requerida;
+  referências nos módulos do painel, no inspetor e no mapa do quadro
+  (ilustrativas, com disclaimer);
+- ✅ **Mini-mapa e grade no canvas** — mini-mapa com retângulo do viewport e
+  navegação por clique/arrasto; grade alternável;
+- ✅ **Panel Schedule** (`engineering/panel_schedule.js`) — mapa do quadro
+  estruturado + documento A4 imprimível gerado do mesmo modelo;
+- ✅ **DXF** (`engineering/dxf_export.js`) — R12/AC1009 com camadas por
+  disciplina e cores ACI por fase, geometria idêntica ao SVG.
+  *DWG (formato binário proprietário) e IFC (modelo BIM) ficam fora do
+  escopo de um app 100% client-side — o DXF cobre a interoperação CAD e
+  converte a DWG/IFC com ferramentas externas (ODA/BIM);*
+- ✅ **Sugestões de seção de cabo quantificadas** — próxima seção comercial
+  e ΔV estimada (R ∝ 1/S) nas recomendações do otimizador, sempre
+  informativas (o valor exato sai do motor ao recalcular).
+
+## Visão 5.0
+
+- Snap de objetos e edição direta no canvas (arrastar circuitos entre
+  trilhos com revalidação ao vivo);
+- Catálogos oficiais de fabricantes com preços para o BOM;
+- Coordenação seletividade disjuntor×disjuntor com curvas tempo-corrente.
