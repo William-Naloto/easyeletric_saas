@@ -320,6 +320,8 @@
     out += deviceBody(mainX - mw / 2, y - mh / 2, mw, mh, P, opts, main.validation.status);
     out += tx(mainX, y - mh / 2 + 12, "GERAL", `text-anchor="middle" font-size="8" font-weight="800" letter-spacing="1.5" fill="${P.dim}"`);
     out += tx(mainX, y + mh / 2 - 8, main.data.In ? `${main.data.In} A · ${main.data.curve} · ${main.data.poles}P` : "—", `text-anchor="middle" font-size="9" font-weight="700" fill="${P.ink}"`);
+    const mainRef = opts.catalog && opts.catalog.byNode && opts.catalog.byNode["main-breaker"];
+    if (mainRef) out += tx(mainX - mw / 2 - 8, y + 3, `${mainRef.maker} ${mainRef.reference}`, `class="qtw-cat" text-anchor="end" font-size="7" fill="${P.dim}" font-family="monospace"`);
     if (opts.overlays.validation) out += ci(mainX + mw / 2 - 7, y - mh / 2 + 8, 3, `class="qtw-ov qtw-ov-validation" fill="${statusColor(P, main.validation.status)}"`);
     if (opts.overlays.icc && main.calc.icnRequiredA)
       out += tx(mainX, y + mh / 2 + 11, `Icn ≥ ${fmt(main.calc.icnRequiredA / 1000, 1)} kA`, `class="qtw-ov qtw-ov-icc" text-anchor="middle" ${lbl}`);
@@ -468,6 +470,8 @@
       out += rc(px - 6, top, 12, 3.5, `fill="${P.phases[p]}" rx="1"`);
     });
     out += tx(cx, top + 14, `${brk.data.In} A`, `text-anchor="middle" font-size="9.5" font-weight="800" fill="${P.ink}"`);
+    const brkRef = opts.catalog && opts.catalog.byNode && opts.catalog.byNode[circ.breakerId];
+    if (brkRef) out += tx(cx, top + 46, trunc(brkRef.reference, item.poles > 1 ? 20 : 10), `class="qtw-cat" text-anchor="middle" font-size="4.8" fill="${P.dim}" font-family="monospace"`);
     out += tx(cx, top + G.modH - 6, `${brk.data.curve} · ${item.poles}P`, `text-anchor="middle" font-size="7.5" fill="${P.dim}"`);
     if (opts.overlays.validation)
       out += ci(x0 + w - 6, top + G.modH - 7, 2.6, `class="qtw-ov qtw-ov-validation" fill="${sc}"`);
@@ -593,7 +597,9 @@
   /**
    * Renderiza o Smart Distribution Board do modelo.
    * @param model ElectricalProjectModel (EEProjectModel.build)
-   * @param opts {theme, overlays, perRow, projectName, date}
+   * @param opts {theme, overlays, perRow, projectName, date,
+   *              catalog?}  catalog = EEManufacturerCatalog.forModel:
+   *              referências comerciais impressas nos módulos
    * @returns string SVG autocontido
    */
   function render(model, opts) {

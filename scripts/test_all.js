@@ -19,7 +19,10 @@ const SUITES = [
   "engineering/test_project_model.js",
   "engineering/test_unifilar_twin.js",
   "engineering/test_panel_health.js",
-  "engineering/test_qdf_twin.js"
+  "engineering/test_qdf_twin.js",
+  "engineering/test_manufacturer_catalog.js",
+  "engineering/test_panel_schedule.js",
+  "engineering/test_dxf_export.js"
 ];
 
 let failedSuites = 0;

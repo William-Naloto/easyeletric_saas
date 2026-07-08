@@ -166,6 +166,14 @@ test("Circuito com DR 30 mA exibe badge DR", () => {
     svg.includes("DR 30 mA");
 });
 
+test("Catálogo de fabricante: referências impressas nos módulos", () => {
+  const catalog = { byNode: { "main-breaker": { maker: "WEG", reference: "MDWH-C63-3" } } };
+  catalog.byNode[model.circuits[0].breakerId] = { maker: "WEG", reference: "MDW-C10-1" };
+  const s = Q.render(model, { catalog });
+  return s.includes("MDWH-C63-3") && s.includes("MDW-C10-1") && s.includes("qtw-cat") &&
+    !svg.includes("qtw-cat"); // sem catálogo, nenhuma referência
+});
+
 test("Determinismo: mesmo modelo + opções → mesmo SVG", () =>
   Q.render(model, { theme: "light" }) === Q.render(model, { theme: "light" }));
 
