@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="description" content="EasyEletric SaaS v3.6 - Projetista elétrico residencial NBR 5410:2023. Smart Distribution Board interativo, dimensionamento automático, mono/bi/trifásico.">
+<meta name="description" content="EasyEletric SaaS v3.7 - Projetista elétrico residencial NBR 5410:2023. Smart Distribution Board interativo, dimensionamento automático, mono/bi/trifásico.">
 <meta name="keywords" content="dimensionador elétrico,NBR 5410,calcular disjuntor,QDF residencial,DR DPS,projeto elétrico">
 <meta name="robots" content="index,follow">
 <meta property="og:title" content="EasyEletric SaaS | Projetista Elétrico NBR 5410:2023">
@@ -43,7 +43,7 @@
   --inf:#06b6d4; --infb:rgba(6,182,212,.12);
   --pu:#8b5cf6; --pub:rgba(139,92,246,.12);
   --or:#f97316; --orb:rgba(249,115,22,.12);
-  --ph-a:#1e90ff; --ph-b:#f97316; --ph-c:#22c55e; --ph-n:#9ca3af;
+  --ph-a:#d7dee8; --ph-b:#f87171; --ph-c:#c9884b; --ph-n:#60a5fa;
   --r:8px; --rm:12px; --rl:16px; --rxl:20px;
   --mono:"Roboto Mono",monospace;
   --sh:0 4px 32px rgba(0,0,0,.5);
@@ -70,7 +70,7 @@
   --inf:#0891b2; --infb:rgba(8,145,178,.08);
   --pu:#7c3aed; --pub:rgba(124,58,237,.08);
   --or:#ea580c; --orb:rgba(234,88,12,.08);
-  --ph-a:#1565c0; --ph-b:#ea580c; --ph-c:#16a34a; --ph-n:#6b7280;
+  --ph-a:#1a1f26; --ph-b:#d92b2b; --ph-c:#8a5a2b; --ph-n:#2f6fde;
 }
 
 /* ============================================================
@@ -611,9 +611,9 @@ nav {
   color:var(--er); display:flex; align-items:center; gap:6px; margin-top:6px;
 }
 .tags-row { display:flex; gap:4px; flex-wrap:wrap; margin-top:7px }
-.ph-badge-a { background:rgba(30,144,255,.15);  color:var(--ph-a); border:1px solid var(--ph-a) }
-.ph-badge-b { background:rgba(249,115,22,.15);  color:var(--ph-b); border:1px solid var(--ph-b) }
-.ph-badge-c { background:rgba(34,197,94,.15);   color:var(--ph-c); border:1px solid var(--ph-c) }
+.ph-badge-a { background:rgba(160,174,192,.15); color:var(--ph-a); border:1px solid var(--ph-a) }
+.ph-badge-b { background:rgba(217,43,43,.15);   color:var(--ph-b); border:1px solid var(--ph-b) }
+.ph-badge-c { background:rgba(138,90,43,.18);   color:var(--ph-c); border:1px solid var(--ph-c) }
 
 /* ============================================================
    QDF — SMART DISTRIBUTION BOARD (engineering workspace)
@@ -1191,7 +1191,7 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
   <div class="nav-logo" onclick="gotoSection('hero')">
     <div class="logo-icon"><i class="fa-solid fa-bolt"></i></div>
     <span>EasyEletric</span>
-    <span class="logo-badge">SaaS v3.6</span>
+    <span class="logo-badge">SaaS v3.7</span>
   </div>
   <div class="nav-links">
     <button class="nav-link" onclick="gotoSection('features')">Recursos</button>
@@ -1268,7 +1268,7 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
      FEATURES
      ============================================================ -->
 <section class="section" id="features">
-  <div class="sec-lbl"><i class="fa-solid fa-star"></i> Recursos v3.6</div>
+  <div class="sec-lbl"><i class="fa-solid fa-star"></i> Recursos v3.7</div>
   <h2 class="sec-h2">Projetista Assistido Residencial</h2>
   <p class="sec-sub">Duas formas de uso: informe cômodos e áreas para geração automática, ou adicione cargas manualmente.</p>
   <div class="feat-grid">
@@ -1408,6 +1408,13 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
           <div class="fg">
             <label class="fl"><i class="fa-solid fa-percent"></i> Queda máx. (%)</label>
             <input type="number" class="fc2" id="maxDrop" value="4" min="1" max="7" step="0.5">
+          </div>
+          <div class="fg">
+            <label class="fl"><i class="fa-solid fa-plug-circle-check"></i> Aterramento</label>
+            <select class="fc2" id="earthScheme" onchange="onEarthSchemeChange()" title="Esquema de aterramento — NBR 5410 §5.1.2.2. TT: eletrodo próprio, DR obrigatório, DPS conexão N+1 (centelhador N-PE). TN-S: PE da fonte, DPS em modo comum.">
+              <option value="TT" selected>TT — eletrodo próprio (padrão BR)</option>
+              <option value="TN-S">TN-S — PE separado da fonte</option>
+            </select>
           </div>
         </div>
         <div class="sys-voltage-display" id="sysVoltDisplay">
@@ -1653,10 +1660,12 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
           <span id="balanceWarnMsg"></span>
         </div>
         <p style="font-size:11px;color:var(--t3);margin-top:10px">
-          <i class="fa-solid fa-circle-info"></i> Passe o mouse para iluminar a cadeia de proteção; clique em qualquer componente para inspecionar cálculos, validação NBR 5410 e decisões de engenharia. Fases:
-          <span style="color:var(--ph-a)">A=azul</span>
-          <span style="color:var(--ph-b)">B=laranja</span>
-          <span style="color:var(--ph-c)">C=verde</span>
+          <i class="fa-solid fa-circle-info"></i> Passe o mouse para iluminar a cadeia de proteção; clique em qualquer componente para inspecionar cálculos, validação NBR 5410 e decisões de engenharia. Cores dos condutores (NBR 5410 §6.1.5.3):
+          <span style="color:var(--ph-a)">Fase A=preto</span> ·
+          <span style="color:var(--ph-b)">Fase B=vermelho</span> ·
+          <span style="color:var(--ph-c)">Fase C=marrom</span> ·
+          <span style="color:var(--ph-n)">Neutro=azul-claro</span> ·
+          <span style="color:var(--ok)">PE=verde</span>
         </p>
       </div>
 
@@ -1802,12 +1811,12 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
       <div class="footer-col">
         <h4>Sobre</h4>
         <a href="https://github.com/William-Naloto/easyeletric_saas" target="_blank">GitHub</a>
-        <a href="CHANGELOG.md">Changelog v3.6</a>
+        <a href="CHANGELOG.md">Changelog v3.7</a>
         <a href="README.md">Documentação</a>
       </div>
     </div>
     <div class="footer-bottom">
-      <p>EasyEletric SaaS v3.6 &copy; 2025 William Naloto &bull; Sem coleta de PII &bull;
+      <p>EasyEletric SaaS v3.7 &copy; 2025 William Naloto &bull; Sem coleta de PII &bull;
         <a href="https://github.com/William-Naloto/easyeletric_saas" target="_blank">GitHub Pages</a><br>
         <strong>Aviso:</strong> Ferramenta de pré-dimensionamento. Não substitui projeto elétrico, ART/RRT, consulta NBR 5410 oficial e catálogos de fabricantes.
       </p>
@@ -1815,7 +1824,7 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
         <span class="fbadge">NBR 5410</span>
         <span class="fbadge">Offline</span>
         <span class="fbadge">No PII</span>
-        <span class="fbadge">v3.6</span>
+        <span class="fbadge">v3.7</span>
       </div>
     </div>
   </div>
@@ -1914,19 +1923,19 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
   </div>
 </div>
 
-<script src="scripts/nbr5410_engine.js?v=3.6.0"></script>
-<script src="scripts/engineering/phase_balance.js?v=3.6.0"></script>
-<script src="scripts/engineering/rcd.js?v=3.6.0"></script>
-<script src="scripts/engineering/spd.js?v=3.6.0"></script>
-<script src="scripts/engineering/grounding.js?v=3.6.0"></script>
-<script src="scripts/engineering/decision_log.js?v=3.6.0"></script>
-<script src="scripts/engineering/project_model.js?v=3.6.0"></script>
-<script src="scripts/engineering/unifilar_twin.js?v=3.6.0"></script>
-<script src="scripts/engineering/panel_health.js?v=3.6.0"></script>
-<script src="scripts/engineering/qdf_twin.js?v=3.6.0"></script>
-<script src="scripts/engineering/manufacturer_catalog.js?v=3.6.0"></script>
-<script src="scripts/engineering/panel_schedule.js?v=3.6.0"></script>
-<script src="scripts/engineering/dxf_export.js?v=3.6.0"></script>
+<script src="scripts/nbr5410_engine.js?v=3.7.0"></script>
+<script src="scripts/engineering/phase_balance.js?v=3.7.0"></script>
+<script src="scripts/engineering/rcd.js?v=3.7.0"></script>
+<script src="scripts/engineering/spd.js?v=3.7.0"></script>
+<script src="scripts/engineering/grounding.js?v=3.7.0"></script>
+<script src="scripts/engineering/decision_log.js?v=3.7.0"></script>
+<script src="scripts/engineering/project_model.js?v=3.7.0"></script>
+<script src="scripts/engineering/unifilar_twin.js?v=3.7.0"></script>
+<script src="scripts/engineering/panel_health.js?v=3.7.0"></script>
+<script src="scripts/engineering/qdf_twin.js?v=3.7.0"></script>
+<script src="scripts/engineering/manufacturer_catalog.js?v=3.7.0"></script>
+<script src="scripts/engineering/panel_schedule.js?v=3.7.0"></script>
+<script src="scripts/engineering/dxf_export.js?v=3.7.0"></script>
 <script>
 // ================================================================
 // NBR 5410:2023 — camada de integração com o motor de cálculo
@@ -2691,8 +2700,16 @@ function buildSite(){
     Ta:parseInt(document.getElementById("ambTemp").value)||30,
     insulation:document.getElementById("insType").value||"PVC",
     groupedCircuits:parseInt(document.getElementById("totCirc").value)||3,
-    maxDropPct:parseFloat(document.getElementById("maxDrop").value)||4
+    maxDropPct:parseFloat(document.getElementById("maxDrop").value)||4,
+    earthingScheme:getEarthScheme()
   };
+}
+// Esquema de aterramento (NBR 5410 §5.1.2.2) — TT padrão residencial BR
+function getEarthScheme(){return document.getElementById("earthScheme")?.value==="TN-S"?"TN-S":"TT"}
+function onEarthSchemeChange(){
+  saveState();
+  if(results.length){calculateAll("qdf")}
+  toast(`Esquema ${getEarthScheme()}: ${getEarthScheme()==="TT"?"DR obrigatório na origem; DPS conexão N+1 (centelhador N-PE)":"PE separado desde a fonte; DPS em modo comum"} — NBR 5410 §5.1.2.2`,"info");
 }
 function calculateAll(targetTab="circ"){
   if(!loads.length){toast("Adicione pelo menos uma carga.","err");return}
@@ -2940,7 +2957,7 @@ function renderDPS(res){
   const{Vfn}=getSysVoltages();
   const spd=EESpd.selectEntranceSPD({
     Vfn,supplyType:getSupplyType(),
-    groundingScheme:"TT",serviceEntry:"aerea"
+    groundingScheme:getEarthScheme(),serviceEntry:"aerea"
   });
   const p=spd.params;
   const specs=[
@@ -2992,22 +3009,32 @@ function renderBOM(res){
   function add(key,name,spec,brand,qty,unit,nbr,affId){
     if(bom[key])bom[key].qty+=qty;else bom[key]={name,spec,brand,qty,unit,nbr,affId};
   }
+  // Cores dos condutores conforme NBR 5410 §6.1.5.3:
+  // fases preto/vermelho/marrom · neutro azul-claro · PE verde
+  const PH_WIRE_COLOR={A:"preto",B:"vermelho",C:"marrom"};
   res.forEach(r=>{
-    const mlen=Math.ceil(r.l.distance*1.2*(r.wt==="A+B+C"?4:r.phases.length===2?3:2));
+    const perCondLen=Math.ceil(r.l.distance*1.2);
     const br=NBR.brands.cond[r.sz]||"Prysmian";
     // Polaridade do disjuntor segue a fiação; Icn segue a Icc presumida
     const poles=r.wt==="A+B+C"?"Tripolar":r.phases.length===2?"Bipolar":"Monopolar";
     const icn=r.icnReq?`${r.icnReq/1000}kA`:">10kA";
     const drIn=r.eng?.rcd?.In||r.mcb;
-    add("c_"+r.sz,`Cabo Cu ${r.sz}mm²`,`Cobre ${r.sz}mm² PVC 750V NBR NM 247-3`,br,mlen,"m","NBR NM 247-3","cabo_"+r.sz+"mm");
+    // Um item de cabo por FUNÇÃO/COR (fase por fase + neutro azul)
+    r.phases.forEach(ph=>{
+      const cor=PH_WIRE_COLOR[ph];
+      add("c_"+r.sz+"_"+cor,`Cabo Cu ${r.sz}mm² ${cor}`,`Fase ${ph} — cobre ${r.sz}mm² PVC 750V ${cor} (NBR 5410 §6.1.5.3)`,br,perCondLen,"m","NBR NM 247-3","cabo_"+r.sz+"mm");
+    });
+    if(r.wt.includes("N"))
+      add("c_"+r.sz+"_azul",`Cabo Cu ${r.sz}mm² azul-claro`,`Neutro — cobre ${r.sz}mm² PVC 750V azul-claro (NBR 5410 §6.1.5.3)`,br,perCondLen,"m","NBR NM 247-3","cabo_"+r.sz+"mm");
+    add("c_"+r.peSz+"_verde",`Cabo Cu ${r.peSz||r.sz}mm² verde`,`Proteção PE — cobre ${r.peSz||r.sz}mm² PVC 750V verde (NBR 5410 §6.1.5.3 / Tab. 58)`,NBR.brands.pe,perCondLen,"m","NBR NM 247-3","cabo_"+(r.peSz||r.sz)+"mm");
     add("m_"+r.mcb+"_"+r.curve,`MCB ${r.mcb}A Curva ${r.curve}`,`${poles} ${r.mcb}A curva ${r.curve} Icn ${icn}`,NBR.brands.mcb,1,"un","NBR IEC 60898-1","mcb_"+r.mcb+"A_"+r.curve);
-    add("d_"+drIn+"_"+r.dr,`DR/IDR ${drIn}A/${r.dr}mA`,`${r.phases.length>1?"Tetrapolar":"Bipolar"} ${drIn}A ${r.dr}mA`,NBR.brands.dr,1,"un","NBR IEC 61008-1","dr_"+r.dr+"mA");
+    add("d_"+drIn+"_"+r.dr,`IDR ${drIn}A/${r.dr}mA`,`Interruptor diferencial do circuito — ${r.phases.length>1?"Tetrapolar":"Bipolar"} ${drIn}A ${r.dr}mA`,NBR.brands.dr,1,"un","NBR IEC 61008-1","dr_"+r.dr+"mA");
     add("e_B1",`Eletroduto PVC 3/4"`,`PVC corrugado 3/4" NBR 15465`,NBR.brands.elet,Math.ceil(r.l.distance*1.1),"m","NBR 15465","eletroduto_pvc");
   });
-  const totL=Math.ceil(res.reduce((s,r)=>s+r.l.distance,0)*1.1);
-  const dpsSpec=_qdfResult?`Tipo 2 Uc≥${_qdfResult.dps.ucV}V Imax ${_qdfResult.dps.imaxKA}kA 8/20µs ${_qdfResult.dps.poles}P`:"Tipo 2 Uc≥275V Imax 40kA 8/20µs 2P";
+  const dpsSpec=_qdfResult?`Tipo 2 Uc≥${_qdfResult.dps.ucV}V Imax ${_qdfResult.dps.imaxKA}kA 8/20µs ${_qdfResult.dps.poles}P — instalação em PARALELO (§6.3.5.2)`:"Tipo 2 Uc≥275V Imax 40kA 8/20µs 2P — instalação em PARALELO (§6.3.5.2)";
   add("dps","DPS Classe II 40kA",dpsSpec,"Clamper",1,"un","IEC 61643-11","dps_classeII");
-  add("pe","Cabo PE verde/amarelo 2.5mm²","Proteção 2.5mm² verde/amarelo",NBR.brands.pe,totL,"m","NBR 5410 §6.3","cabo_2.5mm");
+  if(_qdfResult)
+    add("dr_geral",`DR Geral ${_qdfResult.rcd.In}A/${_qdfResult.rcd.sensitivityMa}mA`,`Proteção diferencial GERAL do quadro — ${getSupplyType()==="trifasico"?"Tetrapolar":"Bipolar"} ${_qdfResult.rcd.In}A ${_qdfResult.rcd.sensitivityMa}mA`,NBR.brands.dr,1,"un","NBR IEC 61008-1","dr_"+_qdfResult.rcd.sensitivityMa+"mA");
   add("qdf",`QDF ${res.length+3} disjuntores`,`Embutir/sobrepor ${res.length+3}P IP40`,NBR.brands.qdf,1,"un","NBR IEC 60439-3","qdf_box");
 
   // ── Group items by engineering category (ERP-style) ──
@@ -3019,8 +3046,8 @@ function renderBOM(res){
     ["cabo","Condutores","fa-bacon"],
     ["infra","Infraestrutura","fa-circle-nodes"]
   ];
-  const catOf=k=>k.startsWith("m_")?"mcb":k.startsWith("d_")?"dr":k==="dps"?"dps"
-    :k.startsWith("c_")||k==="pe"?"cabo":k==="qdf"?"qdf":"infra";
+  const catOf=k=>k.startsWith("m_")?"mcb":k.startsWith("d_")||k==="dr_geral"?"dr":k==="dps"?"dps"
+    :k.startsWith("c_")?"cabo":k==="qdf"?"qdf":"infra";
 
   let rowIdx=0;
   const mkRow=(catLabel)=>([k,it])=>{
@@ -3382,7 +3409,7 @@ let _saveTimer=null;
 function saveState(){
   clearTimeout(_saveTimer);
   _saveTimer=setTimeout(()=>{
-    try{localStorage.setItem("ee_state_v22",JSON.stringify({loads,lcnt,tueLoads,tueCnt,rooms,rcnt,currentMode,supplyType:getSupplyType()}))}catch(e){}
+    try{localStorage.setItem("ee_state_v22",JSON.stringify({loads,lcnt,tueLoads,tueCnt,rooms,rcnt,currentMode,supplyType:getSupplyType(),earthScheme:getEarthScheme()}))}catch(e){}
   },300);
 }
 function loadState(){
@@ -3394,6 +3421,7 @@ function loadState(){
     rooms=s.rooms||[];rcnt=s.rcnt||0;
     currentMode=s.currentMode||"manual";
     const st=document.getElementById("supplyType");if(st&&s.supplyType)st.value=s.supplyType;
+    const es=document.getElementById("earthScheme");if(es&&s.earthScheme)es.value=s.earthScheme;
     return true;
   }catch(e){return false}
 }
@@ -3457,7 +3485,7 @@ function exportToExcel(){
   const{Vfn,Vll}=getSysVoltages();
   const wb=XLSX.utils.book_new();
   const sum=[
-    ["EasyEletric SaaS v3.6 — NBR 5410:2023"],[""],
+    ["EasyEletric SaaS v3.7 — NBR 5410:2023"],[""],
     ["Projeto","EasyEletric"],["Data",new Date().toLocaleDateString("pt-BR")],
     ["Circuitos",results.length],["Potência Total (W)",results.reduce((s,r)=>s+r.l.power,0)],
     ["Maior Queda (%)",Math.max(...results.map(r=>parseFloat(r.vd.pct))).toFixed(2)],
@@ -3742,7 +3770,7 @@ function twRender(){
   if(!_twModel)return;
   document.getElementById("twViewport").innerHTML=EEUnifilarTwin.render(_twModel,{
     theme:twTheme(),overlays:_twState.overlays,
-    projectName:"EasyEletric SaaS v3.6",
+    projectName:"EasyEletric SaaS v3.7",
     date:new Date().toLocaleDateString("pt-BR")
   });
   twApplyTransform();
@@ -3971,7 +3999,7 @@ function twExplorer(id){
 function twPrintSVG(){
   return EEUnifilarTwin.render(_twModel,{
     theme:"print",overlays:_twState.overlays,
-    projectName:"EasyEletric SaaS v3.6",
+    projectName:"EasyEletric SaaS v3.7",
     date:new Date().toLocaleDateString("pt-BR")
   });
 }
@@ -4009,8 +4037,8 @@ function qxRender(){
   _qxCatalog=_qxState.maker!=="generic"?EEManufacturerCatalog.forModel(_qxState.maker,_qxModel):null;
   document.getElementById("qxViewport").innerHTML=EEQdfTwin.render(_qxModel,{
     theme:twTheme(),overlays:_qxState.overlays,
-    catalog:_qxCatalog||undefined,
-    projectName:"EasyEletric SaaS v3.6",
+    catalog:_qxCatalog||undefined,scheme:getEarthScheme(),
+    projectName:"EasyEletric SaaS v3.7",
     date:new Date().toLocaleDateString("pt-BR")
   });
   qxMinimapRender();
@@ -4227,7 +4255,8 @@ function qxApplyRec(i){
 function qxPrintSVG(){
   return EEQdfTwin.render(_qxModel,{
     theme:"print",overlays:_qxState.overlays,
-    projectName:"EasyEletric SaaS v3.6",
+    catalog:_qxCatalog||undefined,scheme:getEarthScheme(),
+    projectName:"EasyEletric SaaS v3.7",
     date:new Date().toLocaleDateString("pt-BR")
   });
 }
@@ -4242,7 +4271,8 @@ function exportQdfPNG(){
   if(!_qxModel){toast("Calcule os circuitos primeiro.","err");return}
   const svgStr=EEQdfTwin.render(_qxModel,{
     theme:twTheme(),overlays:_qxState.overlays,
-    projectName:"EasyEletric SaaS v3.6",
+    catalog:_qxCatalog||undefined,scheme:getEarthScheme(),
+    projectName:"EasyEletric SaaS v3.7",
     date:new Date().toLocaleDateString("pt-BR")
   });
   const url=URL.createObjectURL(new Blob([svgStr],{type:"image/svg+xml"}));
@@ -4277,7 +4307,7 @@ function exportQdfSchedule(){
   if(!_qxModel){toast("Calcule os circuitos primeiro.","err");return}
   const html=EEPanelSchedule.toHtml(_qxModel,{
     catalog:_qxCatalog||undefined,
-    projectName:"EasyEletric SaaS v3.6",
+    projectName:"EasyEletric SaaS v3.7",
     date:new Date().toLocaleDateString("pt-BR")
   });
   const w=window.open("","_blank");
@@ -4287,7 +4317,7 @@ function exportQdfSchedule(){
 }
 function exportQdfDXF(){
   if(!_qxModel){toast("Calcule os circuitos primeiro.","err");return}
-  const dxf=EEDxfExport.render(_qxModel,{projectName:"EasyEletric SaaS v3.6"});
+  const dxf=EEDxfExport.render(_qxModel,{projectName:"EasyEletric SaaS v3.7",scheme:getEarthScheme()});
   const blob=new Blob([dxf],{type:"application/dxf"});
   const a=Object.assign(document.createElement("a"),{href:URL.createObjectURL(blob),download:"qdf_smart_distribution_board.dxf"});
   a.click();URL.revokeObjectURL(a.href);

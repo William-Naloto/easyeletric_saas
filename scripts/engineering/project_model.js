@@ -339,7 +339,7 @@
       if (hasRcd) {
         rcd = addNode({
           id: "rcd-" + cid, type: "rcd", parent: breaker.id, buses: busIds,
-          label: `DR ${cid.toUpperCase()}`,
+          label: `IDR ${cid.toUpperCase()}`,
           sub: `${r.rcd.In} A / ${r.rcd.sensitivityMa} mA`,
           data: { In: r.rcd.In, sensitivityMa: r.rcd.sensitivityMa, circuit: n },
           calc: {},
@@ -471,7 +471,7 @@
     function byType(type) { return nodes.filter(n => n.type === type); }
 
     return {
-      version: "3.6",
+      version: "3.7",
       nodes, byId, root: utility.id, circuits, summary,
       meta: {
         site: { Vfn: site.Vfn, Vll: site.Vll, supplyType: st, Ta: site.Ta, insulation: site.insulation },

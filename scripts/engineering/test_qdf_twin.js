@@ -64,24 +64,44 @@ test("Elementos realistas do painel: cobre, aço, trilho DIN e terra", () =>
     .every(id => svg.includes(`id="${id}"`)) &&
   svg.includes('url(#qtw-copper)') && svg.includes('url(#qtw-rail)'));
 
+test("Cores dos condutores conforme NBR 5410 §6.1.5.3", () =>
+  Q.WIRES.A === "#1a1f26" &&             // fase A — preto
+  Q.WIRE_NAMES.A === "preto" && Q.WIRE_NAMES.B === "vermelho" &&
+  Q.WIRE_NAMES.C === "marrom" && Q.WIRE_NAMES.N === "azul-claro" &&
+  Q.WIRE_NAMES.PE === "verde" &&
+  svg.includes("preto") && svg.includes("azul-claro") && svg.includes("verde"));
+
+test("DPS instalado em PARALELO (derivação) com aviso normativo", () =>
+  svg.includes("INSTALAÇÃO EM PARALELO (derivação) — NBR 5410 §6.3.5.2"));
+
+test("Esquema TT (padrão): conexão N+1 com centelhador N-PE", () =>
+  svg.includes("Esquema TT: conexão 3+1 — N–PE por centelhador"));
+
+test("Esquema TN-S: DPS em modo comum", () => {
+  const s = Q.render(model, { scheme: "TN-S" });
+  return s.includes("Esquema TN-S: modo comum — fases e N ao PE") &&
+    !s.includes("centelhador");
+});
+
+test("Esquema inválido cai em TT sem exceção", () =>
+  Q.render(model, { scheme: "XX" }).includes("Esquema TT"));
+
 test("Barras de Neutro e PE presentes com rótulos", () =>
   svg.includes("BARRA DE NEUTRO (N)") && svg.includes("BARRA DE PROTEÇÃO (PE)"));
 
-/* ---------------- Ocupação DIN / fileiras ---------------- */
-test("packRows: circuito multipolar ocupa polos = módulos", () => {
-  const rows = Q.packRows(model, 10);
-  const all = rows.flatMap(r => r.items);
-  return all.length === model.circuits.length &&
-    all.every(it => it.poles === it.circ.phases.length);
+/* ---------------- Colunas / fileiras ---------------- */
+test("splitColumns: ímpares à esquerda, pares à direita (todos presentes)", () => {
+  const cols = Q.splitColumns(model);
+  return cols.left.length + cols.right.length === model.circuits.length &&
+    cols.left[0].n === 1 && (model.circuits.length < 2 || cols.right[0].n === 2) &&
+    cols.rows === Math.max(cols.left.length, cols.right.length);
 });
 
-test("packRows: quebra em nova fileira quando excede perRow", () => {
-  const many = Array.from({ length: 14 }, (_, i) =>
-    ({ name: "C" + i, power: 1000, distance: 10, pf: 0.92, type: "tomadas", method: "B1", wiringType: ["A+N", "B+N", "C+N"][i % 3] }));
-  const m = M.build(many, SITE_TRI);
-  const rows = Q.packRows(m, 10);
-  return rows.length === 2 && rows[0].slots === 10 && rows[1].slots === 4 &&
-    rows.every(r => r.slots <= 10);
+test("Circuito multipolar: um stub por fase saindo do pente central", () => {
+  const tri = model.circuits.find(c => c.phases.length === 3);
+  if (!tri) return false;
+  const g = svg.match(new RegExp(`<g class="qtw-node" data-node="${tri.breakerId}"[\\s\\S]*?</g>`));
+  return g && Q.THEMES.dark.phases.A && ["A", "B", "C"].every(p => g[0].includes(Q.WIRES[p]));
 });
 
 test("Altura cresce com fileiras adicionais (multi-trilho)", () => {
@@ -159,11 +179,11 @@ test("Cada circuito mostra In do disjuntor e seção do condutor", () =>
     svg.includes(`${model.byId[c.breakerId].data.In} A`) &&
     svg.includes(`${model.byId[c.conductorId].data.section} mm²`)));
 
-test("Circuito com DR 30 mA exibe badge DR", () => {
+test("Nomenclatura: DR = geral · IDR = por circuito (badge IDR)", () => {
   const withRcd = model.circuits.filter(c => c.rcdId);
   return withRcd.length > 0 &&
     withRcd.every(c => svg.includes(`data-node="${c.rcdId}"`)) &&
-    svg.includes("DR 30 mA");
+    svg.includes("IDR 30 mA") && svg.includes("DR GERAL");
 });
 
 test("Catálogo de fabricante: referências impressas nos módulos", () => {

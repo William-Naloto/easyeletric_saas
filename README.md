@@ -4,6 +4,8 @@ Plataforma profissional de pré-dimensionamento elétrico residencial conforme *
 
 ## Versão atual
 
+**v3.7 — Painel Real** — layout do QDF seguindo um quadro residencial de verdade: **DPS em paralelo** (§6.3.5.2, centelhador N-PE em TT), **escolha de aterramento TT/TN-S** (§5.1.2.2), pente de cobre central com colunas espelhadas, **cores de condutores da norma** (fases preto/vermelho/marrom, neutro azul-claro, PE verde — §6.1.5.3) em painel, unifilar, DXF e lista de materiais, e nomenclatura **DR (geral) / IDR (por circuito)**.
+
 **v3.6 — Engineering Workspace (roadmap concluído)** — o Smart Distribution Board ganha **catálogo de fabricantes** (WEG/Schneider/Siemens/ABB — referências ilustrativas escolhidas pela Icn requerida, `scripts/engineering/manufacturer_catalog.js`), **mapa do quadro imprimível** (panel schedule, `scripts/engineering/panel_schedule.js`), **exportação DXF R12 para CAD** (`scripts/engineering/dxf_export.js`), mini-mapa com navegação, grade alternável e sugestões de seção de cabo quantificadas (próxima seção comercial + ΔV estimada).
 
 **v3.5 — Smart Distribution Board** — o QDF se torna o recurso-assinatura da plataforma: um **painel elétrico realista e interativo** (`scripts/engineering/qdf_twin.js`) renderizado do gêmeo digital — gabinete, barramentos de cobre com utilização/reserva, disjuntores em trilhos DIN, DPS/DR, barras de N/PE — com **Engineering Health Score** e recomendações de otimização auditáveis (`scripts/engineering/panel_health.js`), inspetor de engenharia por componente e exportações SVG/PNG/PDF. Arquitetura em `docs/smart_distribution_board_v3_5.md`.
@@ -38,7 +40,7 @@ Depois acesse `http://localhost:8080`.
 - **Memorial de Cálculo** — seções colapsáveis por circuito com selo de conformidade, fórmulas e referências de norma.
 - **Exportações** — XLSX (3 abas), PDF, unifilar SVG vetorial e quadro em SVG/PNG alta resolução/PDF com carimbo técnico, **mapa do quadro (panel schedule) imprimível** e **DXF R12** para AutoCAD/QCAD/LibreCAD.
 - **Catálogo de fabricantes** — referências comerciais ilustrativas (WEG, Schneider, Siemens, ABB) para disjuntores/DR/DPS, com a série escolhida pela capacidade de interrupção requerida.
-- **QA Suite** — 28 verificações in-app no Dev Panel (`Ctrl+Shift+D`) + 13 suítes Node (286 casos: motor, balanceamento, DR, DPS, aterramento, decisões, gêmeo digital, unifilar, saúde do quadro, Smart Distribution Board, catálogo, panel schedule e DXF): `node scripts/test_all.js`.
+- **QA Suite** — 28 verificações in-app no Dev Panel (`Ctrl+Shift+D`) + 13 suítes Node (291 casos: motor, balanceamento, DR, DPS, aterramento, decisões, gêmeo digital, unifilar, saúde do quadro, Smart Distribution Board, catálogo, panel schedule e DXF): `node scripts/test_all.js`.
 - **Offline-first** — 100% estático, sem backend; projetos salvos como `.json` local.
 
 ## Estrutura

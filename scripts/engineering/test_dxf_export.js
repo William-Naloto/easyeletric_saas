@@ -53,8 +53,9 @@ test("Todas as camadas de projeto declaradas na tabela LAYER", () =>
   D.LAYERS.every(ly => dxf.includes(ly.name)) &&
   dxf.includes("CONTINUOUS") && D.LAYERS.length === 9);
 
-test("Camadas de fase com cores ACI distintas (A=5 azul, B=30 laranja, C=3 verde)", () =>
-  D.ACI.A === 5 && D.ACI.B === 30 && D.ACI.C === 3 &&
+test("Cores ACI seguem os condutores NBR 5410 (A preto=7, B vermelho=1, C marrom=34, N azul=5, PE verde=3)", () =>
+  D.ACI.A === 7 && D.ACI.B === 1 && D.ACI.C === 34 &&
+  D.ACI.N === 5 && D.ACI.PE === 3 &&
   new Set([D.ACI.A, D.ACI.B, D.ACI.C]).size === 3);
 
 /* ---------------- Conteúdo do desenho ---------------- */
@@ -70,11 +71,13 @@ test("Título, circuitos e cargas no desenho", () =>
   model.circuits.every(c => dxf.includes(`C${String(c.n).padStart(2, "0")}`)) &&
   dxf.includes("Chuveiro") && dxf.includes("Motobomba"));
 
-test("Dados do motor no desenho: geral, DPS, DR e barras N/PE", () => {
+test("Dados do motor no desenho: geral, DPS em paralelo, DR e barras N/PE", () => {
   const main = model.byId["main-breaker"];
   return dxf.includes(`GERAL ${main.data.In}A`) &&
-    dxf.includes("DPS CL.") && dxf.includes("mA") &&
-    dxf.includes("BARRA DE NEUTRO (N)") && dxf.includes("BARRA DE PROTECAO (PE)");
+    dxf.includes("DPS EM PARALELO (DERIVACAO) - NBR 5410 6.3.5.2") &&
+    dxf.includes("DR GERAL") && dxf.includes("mA") &&
+    dxf.includes("BARRA DE NEUTRO (N) - AZUL-CLARO") &&
+    dxf.includes("BARRA DE PROTECAO (PE) - VERDE");
 });
 
 test("Rodapé normativo com aviso de ART/RRT", () =>
@@ -91,7 +94,7 @@ test("Coordenadas numéricas válidas (grupos 10/20 sempre numéricos)", () => {
 
 test("Eixo Y invertido: título acima do gabinete tem Y maior no DXF", () => {
   // No SVG o título está ACIMA (y menor); no DXF deve ter Y MAIOR
-  const idx = lines.indexOf("SMART DISTRIBUTION BOARD - Residência Teste - NBR 5410:2023".replace("SMART", "QDF - SMART"));
+  const idx = lines.findIndex(l => l.startsWith("QDF - SMART DISTRIBUTION BOARD"));
   if (idx < 0) return false;
   // localiza o grupo 20 imediatamente antes do texto
   let y = null;

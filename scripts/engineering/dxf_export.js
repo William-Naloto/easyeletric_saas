@@ -5,7 +5,9 @@
  * Módulo independente e SEM DOM: roda no navegador (global
  * `EEDxfExport`) e em Node.js. Consome o ElectricalProjectModel e a
  * GEOMETRIA do renderizador do quadro (EEQdfTwin.layout) — o DXF é
- * o MESMO desenho do SVG, em formato CAD aberto.
+ * o MESMO desenho do SVG (layout de painel real: pente central
+ * vertical, colunas de disjuntores, DPS em paralelo), em formato
+ * CAD aberto.
  *
  * Gera DXF ASCII R12 (AC1009) — o dialeto mais interoperável:
  * abre em AutoCAD, BricsCAD, QCAD, LibreCAD, DraftSight etc.
@@ -13,8 +15,9 @@
  * Estrutura:
  *  - HEADER ($ACADVER = AC1009, $INSUNITS = mm);
  *  - TABLES/LAYER — camadas de projeto por disciplina:
- *    QDF-GABINETE, QDF-BARRAMENTO-A/B/C (cores ACI por fase),
- *    QDF-NEUTRO, QDF-PE, QDF-DISPOSITIVO, QDF-CABO, QDF-TEXTO;
+ *    QDF-GABINETE, QDF-BARRAMENTO-A/B/C (cores ACI ≈ cores NBR 5410
+ *    §6.1.5.3: A preto→7, B vermelho→1, C marrom→34), QDF-NEUTRO
+ *    (azul→5), QDF-PE (verde→3), QDF-DISPOSITIVO, QDF-CABO, QDF-TEXTO;
  *  - ENTITIES — LINE / CIRCLE / TEXT.
  *
  * Convenções:
@@ -34,8 +37,10 @@
 })(typeof self !== "undefined" ? self : this, function (Q) {
   "use strict";
 
-  /* Cores ACI (AutoCAD Color Index) */
-  const ACI = { A: 5, B: 30, C: 3, N: 8, PE: 3, DEVICE: 7, CABLE: 7, TEXT: 7, ENCLOSURE: 8 };
+  /* Cores ACI (AutoCAD Color Index) ≈ cores de condutor NBR 5410:
+   * fase A preto → 7 (branco/preto), B vermelho → 1, C marrom → 34,
+   * neutro azul → 5, PE verde → 3 */
+  const ACI = { A: 7, B: 1, C: 34, N: 5, PE: 3, DEVICE: 8, CABLE: 8, TEXT: 7, ENCLOSURE: 8 };
 
   const LAYERS = [
     { name: "QDF-GABINETE", color: ACI.ENCLOSURE },
@@ -98,11 +103,11 @@
   /**
    * Gera o DXF do Smart Distribution Board.
    * @param model ElectricalProjectModel (EEProjectModel.build)
-   * @param opts {perRow?, projectName?}
+   * @param opts {projectName?, scheme?}
    * @returns string DXF R12 (ASCII)
    */
   function render(model, opts) {
-    opts = Object.assign({ theme: "print" }, opts || {});
+    opts = Object.assign({ theme: "print", scheme: "TT" }, opts || {});
     const L = Q.layout(model, opts);
     const by = model.byId;
     const w = writer(L.height);
@@ -128,101 +133,107 @@
 
     // Título
     w.text(L.encX, L.encY - 18, 8,
-      `QDF - SMART DISTRIBUTION BOARD - ${opts.projectName || "EasyEletric"} - NBR 5410:2023`, "QDF-TEXTO");
+      `QDF - SMART DISTRIBUTION BOARD - ${opts.projectName || "EasyEletric"} - NBR 5410:2023 - ESQUEMA ${opts.scheme}`, "QDF-TEXTO");
 
     // Gabinete + placa de montagem
     w.rect(L.encX, L.encY, L.encW, L.encH, "QDF-GABINETE");
-    w.rect(L.encX + 10, L.encY + 42, L.encW - 20, L.encH - 52, "QDF-GABINETE");
+    w.rect(L.encX + 8, L.encY + 40, L.encW - 16, L.encH - 50, "QDF-GABINETE");
 
-    // Entrada: alimentador → geral → DPS → DR geral (mesmo x do SVG)
-    const mainX = L.encX + G.padX + G.gutterL + 44;
-    const y = L.mainY;
-    const feeder = by.feeder;
-    w.line(mainX, L.encY - 12, mainX, y - 34, "QDF-CABO");
+    // ── Entrada: alimentador → geral (dir) → DR geral (centro) ──
+    const feeder = by.feeder, main = by["main-breaker"], mrcd = by["main-rcd"], spd = by.spd;
+    const mw = 118, mh = 44;
+    const mainCx = L.mainX + mw / 2;
+    w.line(mainCx, L.encY - 12, mainCx, L.topY1 - mh / 2, "QDF-CABO");
     if (feeder.data.section) {
-      w.text(mainX + 12, L.encY + 60, 4,
+      w.text(L.mainX - 10, L.encY + 63, 4,
         `ALIMENTADOR ${feeder.data.section}mm2 + N ${feeder.data.neutral} + PE ${feeder.data.pe}mm2 - ${feeder.data.lengthM}m ${feeder.data.method}`, "QDF-TEXTO");
     }
-    const main = by["main-breaker"];
-    w.rect(mainX - 33, y - 29, 66, 58, "QDF-DISPOSITIVO");
-    w.text(mainX, y + 4, 4.5, main.data.In ? `GERAL ${main.data.In}A ${main.data.curve} ${main.data.poles}P` : "GERAL", "QDF-TEXTO", "center");
-    const spdX = mainX + 150, spd = by.spd;
-    w.line(mainX + 33, y, spdX - 25, y, "QDF-DISPOSITIVO");
-    w.rect(spdX - 25, y - 26, 50, 52, "QDF-DISPOSITIVO");
-    w.text(spdX, y + 2, 4, spd.data.class ? `DPS CL.${spd.data.class}` : "DPS", "QDF-TEXTO", "center");
-    w.line(spdX, y + 26, spdX, y + 40, "QDF-PE");
-    const rcdX = spdX + 190, mrcd = by["main-rcd"];
-    w.line(spdX + 25, y, rcdX - 30, y, "QDF-DISPOSITIVO");
-    w.rect(rcdX - 30, y - 26, 60, 52, "QDF-DISPOSITIVO");
-    w.text(rcdX, y + 2, 4, mrcd.data.In ? `DR ${mrcd.data.In}A/${mrcd.data.sensitivityMa}mA` : "DR", "QDF-TEXTO", "center");
+    w.rect(L.mainX, L.topY1 - mh / 2, mw, mh, "QDF-DISPOSITIVO");
+    w.text(mainCx, L.topY1 + 4, 4.5, main.data.In ? `GERAL ${main.data.In}A ${main.data.curve} ${main.data.poles}P` : "GERAL", "QDF-TEXTO", "center");
 
-    // Descidas DR → barramentos + barramentos de fase
-    L.phases.forEach((p, k) => {
-      const dx = rcdX - 12 + k * 12;
-      w.line(dx, y + 26, dx, L.busY[p], PHASE_LAYER[p]);
+    const junX = L.cx + 60;
+    w.line(L.mainX, L.topY1, junX, L.topY1, "QDF-BARRAMENTO-A");
+    w.line(junX, L.topY1, L.cx, L.topY2 - 24, "QDF-BARRAMENTO-A");
+
+    // ── DPS em PARALELO (derivação) com descida ao PE ──
+    const S = L.spd;
+    const bankW = S.count * (S.modW + S.modGap) - S.modGap;
+    const tapY = L.topY1 - 26;
+    w.line(junX, L.topY1, junX, tapY, "QDF-BARRAMENTO-A");
+    w.line(junX, tapY, S.x0 + bankW / 2, tapY, "QDF-BARRAMENTO-A");
+    w.line(S.x0 + bankW / 2, tapY, S.x0 + bankW / 2, S.y - 24, "QDF-BARRAMENTO-A");
+    const phasesN = L.phases.concat(["N"]);
+    for (let i = 0; i < S.count; i++) {
+      const x = S.x0 + i * (S.modW + S.modGap);
+      const mcx = x + S.modW / 2;
+      w.rect(x, S.y - 20, S.modW, 40, "QDF-DISPOSITIVO");
+      w.text(mcx, S.y + 2, 3.5, `DPS ${phasesN[i] || "N"}`, "QDF-TEXTO", "center");
+      w.line(mcx, S.y + 20, mcx, S.y + 30, "QDF-PE");
+    }
+    w.line(S.x0 + S.modW / 2, S.y + 30, S.x0 + bankW - S.modW / 2, S.y + 30, "QDF-PE");
+    w.line(S.x0 + S.modW / 2, S.y + 30, L.leftCol.peX + G.stripW / 2, S.y + 30, "QDF-PE");
+    w.text(S.x0, S.y + 48, 3.8, "DPS EM PARALELO (DERIVACAO) - NBR 5410 6.3.5.2 - ESQUEMA " + opts.scheme, "QDF-TEXTO");
+
+    // ── DR geral ──
+    const dw = 96, dh = 44;
+    w.rect(L.cx - dw / 2, L.topY2 - dh / 2, dw, dh, "QDF-DISPOSITIVO");
+    w.text(L.cx, L.topY2 + 4, 4, mrcd.data.In ? `DR GERAL ${mrcd.data.In}A/${mrcd.data.sensitivityMa}mA` : "DR GERAL", "QDF-TEXTO", "center");
+
+    // ── Pente vertical central (uma barra por fase) ──
+    L.phases.forEach(p => {
+      const x = L.combX[p];
+      w.line(x, L.topY2 + dh / 2, x, L.combTop, PHASE_LAYER[p]);
+      w.rect(x - G.combW / 2, L.combTop, G.combW, L.combBottom - L.combTop, PHASE_LAYER[p]);
+      w.text(x, L.combTop - 4, 4, p, PHASE_LAYER[p], "center");
       const busNode = by["bus-" + p];
-      w.line(L.busX0, L.busY[p], L.busX1 - 168, L.busY[p], PHASE_LAYER[p]);
-      w.text(L.busX0 - 14, L.busY[p] + 2, 4.5, p, PHASE_LAYER[p]);
       if (busNode && busNode.calc.currentA != null) {
-        w.text(L.busX1 - 158, L.busY[p] + 2, 3.5, `${busNode.calc.currentA.toFixed(1)}A`, "QDF-TEXTO");
-      }
-      // Riser da fase até a última fileira
-      if (L.rows.length) {
-        const lastRow = L.rows[L.rows.length - 1];
-        w.line(L.riserX(k), L.busY[p], L.riserX(k), lastRow.combY + k * G.combGap, PHASE_LAYER[p]);
+        w.text(L.cx, L.busLabelY + L.phases.indexOf(p) * 13 + 8, 3.5,
+          `FASE ${p}: ${busNode.calc.currentA.toFixed(1)}A`, PHASE_LAYER[p], "center");
       }
     });
 
-    // Fileiras: pentes, trilho DIN, disjuntores, cabos, cargas
-    for (const row of L.rows) {
-      const rowEndX = L.slotX(Math.max(row.slots, 1)) - 14;
-      L.phases.forEach((p, k) => {
-        w.line(L.riserX(k), row.combY + k * G.combGap, rowEndX, row.combY + k * G.combGap, PHASE_LAYER[p]);
+    // ── Circuitos: stubs, módulos, fios de saída, etiquetas ──
+    const drawRow = (circ, y, col, isLeft) => {
+      const brk = by[circ.breakerId], cond = by[circ.conductorId], load = by[circ.loadId];
+      const modIn = isLeft ? col.modX + G.modW : col.modX;
+      const modOut = isLeft ? col.modX : col.modX + G.modW;
+      const tagEdge = isLeft ? col.tagX + G.tagW : col.tagX;
+      circ.phases.forEach((p, k) => {
+        const sy = y - (circ.phases.length - 1) * 3.5 + k * 7;
+        w.line(L.combX[p], sy, modIn, sy, PHASE_LAYER[p]);
       });
-      const railX0 = L.slotX(0) - 12;
-      w.rect(railX0, row.railY, rowEndX - railX0 + 12, 8, "QDF-GABINETE");
+      w.rect(col.modX, y - G.modH / 2, G.modW, G.modH, "QDF-DISPOSITIVO");
+      w.text(col.modX + G.modW / 2, y + 3, 4,
+        `C${String(circ.n).padStart(2, "0")} ${brk.data.In}A ${brk.data.curve} ${circ.phases.length}P`, "QDF-TEXTO", "center");
+      w.line(modOut, y, tagEdge, y, PHASE_LAYER[circ.phases[0]] || "QDF-CABO");
+      w.text(col.modX + G.modW / 2, y - G.modH / 2 - 6, 3.2,
+        `${cond.data.section}mm2 ${cond.data.lengthM}m`, "QDF-TEXTO", "center");
+      w.rect(col.tagX, y - 13, G.tagW, 26, "QDF-CABO");
+      w.text(col.tagX + G.tagW / 2, y + 2, 3.2, String(load.data.name).slice(0, 24), "QDF-TEXTO", "center");
+      // N e PE da carga às barras da borda
+      const outEdge = isLeft ? col.tagX : col.tagX + G.tagW;
+      w.line(outEdge, y - 5, col.nX + G.stripW / 2, y - 5, "QDF-NEUTRO");
+      w.line(outEdge, y + 5, col.peX + G.stripW / 2, y + 5, "QDF-PE");
+    };
+    L.cols.left.forEach((c, i) => drawRow(c, L.rowY(i), L.leftCol, true));
+    L.cols.right.forEach((c, i) => drawRow(c, L.rowY(i), L.rightCol, false));
 
-      for (const item of row.items) {
-        const circ = item.circ;
-        const brk = by[circ.breakerId], cond = by[circ.conductorId], load = by[circ.loadId];
-        const x0 = L.slotX(item.slot);
-        const wMod = item.poles * G.slotW - 12;
-        const cx = x0 + wMod / 2;
-        const top = row.modTop;
-
-        // stubs de fase → módulo
-        circ.phases.forEach((p, k) => {
-          const px = x0 + (k + 0.5) * (wMod / item.poles);
-          w.line(px, row.combY + L.phases.indexOf(p) * G.combGap, px, top, PHASE_LAYER[p]);
-        });
-        // módulo
-        w.rect(x0, top, wMod, G.modH, "QDF-DISPOSITIVO");
-        w.text(cx, top - 6, 4, `C${String(circ.n).padStart(2, "0")}`, "QDF-TEXTO", "center");
-        w.text(cx, top + 18, 4, `${brk.data.In}A ${brk.data.curve} ${item.poles}P`, "QDF-TEXTO", "center");
-        // cabo + carga
-        const tagY = top + G.modH + G.cableZone - 34;
-        w.line(cx, top + G.modH, cx, tagY, "QDF-CABO");
-        w.text(cx + 6, top + G.modH + 14, 3.5, `${cond.data.section}mm2 ${cond.data.lengthM}m`, "QDF-TEXTO");
-        w.rect(cx - Math.max(wMod, 50) / 2, tagY, Math.max(wMod, 50), 26, "QDF-CABO");
-        w.text(cx, tagY + 16, 3.5, String(load.data.name).slice(0, 24), "QDF-TEXTO", "center");
-      }
-    }
-
-    // Barras N / PE
-    const halfW = (L.encW - 2 * G.padX - 30) / 2;
-    const nx = L.encX + G.padX, px = nx + halfW + 30;
+    // ── Barras N/PE das bordas ──
+    const y0 = L.rowsY0 - 14, y1 = L.rowsYEnd + 8;
     if (by["bus-N"]) {
-      w.rect(nx, L.termY, halfW, 13, "QDF-NEUTRO");
-      w.text(nx + 4, L.termY + 26, 4, "BARRA DE NEUTRO (N)", "QDF-NEUTRO");
+      w.rect(L.leftCol.nX, y0, G.stripW, y1 - y0, "QDF-NEUTRO");
+      w.rect(L.rightCol.nX, y0, G.stripW, y1 - y0, "QDF-NEUTRO");
+      w.text(L.cx, L.busLabelY + L.phases.length * 13 + 6, 3.8, "BARRA DE NEUTRO (N) - AZUL-CLARO", "QDF-NEUTRO", "center");
     }
     if (by["bus-PE"]) {
-      w.rect(px, L.termY, halfW, 13, "QDF-PE");
-      w.text(px + 4, L.termY + 26, 4, "BARRA DE PROTECAO (PE)", "QDF-PE");
+      w.rect(L.leftCol.peX, y0, G.stripW, y1 - y0, "QDF-PE");
+      w.rect(L.rightCol.peX, y0, G.stripW, y1 - y0, "QDF-PE");
+      w.text(L.cx, L.busLabelY + L.phases.length * 13 + 16, 3.8, "BARRA DE PROTECAO (PE) - VERDE", "QDF-PE", "center");
     }
 
     // Rodapé normativo
     w.text(L.encX, L.height - 8, 3.5,
-      "EasyEletric - Pre-dimensionamento NBR 5410:2023 - nao substitui projeto assinado com ART/RRT", "QDF-TEXTO");
+      "EasyEletric - Pre-dimensionamento NBR 5410:2023 - cores de condutor cf. 6.1.5.3 - nao substitui projeto assinado com ART/RRT", "QDF-TEXTO");
 
     w.pair(0, "ENDSEC");
     w.pair(0, "EOF");
