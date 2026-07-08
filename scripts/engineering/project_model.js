@@ -471,7 +471,7 @@
     function byType(type) { return nodes.filter(n => n.type === type); }
 
     return {
-      version: "3.5",
+      version: "3.6",
       nodes, byId, root: utility.id, circuits, summary,
       meta: {
         site: { Vfn: site.Vfn, Vll: site.Vll, supplyType: st, Ta: site.Ta, insulation: site.insulation },

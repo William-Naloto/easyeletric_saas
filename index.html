@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="description" content="EasyEletric SaaS v3.5 - Projetista elétrico residencial NBR 5410:2023. Smart Distribution Board interativo, dimensionamento automático, mono/bi/trifásico.">
+<meta name="description" content="EasyEletric SaaS v3.6 - Projetista elétrico residencial NBR 5410:2023. Smart Distribution Board interativo, dimensionamento automático, mono/bi/trifásico.">
 <meta name="keywords" content="dimensionador elétrico,NBR 5410,calcular disjuntor,QDF residencial,DR DPS,projeto elétrico">
 <meta name="robots" content="index,follow">
 <meta property="og:title" content="EasyEletric SaaS | Projetista Elétrico NBR 5410:2023">
@@ -671,6 +671,21 @@ nav {
   box-shadow:var(--sh-sm); font-size:11px; line-height:1.45; color:var(--t1);
 }
 #qxTooltip .tt-sub { color:var(--t3); font-family:var(--mono); font-size:10px }
+#qxCanvas.nogrid { background:var(--bg) }
+#qxMinimap {
+  position:absolute; right:12px; bottom:12px; z-index:30;
+  width:172px; border:1px solid var(--brf); border-radius:var(--r);
+  background:var(--bg2); box-shadow:var(--sh-sm);
+  overflow:hidden; cursor:crosshair;
+}
+#qxMinimapSvg { pointer-events:none; line-height:0 }
+#qxMinimapSvg svg { width:100%; height:auto; display:block }
+#qxMinimapView {
+  position:absolute; pointer-events:none;
+  border:1.5px solid var(--acl); background:var(--acg);
+  border-radius:2px;
+}
+#qxMaker { -webkit-appearance:none; appearance:none }
 #qxInspector {
   width:300px; flex-shrink:0; overflow-y:auto;
   border-left:1px solid var(--br); background:var(--bgc);
@@ -1176,7 +1191,7 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
   <div class="nav-logo" onclick="gotoSection('hero')">
     <div class="logo-icon"><i class="fa-solid fa-bolt"></i></div>
     <span>EasyEletric</span>
-    <span class="logo-badge">SaaS v3.5</span>
+    <span class="logo-badge">SaaS v3.6</span>
   </div>
   <div class="nav-links">
     <button class="nav-link" onclick="gotoSection('features')">Recursos</button>
@@ -1253,7 +1268,7 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
      FEATURES
      ============================================================ -->
 <section class="section" id="features">
-  <div class="sec-lbl"><i class="fa-solid fa-star"></i> Recursos v3.5</div>
+  <div class="sec-lbl"><i class="fa-solid fa-star"></i> Recursos v3.6</div>
   <h2 class="sec-h2">Projetista Assistido Residencial</h2>
   <p class="sec-sub">Duas formas de uso: informe cômodos e áreas para geração automática, ou adicione cargas manualmente.</p>
   <div class="feat-grid">
@@ -1580,8 +1595,14 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
             <button class="tw-tb-btn on" id="qxOv-drop" onclick="qxToggleOverlay('drop',this)" title="Queda de tensão por circuito"><i class="fa-solid fa-arrow-trend-down"></i> ΔV</button>
             <button class="tw-tb-btn" id="qxOv-icc" onclick="qxToggleOverlay('icc',this)" title="Curto-circuito e capacidade de interrupção"><i class="fa-solid fa-explosion"></i> Icc</button>
             <button class="tw-tb-btn on" id="qxOv-validation" onclick="qxToggleOverlay('validation',this)" title="Status de validação (verde/amarelo/vermelho)"><i class="fa-solid fa-circle-check"></i> Validação</button>
+            <div class="tw-tb-sep"></div>
+            <button class="tw-tb-btn on" id="qxGridBtn" onclick="qxToggleGrid(this)" title="Mostrar/ocultar grade do canvas"><i class="fa-solid fa-border-all"></i> Grade</button>
+            <button class="tw-tb-btn on" id="qxMiniBtn" onclick="qxToggleMinimap(this)" title="Mostrar/ocultar mini-mapa"><i class="fa-solid fa-map"></i> Mini-mapa</button>
+            <select class="tw-tb-btn" id="qxMaker" onchange="qxSetMaker(this.value)" title="Fabricante de referência (referências ilustrativas — confirme no catálogo oficial)" aria-label="Fabricante de referência"></select>
           </div>
           <div class="tw-tb-group">
+            <button class="btn btn-o" style="font-size:11px;padding:5px 10px" onclick="exportQdfSchedule()" title="Mapa do quadro (panel schedule) imprimível"><i class="fa-solid fa-table-list"></i> Mapa</button>
+            <button class="btn btn-o" style="font-size:11px;padding:5px 10px" onclick="exportQdfDXF()" title="Exportar DXF R12 (AutoCAD/QCAD/LibreCAD)"><i class="fa-solid fa-compass-drafting"></i> DXF</button>
             <button class="btn btn-o" style="font-size:11px;padding:5px 10px" onclick="exportQdfSVG()" title="Exportar SVG vetorial (tema de impressão)"><i class="fa-solid fa-file-code"></i> SVG</button>
             <button class="btn btn-o" style="font-size:11px;padding:5px 10px" onclick="exportQdfPNG()" title="Exportar PNG em alta resolução"><i class="fa-solid fa-image"></i> PNG</button>
             <button class="btn btn-p" style="font-size:11px;padding:5px 10px" onclick="exportQdfPDF()" title="Imprimir / salvar PDF com carimbo técnico"><i class="fa-solid fa-file-pdf"></i> PDF</button>
@@ -1591,6 +1612,10 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
           <div id="qxCanvas">
             <div id="qxViewport"></div>
             <div id="qxTooltip"></div>
+            <div id="qxMinimap" title="Mini-mapa — clique para navegar" aria-hidden="true">
+              <div id="qxMinimapSvg"></div>
+              <div id="qxMinimapView"></div>
+            </div>
           </div>
           <aside id="qxInspector" aria-label="Inspetor de engenharia do quadro"></aside>
         </div>
@@ -1777,12 +1802,12 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
       <div class="footer-col">
         <h4>Sobre</h4>
         <a href="https://github.com/William-Naloto/easyeletric_saas" target="_blank">GitHub</a>
-        <a href="CHANGELOG.md">Changelog v3.5</a>
+        <a href="CHANGELOG.md">Changelog v3.6</a>
         <a href="README.md">Documentação</a>
       </div>
     </div>
     <div class="footer-bottom">
-      <p>EasyEletric SaaS v3.5 &copy; 2025 William Naloto &bull; Sem coleta de PII &bull;
+      <p>EasyEletric SaaS v3.6 &copy; 2025 William Naloto &bull; Sem coleta de PII &bull;
         <a href="https://github.com/William-Naloto/easyeletric_saas" target="_blank">GitHub Pages</a><br>
         <strong>Aviso:</strong> Ferramenta de pré-dimensionamento. Não substitui projeto elétrico, ART/RRT, consulta NBR 5410 oficial e catálogos de fabricantes.
       </p>
@@ -1790,7 +1815,7 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
         <span class="fbadge">NBR 5410</span>
         <span class="fbadge">Offline</span>
         <span class="fbadge">No PII</span>
-        <span class="fbadge">v3.5</span>
+        <span class="fbadge">v3.6</span>
       </div>
     </div>
   </div>
@@ -1889,16 +1914,19 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
   </div>
 </div>
 
-<script src="scripts/nbr5410_engine.js?v=3.5.0"></script>
-<script src="scripts/engineering/phase_balance.js?v=3.5.0"></script>
-<script src="scripts/engineering/rcd.js?v=3.5.0"></script>
-<script src="scripts/engineering/spd.js?v=3.5.0"></script>
-<script src="scripts/engineering/grounding.js?v=3.5.0"></script>
-<script src="scripts/engineering/decision_log.js?v=3.5.0"></script>
-<script src="scripts/engineering/project_model.js?v=3.5.0"></script>
-<script src="scripts/engineering/unifilar_twin.js?v=3.5.0"></script>
-<script src="scripts/engineering/panel_health.js?v=3.5.0"></script>
-<script src="scripts/engineering/qdf_twin.js?v=3.5.0"></script>
+<script src="scripts/nbr5410_engine.js?v=3.6.0"></script>
+<script src="scripts/engineering/phase_balance.js?v=3.6.0"></script>
+<script src="scripts/engineering/rcd.js?v=3.6.0"></script>
+<script src="scripts/engineering/spd.js?v=3.6.0"></script>
+<script src="scripts/engineering/grounding.js?v=3.6.0"></script>
+<script src="scripts/engineering/decision_log.js?v=3.6.0"></script>
+<script src="scripts/engineering/project_model.js?v=3.6.0"></script>
+<script src="scripts/engineering/unifilar_twin.js?v=3.6.0"></script>
+<script src="scripts/engineering/panel_health.js?v=3.6.0"></script>
+<script src="scripts/engineering/qdf_twin.js?v=3.6.0"></script>
+<script src="scripts/engineering/manufacturer_catalog.js?v=3.6.0"></script>
+<script src="scripts/engineering/panel_schedule.js?v=3.6.0"></script>
+<script src="scripts/engineering/dxf_export.js?v=3.6.0"></script>
 <script>
 // ================================================================
 // NBR 5410:2023 — camada de integração com o motor de cálculo
@@ -3429,7 +3457,7 @@ function exportToExcel(){
   const{Vfn,Vll}=getSysVoltages();
   const wb=XLSX.utils.book_new();
   const sum=[
-    ["EasyEletric SaaS v3.5 — NBR 5410:2023"],[""],
+    ["EasyEletric SaaS v3.6 — NBR 5410:2023"],[""],
     ["Projeto","EasyEletric"],["Data",new Date().toLocaleDateString("pt-BR")],
     ["Circuitos",results.length],["Potência Total (W)",results.reduce((s,r)=>s+r.l.power,0)],
     ["Maior Queda (%)",Math.max(...results.map(r=>parseFloat(r.vd.pct))).toFixed(2)],
@@ -3714,7 +3742,7 @@ function twRender(){
   if(!_twModel)return;
   document.getElementById("twViewport").innerHTML=EEUnifilarTwin.render(_twModel,{
     theme:twTheme(),overlays:_twState.overlays,
-    projectName:"EasyEletric SaaS v3.5",
+    projectName:"EasyEletric SaaS v3.6",
     date:new Date().toLocaleDateString("pt-BR")
   });
   twApplyTransform();
@@ -3943,7 +3971,7 @@ function twExplorer(id){
 function twPrintSVG(){
   return EEUnifilarTwin.render(_twModel,{
     theme:"print",overlays:_twState.overlays,
-    projectName:"EasyEletric SaaS v3.5",
+    projectName:"EasyEletric SaaS v3.6",
     date:new Date().toLocaleDateString("pt-BR")
   });
 }
@@ -3970,18 +3998,22 @@ function exportUnifilarPDF(){
 // (EEProjectModel = fonte única · EEQdfTwin = painel realista ·
 //  EEPanelHealth = saúde/otimização · infraestrutura twin genérica)
 // ================================================================
-let _qxModel=null,_qxHealth=null,_qxRecs=null;
-const _qxState={scale:1,tx:0,ty:0,overlays:{current:true,drop:true,icc:false,validation:true},selected:null,fitted:false};
+let _qxModel=null,_qxHealth=null,_qxRecs=null,_qxCatalog=null;
+const _qxState={scale:1,tx:0,ty:0,overlays:{current:true,drop:true,icc:false,validation:true},selected:null,fitted:false,maker:"generic",grid:true,minimap:true};
 
 function qxSvg(){return document.querySelector("#qxViewport svg")}
 
 function qxRender(){
   if(!_qxModel)return;
+  // Catálogo de fabricante (referências ilustrativas nos módulos)
+  _qxCatalog=_qxState.maker!=="generic"?EEManufacturerCatalog.forModel(_qxState.maker,_qxModel):null;
   document.getElementById("qxViewport").innerHTML=EEQdfTwin.render(_qxModel,{
     theme:twTheme(),overlays:_qxState.overlays,
-    projectName:"EasyEletric SaaS v3.5",
+    catalog:_qxCatalog||undefined,
+    projectName:"EasyEletric SaaS v3.6",
     date:new Date().toLocaleDateString("pt-BR")
   });
+  qxMinimapRender();
   qxApplyTransform();
   if(_qxState.selected)twinMarkSelected(qxSvg(),"qtw",_qxState.selected);
 }
@@ -3991,6 +4023,7 @@ function qxApplyTransform(){
   document.getElementById("qxViewport").style.transform=
     `translate(${_qxState.tx}px,${_qxState.ty}px) scale(${_qxState.scale})`;
   document.getElementById("qxZoomLbl").textContent=Math.round(_qxState.scale*100)+"%";
+  qxMinimapViewport();
 }
 function qxZoom(dir,cx,cy){
   const r=document.getElementById("qxCanvas").getBoundingClientRect();
@@ -4020,6 +4053,73 @@ function qxToggleOverlay(k,btn){
   btn.classList.toggle("on",_qxState.overlays[k]);
   qxRender();
 }
+function qxToggleGrid(btn){
+  _qxState.grid=!_qxState.grid;
+  btn.classList.toggle("on",_qxState.grid);
+  document.getElementById("qxCanvas").classList.toggle("nogrid",!_qxState.grid);
+}
+function qxToggleMinimap(btn){
+  _qxState.minimap=!_qxState.minimap;
+  btn.classList.toggle("on",_qxState.minimap);
+  document.getElementById("qxMinimap").style.display=_qxState.minimap?"":"none";
+  if(_qxState.minimap){qxMinimapRender();qxMinimapViewport()}
+}
+
+// ── Mini-mapa: visão geral + retângulo do viewport, clique navega ─
+function qxMinimapRender(){
+  if(!_qxState.minimap)return;
+  const svg=document.getElementById("qxViewport").innerHTML;
+  document.getElementById("qxMinimapSvg").innerHTML=svg;
+}
+function qxMinimapViewport(){
+  if(!_qxState.minimap)return;
+  const svg=qxSvg(),mini=document.getElementById("qxMinimap");
+  const view=document.getElementById("qxMinimapView");
+  if(!svg||!mini.offsetWidth){view.style.display="none";return}
+  const W=parseFloat(svg.getAttribute("width")),H=parseFloat(svg.getAttribute("height"));
+  const k=mini.clientWidth/W;
+  const canvas=document.getElementById("qxCanvas").getBoundingClientRect();
+  const x0=Math.max(0,-_qxState.tx/_qxState.scale),y0=Math.max(0,-_qxState.ty/_qxState.scale);
+  const vw=Math.min(W-x0,canvas.width/_qxState.scale),vh=Math.min(H-y0,canvas.height/_qxState.scale);
+  view.style.display="";
+  view.style.left=(x0*k)+"px";view.style.top=(y0*k)+"px";
+  view.style.width=Math.max(10,vw*k)+"px";view.style.height=Math.max(10,vh*k)+"px";
+}
+(function qxMinimapBind(){
+  const mini=document.getElementById("qxMinimap");
+  if(!mini)return;
+  const nav=e=>{
+    e.stopPropagation();
+    const svg=qxSvg();if(!svg)return;
+    const W=parseFloat(svg.getAttribute("width"));
+    const k=mini.clientWidth/W;
+    const r=mini.getBoundingClientRect();
+    const canvas=document.getElementById("qxCanvas").getBoundingClientRect();
+    _qxState.tx=canvas.width/2-((e.clientX-r.left)/k)*_qxState.scale;
+    _qxState.ty=canvas.height/2-((e.clientY-r.top)/k)*_qxState.scale;
+    qxApplyTransform();
+  };
+  let down=false;
+  mini.addEventListener("mousedown",e=>{down=true;nav(e)});
+  mini.addEventListener("mousemove",e=>{if(down)nav(e)});
+  window.addEventListener("mouseup",()=>{down=false});
+  mini.addEventListener("click",e=>e.stopPropagation());
+  mini.addEventListener("mouseover",e=>e.stopPropagation());
+})();
+
+// ── Catálogo de fabricante (referências ilustrativas) ──────────
+(function qxMakerInit(){
+  const sel=document.getElementById("qxMaker");
+  if(!sel||typeof EEManufacturerCatalog==="undefined")return;
+  sel.innerHTML=EEManufacturerCatalog.manufacturers()
+    .map(m=>`<option value="${m.id}">${m.name}</option>`).join("");
+})();
+function qxSetMaker(id){
+  _qxState.maker=id;
+  qxRender();
+  if(_qxState.selected)qxInspector(_qxState.selected);
+  if(id!=="generic")toast(EEManufacturerCatalog.DISCLAIMER,"info");
+}
 
 // ── Seleção + Inspetor de Engenharia ────────────────────────────
 function qxSelect(id){
@@ -4034,7 +4134,18 @@ function qxInspectorHome(){
 function qxInspector(id){
   const html=twinDetailHtml(_qxModel,id);
   if(!html){qxInspectorHome();return}
-  document.getElementById("qxInspector").innerHTML=html;
+  // Referência comercial do fabricante selecionado (quando houver)
+  let cat="";
+  const e=_qxCatalog&&_qxCatalog.byNode[id];
+  if(e){
+    cat=`<div class="twx-sec">Catálogo do Fabricante</div>
+      <div class="twx-kv"><span class="k">Fabricante</span><span class="v">${twEsc(e.maker)}</span></div>
+      <div class="twx-kv"><span class="k">Linha</span><span class="v">${twEsc(e.series)}</span></div>
+      <div class="twx-kv"><span class="k">Referência</span><span class="v">${twEsc(e.reference)}</span></div>
+      ${e.icnKA?`<div class="twx-kv"><span class="k">Icn da linha (kA)</span><span class="v">${e.icnKA}</span></div>`:""}
+      <div style="font-size:9px;color:var(--t3);margin-top:5px;line-height:1.5">${twEsc(_qxCatalog.disclaimer)}</div>`;
+  }
+  document.getElementById("qxInspector").innerHTML=html+cat;
 }
 twinBindCanvas({
   canvas:"qxCanvas",tooltip:"qxTooltip",prefix:"qtw",
@@ -4116,7 +4227,7 @@ function qxApplyRec(i){
 function qxPrintSVG(){
   return EEQdfTwin.render(_qxModel,{
     theme:"print",overlays:_qxState.overlays,
-    projectName:"EasyEletric SaaS v3.5",
+    projectName:"EasyEletric SaaS v3.6",
     date:new Date().toLocaleDateString("pt-BR")
   });
 }
@@ -4131,7 +4242,7 @@ function exportQdfPNG(){
   if(!_qxModel){toast("Calcule os circuitos primeiro.","err");return}
   const svgStr=EEQdfTwin.render(_qxModel,{
     theme:twTheme(),overlays:_qxState.overlays,
-    projectName:"EasyEletric SaaS v3.5",
+    projectName:"EasyEletric SaaS v3.6",
     date:new Date().toLocaleDateString("pt-BR")
   });
   const url=URL.createObjectURL(new Blob([svgStr],{type:"image/svg+xml"}));
@@ -4161,6 +4272,26 @@ function exportQdfPDF(){
 <body>${qxPrintSVG()}<script>window.onload=function(){window.print()}<\/script></body></html>`);
   w.document.close();
   toast("Abrindo para impressão / salvar PDF…","info");
+}
+function exportQdfSchedule(){
+  if(!_qxModel){toast("Calcule os circuitos primeiro.","err");return}
+  const html=EEPanelSchedule.toHtml(_qxModel,{
+    catalog:_qxCatalog||undefined,
+    projectName:"EasyEletric SaaS v3.6",
+    date:new Date().toLocaleDateString("pt-BR")
+  });
+  const w=window.open("","_blank");
+  w.document.write(html+`<script>window.onload=function(){window.print()}<\/script>`);
+  w.document.close();
+  toast("Mapa do quadro aberto para impressão / PDF…","info");
+}
+function exportQdfDXF(){
+  if(!_qxModel){toast("Calcule os circuitos primeiro.","err");return}
+  const dxf=EEDxfExport.render(_qxModel,{projectName:"EasyEletric SaaS v3.6"});
+  const blob=new Blob([dxf],{type:"application/dxf"});
+  const a=Object.assign(document.createElement("a"),{href:URL.createObjectURL(blob),download:"qdf_smart_distribution_board.dxf"});
+  a.click();URL.revokeObjectURL(a.href);
+  toast("DXF R12 exportado — abre em AutoCAD/QCAD/LibreCAD.","ok");
 }
 
 // ================================================================

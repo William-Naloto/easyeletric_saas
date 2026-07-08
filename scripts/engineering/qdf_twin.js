@@ -234,7 +234,7 @@
       out += tx(L.width / 2, 48, "ABNT NBR 5410:2023 — Instalações Elétricas de Baixa Tensão", 'text-anchor="middle" font-size="10" fill="#333"');
       out += tx(14, 80, `Projeto: ${proj}`, 'font-size="10" fill="#000"');
       out += tx(L.width / 2, 80, `Sistema ${s.supplyType} · ${s.circuits} circuitos · Demanda ${fmt(s.demandVA / 1000, 2)} kVA`, 'text-anchor="middle" font-size="10" fill="#000"');
-      out += tx(L.width - 14, 80, opts.date ? `Data: ${opts.date}` : "EasyEletric v3.5", 'text-anchor="end" font-size="10" fill="#000"');
+      out += tx(L.width - 14, 80, opts.date ? `Data: ${opts.date}` : "EasyEletric v3.6", 'text-anchor="end" font-size="10" fill="#000"');
     } else {
       out += tx(L.encX, 30, "SMART DISTRIBUTION BOARD — QDF", `font-size="15" font-weight="800" fill="${P.ink}" letter-spacing="2"`);
       out += tx(L.encX, 48, `${proj} · NBR 5410:2023`, `font-size="10" fill="${P.dim}"`);
@@ -584,7 +584,7 @@
     out += `</g>`;
     if (theme === "print") {
       out += tx(L.encX, L.height - 14,
-        "EasyEletric v3.5 — Smart Distribution Board | ABNT NBR 5410:2023 | Pré-dimensionamento — não substitui projeto assinado com ART/RRT",
+        "EasyEletric v3.6 — Smart Distribution Board | ABNT NBR 5410:2023 | Pré-dimensionamento — não substitui projeto assinado com ART/RRT",
         `font-size="7.5" fill="${P.dim}"`);
     }
     return out;
