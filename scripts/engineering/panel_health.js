@@ -51,6 +51,25 @@
   // Circuito "no limite" de queda de tensão (fração do limite NBR)
   const DROP_ATTENTION_RATIO = 0.8;
 
+  // Seções comerciais de cobre (mm²) — NBR NM 280 / prática NBR 5410
+  const COMMERCIAL_SECTIONS = [1.5, 2.5, 4, 6, 10, 16, 25, 35, 50, 70, 95, 120];
+
+  /** Próxima seção comercial acima da atual (null se já é a maior). */
+  function nextSection(section) {
+    for (const s of COMMERCIAL_SECTIONS) if (s > section) return s;
+    return null;
+  }
+
+  /**
+   * Estimativa da queda com a próxima seção: em circuitos residenciais
+   * a resistência domina a impedância, e R ∝ 1/S ⇒ ΔV' ≈ ΔV·(S/S').
+   * É uma ESTIMATIVA de recomendação — o valor exato sai do motor ao
+   * recalcular; por isso a sugestão é informativa, nunca auto-aplicada.
+   */
+  function estimateDropAt(dropPct, section, newSection) {
+    return dropPct * (section / newSection);
+  }
+
   const STATUS_RANK = { PASS: 0, WARN: 1, ERROR: 2 };
   const worst = (a, b) => (STATUS_RANK[b] || 0) > (STATUS_RANK[a] || 0) ? b : a;
 
@@ -300,17 +319,30 @@
       });
     }
 
-    // 5. Circuitos operando perto do limite de queda de tensão
+    // 5. Circuitos operando perto do limite de queda de tensão —
+    //    sugestão QUANTIFICADA: próxima seção comercial e ΔV estimada
     for (const c of model.circuits) {
       const cond = model.byId[c.conductorId];
       const dropPct = cond.calc.dropPct;
       const maxPct = cond.calc.maxDropPct;
       if (maxPct && dropPct <= maxPct && dropPct > DROP_ATTENTION_RATIO * maxPct) {
+        const next = nextSection(cond.data.section);
+        const estimated = next ? estimateDropAt(dropPct, cond.data.section, next) : null;
         recs.push({
           id: `drop-${c.id}`,
           severity: "info",
           title: `Circuito ${c.n} (${c.name}) com ΔV ${fmtNum(dropPct, 2)}% próximo do limite ${maxPct}%`,
-          detail: `Seção ${cond.data.section} mm² em ${cond.data.lengthM} m — a próxima seção comercial reduziria a queda e o aquecimento`,
+          detail: next
+            ? `Seção ${cond.data.section} mm² em ${cond.data.lengthM} m — subir para ${next} mm² reduziria a queda para ≈ ${fmtNum(estimated, 2)}% (estimativa R ∝ 1/S; valor exato ao recalcular)`
+            : `Seção ${cond.data.section} mm² em ${cond.data.lengthM} m — já na maior seção comercial; avalie reduzir o comprimento ou dividir o circuito`,
+          suggestion: next ? {
+            type: "cable-section",
+            circuit: c.n,
+            fromSection: cond.data.section,
+            toSection: next,
+            dropPct,
+            estimatedDropPct: estimated == null ? null : Math.round(estimated * 100) / 100
+          } : null,
           reference: "NBR 5410 §6.2.7 — limites de queda de tensão"
         });
       }
@@ -328,10 +360,13 @@
     recommend,
     gradeOf,
     collectFindings,
+    nextSection,
+    estimateDropAt,
     THRESHOLDS: {
       PENALTY, WEIGHTS, GRADES,
       BUS_UTIL_WARN_PCT, BUS_UTIL_ERROR_PCT,
-      MIN_FUTURE_CAPACITY_PCT, DROP_ATTENTION_RATIO
+      MIN_FUTURE_CAPACITY_PCT, DROP_ATTENTION_RATIO,
+      COMMERCIAL_SECTIONS
     }
   };
 });

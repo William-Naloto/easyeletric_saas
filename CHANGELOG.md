@@ -1,5 +1,22 @@
 # Changelog
 
+## v3.6 — 2026-07-08 · Engineering Workspace — roadmap concluído
+
+Conclui o roadmap do Smart Distribution Board: catálogo de fabricantes, mapa do quadro (panel schedule), exportação DXF para CAD, mini-mapa/grade no canvas e sugestões de seção de cabo quantificadas.
+
+### Added
+- **Catálogo de fabricantes** `engineering/manufacturer_catalog.js` — referências comerciais para disjuntores, DR e DPS a partir das seleções do motor (WEG MDW/MDWH, Schneider Easy9/Acti9, Siemens 5SL, ABB SH200/S200 + genérico): a série é escolhida pela **Icn requerida** calculada pelo motor (linha residencial → linha reforçada quando necessário); DR com polos comerciais (2P/4P) pelo sistema. Referências seguem o padrão de codificação de cada fabricante e são **ilustrativas** — disclaimer em toda saída (12 testes).
+- **Panel Schedule** `engineering/panel_schedule.js` — mapa do quadro em dois formatos do MESMO modelo: dados estruturados (`build`) e **documento HTML imprimível A4** (`toHtml`) com carimbo técnico, entrada/proteção geral, tabela de circuitos (fases coloridas, disjuntor, DR, cabo F/PE, ΔV, status), totais do quadro e coluna de referência comercial quando um catálogo é fornecido (12 testes).
+- **Exportação DXF** `engineering/dxf_export.js` — DXF ASCII **R12 (AC1009)** do painel com camadas por disciplina (gabinete, barramentos por fase com cores ACI, dispositivos, cabos, textos) e geometria derivada do MESMO layout do SVG (`EEQdfTwin.layout`) — abre em AutoCAD, QCAD, LibreCAD, BricsCAD (13 testes). DWG/IFC permanecem fora do escopo client-side (formato proprietário / modelo BIM): o DXF cobre a interoperação CAD.
+- **Mini-mapa e grade no workspace do QDF** — mini-mapa com retângulo do viewport e navegação por clique/arrasto; alternância da grade do canvas; ambos sem re-render do modelo.
+- **Seletor de fabricante no app** — as referências aparecem nos módulos do painel SVG e em uma seção "Catálogo do Fabricante" no inspetor; o mapa do quadro ganha a coluna de referência.
+- **Sugestões de cabo quantificadas** — recomendações de queda de tensão passam a indicar a **próxima seção comercial e a ΔV estimada** (R ∝ 1/S), sempre informativas (o valor exato sai do motor ao recalcular).
+- Runner unificado passa a 13 suítes / 286 casos (`node scripts/test_all.js`).
+
+### Changed
+- `EEQdfTwin.render` aceita `opts.catalog` (referências impressas nos módulos).
+- Branding e cache-busting atualizados para v3.6.
+
 ## v3.5 — 2026-07-07 · Smart Distribution Board
 
 O QDF deixa de ser uma tabela e se torna o recurso-assinatura do EasyEletric: um **painel elétrico realista e interativo**, renderizado do gêmeo digital, com saúde de engenharia, inspetor por componente e otimizador auditável. Arquitetura documentada em `docs/smart_distribution_board_v3_5.md`.
