@@ -153,9 +153,11 @@
     const cx = encX + encW / 2;
 
     const titleY = encY + 26;
-    const topY1 = encY + 84;          // linha DPS (esq) + GERAL (dir)
-    const topY2 = encY + 158;         // linha do DR GERAL (centro)
-    const combTop = topY2 + 44;
+    // Linha ÚNICA de dispositivos de entrada (como num painel real):
+    // DPS (esq) · DR GERAL (centro, sobre o pente) · DISJUNTOR GERAL
+    // (imediatamente à direita do DR, recebendo o alimentador)
+    const topY1 = encY + 96;
+    const combTop = topY1 + 64;
     const rowsY0 = combTop + 26;
     const rowsYEnd = rowsY0 + Math.max(cols.rows, 1) * G.rowH;
     const combBottom = rowsYEnd + 6;
@@ -185,18 +187,20 @@
 
     const rowY = i => rowsY0 + i * G.rowH + G.rowH / 2;
 
-    // Zona de entrada
+    // Zona de entrada — dimensões dos módulos gerais
+    const drW = 96, mainW = 118, devH = 44;
     const spd = {
       x0: encX + G.padX + 14, y: topY1,
       modW: 26, modGap: 5, count: phases.length + 1  // fases + N
     };
-    const mainX = encX + encW - G.padX - 130;
+    const drX = cx - drW / 2;               // DR centrado sobre o pente
+    const mainX = cx + drW / 2 + 52;        // geral logo à direita do DR
 
     return {
       headerH, encX, encY, encW, encH, width, height, cx,
-      titleY, topY1, topY2, combTop, combBottom, busLabelY,
+      titleY, topY1, combTop, combBottom, busLabelY,
       combX, phases, cols, rowY, rowsY0, rowsYEnd,
-      leftCol, rightCol, spd, mainX
+      leftCol, rightCol, spd, mainX, drX, drW, mainW, devH
     };
   }
 
@@ -289,58 +293,65 @@
     return out;
   }
 
-  /** Zona de entrada: alimentador → GERAL (dir) → derivação DPS em
-   *  PARALELO (esq, com descida ao PE) → DR GERAL (centro). */
+  /** Zona de entrada em LINHA ÚNICA (disposição de painel real):
+   *  DPS em paralelo (esq) ← tap no jumper ← DR GERAL (centro,
+   *  sobre o pente) ← jumper curto ← DISJUNTOR GERAL (dir), que
+   *  recebe o alimentador descendo reto do topo do gabinete. */
   function incomingZone(model, P, L, opts) {
     const by = model.byId;
     const feeder = by.feeder, main = by["main-breaker"], spd = by.spd, mrcd = by["main-rcd"];
+    const dh = L.devH, dw = L.drW, mw = L.mainW;
+    const y = L.topY1;
+    const mainCx = L.mainX + mw / 2;
+    const drCx = L.cx;
     let out = "";
 
-    // ── Alimentador entra pelo topo, à direita, no disjuntor geral ──
-    const mw = 118, mh = 44;
-    const mainCx = L.mainX + mw / 2;
+    // ── Alimentador: desce RETO do topo do gabinete no geral ──
     out += `<g class="qtw-node" data-node="feeder" data-kind="conductor">`;
     out += ln(mainCx, L.encY - 12, mainCx, L.encY + 4, wire(P.ink, 3));
-    out += ln(mainCx, L.encY + 36, mainCx, L.topY1 - mh / 2, wire(WIRES.A, 3));
-    out += tx(L.mainX - 10, L.encY + 52, "ALIMENTADOR", `text-anchor="end" font-size="7.5" font-weight="700" letter-spacing="1" fill="${P.dimIn}"`);
+    out += ln(mainCx, L.encY + 36, mainCx, y - dh / 2, wire(WIRES.A, 3));
+    // Rótulos à DIREITA do módulo do geral (coluna totalmente livre)
+    const flx = L.mainX + mw + 12;
+    out += tx(flx, L.encY + 52, "ALIMENTADOR", `font-size="7.5" font-weight="700" letter-spacing="1" fill="${P.dimIn}"`);
     if (feeder.data.section) {
-      out += tx(L.mainX - 10, L.encY + 63, `${feeder.data.section} mm² + N ${feeder.data.neutral} + PE ${feeder.data.pe} mm² · ${feeder.data.lengthM} m · ${feeder.data.method}`, `text-anchor="end" font-size="8" font-weight="700" fill="${P.inkIn}"`);
-      let fy = L.encY + 74;
+      out += tx(flx, L.encY + 64, `${feeder.data.section} mm² + N ${feeder.data.neutral} + PE ${feeder.data.pe} mm²`, `font-size="8" font-weight="700" fill="${P.inkIn}"`);
+      out += tx(flx, L.encY + 75, `${feeder.data.lengthM} m · ${feeder.data.method} · Izc ${fmt(feeder.calc.Izc)} A`, `font-size="7.5" fill="${P.dimIn}"`);
+      let fy = L.encY + 86;
       if (opts.overlays.current) {
-        out += tx(L.mainX - 10, fy, `Ib ${fmt(feeder.calc.Ib)} A (dim. ${fmt(feeder.calc.Idim)} A) · Izc ${fmt(feeder.calc.Izc)} A`, `class="qtw-ov qtw-ov-current" text-anchor="end" font-size="7.5" fill="${P.accent}"`);
-        fy += 10;
+        out += tx(flx, fy, `Ib ${fmt(feeder.calc.Ib)} A (dim. ${fmt(feeder.calc.Idim)} A)`, `class="qtw-ov qtw-ov-current" font-size="7.5" fill="${P.accent}"`);
+        fy += 11;
       }
       if (opts.overlays.drop) {
-        out += tx(L.mainX - 10, fy, `ΔV ${fmt(feeder.calc.dropPct, 2)}% ≤ ${feeder.calc.maxDropPct}%`, `class="qtw-ov qtw-ov-drop" text-anchor="end" font-size="7.5" fill="${statusColor(P, feeder.validation.status)}"`);
+        out += tx(flx, fy, `ΔV ${fmt(feeder.calc.dropPct, 2)}% ≤ ${feeder.calc.maxDropPct}%`, `class="qtw-ov qtw-ov-drop" font-size="7.5" fill="${statusColor(P, feeder.validation.status)}"`);
       }
     }
     out += `</g>`;
 
-    // ── Disjuntor geral ──
+    // ── Jumper curto geral → DR (com nó de derivação do DPS) ──
+    const junX = (L.mainX + L.cx + dw / 2) / 2;   // meio do jumper
+    out += ln(L.cx + dw / 2, y, L.mainX, y, wire(WIRES.A, 2.4));
+
+    // ── Disjuntor geral (recebe o alimentador; alimenta o DR) ──
     out += `<g class="qtw-node" data-node="main-breaker" data-kind="breaker">`;
-    out += moduleBody(L.mainX, L.topY1 - mh / 2, mw, mh, P, opts, main.validation.status);
-    out += tx(L.mainX + 24, L.topY1 - 6, "DISJUNTOR GERAL", `font-size="7" font-weight="800" letter-spacing="1" fill="${P.dimIn}"`);
-    out += tx(L.mainX + 24, L.topY1 + 8, main.data.In ? `${main.data.In} A · ${main.data.curve} · ${main.data.poles}P` : "—", `font-size="9.5" font-weight="800" fill="${P.inkIn}"`);
+    out += moduleBody(L.mainX, y - dh / 2, mw, dh, P, opts, main.validation.status);
+    out += tx(L.mainX + 24, y - 6, "DISJUNTOR GERAL", `font-size="7" font-weight="800" letter-spacing="1" fill="${P.dimIn}"`);
+    out += tx(L.mainX + 24, y + 8, main.data.In ? `${main.data.In} A · ${main.data.curve} · ${main.data.poles}P` : "—", `font-size="9.5" font-weight="800" fill="${P.inkIn}"`);
     const mainRef = opts.catalog && opts.catalog.byNode && opts.catalog.byNode["main-breaker"];
-    if (mainRef) out += tx(L.mainX + 24, L.topY1 + 17, `${mainRef.maker} ${mainRef.reference}`, `class="qtw-cat" font-size="5.5" fill="${P.dimIn}" font-family="monospace"`);
+    if (mainRef) out += tx(L.mainX + 24, y + 17, `${mainRef.maker} ${mainRef.reference}`, `class="qtw-cat" font-size="5.5" fill="${P.dimIn}" font-family="monospace"`);
     if (opts.overlays.icc && main.calc.icnRequiredA)
-      out += tx(L.mainX + mw, L.topY1 + mh / 2 + 11, `Icn ≥ ${fmt(main.calc.icnRequiredA / 1000, 1)} kA`, `class="qtw-ov qtw-ov-icc" text-anchor="end" font-size="7.5" fill="${P.dimIn}"`);
+      out += tx(L.mainX + mw / 2, y + dh / 2 + 11, `Icn ≥ ${fmt(main.calc.icnRequiredA / 1000, 1)} kA`, `class="qtw-ov qtw-ov-icc" text-anchor="middle" font-size="7.5" fill="${P.dimIn}"`);
     out += `</g>`;
 
-    // ── Barramento de entrada: geral → junção → DR geral ──
-    const junX = L.cx + 60, junY = L.topY1;
-    out += ln(L.mainX, junY, junX, junY, wire(WIRES.A, 2.4));
-    out += ln(junX, junY, L.cx, L.topY2 - 24, wire(WIRES.A, 2.4));
-
-    // ── DPS em PARALELO: derivação da junção para o banco (esq) ──
+    // ── DPS em PARALELO: derivação no jumper, A MONTANTE do DR ──
     const S = L.spd;
     const bankW = S.count * (S.modW + S.modGap) - S.modGap;
-    const tapY = junY - 26;
+    const bankCx = S.x0 + bankW / 2;
+    const tapY = y - dh / 2 - 14;
     out += `<g class="qtw-node" data-node="spd" data-kind="spd">`;
-    out += ci(junX, junY, 2.6, `fill="${WIRES.A}"`);                 // nó de derivação
-    out += ln(junX, junY, junX, tapY, wire(WIRES.A, 1.8));
-    out += ln(junX, tapY, S.x0 + bankW / 2, tapY, wire(WIRES.A, 1.8));
-    out += ln(S.x0 + bankW / 2, tapY, S.x0 + bankW / 2, S.y - 24, wire(WIRES.A, 1.8));
+    out += ci(junX, y, 2.6, `fill="${WIRES.A}"`);                 // nó de derivação
+    out += ln(junX, y, junX, tapY, wire(WIRES.A, 1.8));
+    out += ln(junX, tapY, bankCx, tapY, wire(WIRES.A, 1.8));
+    out += ln(bankCx, tapY, bankCx, S.y - 24, wire(WIRES.A, 1.8));
     // distribuição da derivação para cada módulo do banco
     out += ln(S.x0 + S.modW / 2, S.y - 24, S.x0 + bankW - S.modW / 2, S.y - 24, wire(WIRES.A, 1.6));
     const phasesN = L.phases.concat(["N"]);
@@ -373,33 +384,35 @@
     out += `<use href="#qtw-sym-ground" transform="translate(${S.x0 + bankW + 14},${S.y + 34}) scale(0.85)" style="color:${WIRES.PE}"/>`;
     // rótulos de engenharia do DPS
     out += tx(S.x0, S.y + 46, `INSTALAÇÃO EM PARALELO (derivação) — NBR 5410 §6.3.5.2`, `font-size="7" font-weight="700" letter-spacing="0.5" fill="${P.dimIn}"`);
-    out += tx(S.x0, S.y + 56, opts.scheme === "TT"
+    out += tx(S.x0, S.y + 56, `Derivado entre o disjuntor geral e o DR (a montante do DR)`, `font-size="7" fill="${P.dimIn}"`);
+    out += tx(S.x0, S.y + 66, opts.scheme === "TT"
       ? `Esquema TT: conexão ${L.phases.length}+1 — N–PE por centelhador`
       : `Esquema TN-S: modo comum — fases e N ao PE`, `font-size="7" fill="${P.dimIn}"`);
     if (spd.data.imaxKA) {
-      out += tx(S.x0, S.y + 66, `Classe ${spd.data.class} · Imax ${spd.data.imaxKA} kA · In ${spd.data.inKA} kA · Uc ≥ ${spd.data.ucV} V · ${spd.data.standard || "IEC 61643-11"}`, `font-size="7" fill="${P.dimIn}"`);
+      out += tx(S.x0, S.y + 76, `Classe ${spd.data.class} · Imax ${spd.data.imaxKA} kA · In ${spd.data.inKA} kA · Uc ≥ ${spd.data.ucV} V · ${spd.data.standard || "IEC 61643-11"}`, `font-size="7" fill="${P.dimIn}"`);
     }
     out += `</g>`;
 
-    // ── DR GERAL (centro) ──
-    const dw = 96, dh = 44;
+    // ── DR GERAL (centrado sobre o pente, na MESMA linha) ──
     out += `<g class="qtw-node" data-node="main-rcd" data-kind="rcd">`;
-    out += moduleBody(L.cx - dw / 2, L.topY2 - dh / 2, dw, dh, P, opts, mrcd.validation.status);
-    out += tx(L.cx + 12, L.topY2 - 6, "DR GERAL", `text-anchor="middle" font-size="7" font-weight="800" letter-spacing="1" fill="${P.dimIn}"`);
-    out += tx(L.cx + 12, L.topY2 + 8, mrcd.data.In ? `${mrcd.data.In} A / ${mrcd.data.sensitivityMa} mA` : "—", `text-anchor="middle" font-size="9" font-weight="800" fill="${P.inkIn}"`);
+    out += moduleBody(L.drX, y - dh / 2, dw, dh, P, opts, mrcd.validation.status);
+    out += tx(drCx + 8, y - 6, "DR GERAL", `text-anchor="middle" font-size="7" font-weight="800" letter-spacing="1" fill="${P.dimIn}"`);
+    out += tx(drCx + 8, y + 8, mrcd.data.In ? `${mrcd.data.In} A / ${mrcd.data.sensitivityMa} mA` : "—", `text-anchor="middle" font-size="9" font-weight="800" fill="${P.inkIn}"`);
+    const drRef = opts.catalog && opts.catalog.byNode && opts.catalog.byNode["main-rcd"];
+    if (drRef) out += tx(drCx + 8, y + 17, drRef.reference, `class="qtw-cat" text-anchor="middle" font-size="5.5" fill="${P.dimIn}" font-family="monospace"`);
     out += `</g>`;
 
-    // DR geral → topo do pente (uma descida por fase, na cor da fase)
+    // DR geral → topo do pente: descidas RETAS, uma por fase
     L.phases.forEach(p => {
-      out += ln(L.combX[p], L.topY2 + dh / 2, L.combX[p], L.combTop, wire(WIRES[p], 2.2));
+      out += ln(L.combX[p], y + dh / 2, L.combX[p], L.combTop, wire(WIRES[p], 2.2));
     });
     // Neutro do DR → barras N das bordas (azul)
-    const ny = L.topY2 + dh / 2 + 8;
+    const ny = y + dh / 2 + 10;
     out += `<g data-kind="wire-n">`;
-    out += ln(L.cx - dw / 2, L.topY2 + 10, L.leftCol.nX + G.stripW / 2, L.topY2 + 10, wire(WIRES.N, 1.8));
-    out += ln(L.leftCol.nX + G.stripW / 2, L.topY2 + 10, L.leftCol.nX + G.stripW / 2, L.rowsY0 - 14, wire(WIRES.N, 1.8));
-    out += ln(L.cx + dw / 2, L.topY2 + 10, L.rightCol.nX + G.stripW / 2, L.topY2 + 10, wire(WIRES.N, 1.8));
-    out += ln(L.rightCol.nX + G.stripW / 2, L.topY2 + 10, L.rightCol.nX + G.stripW / 2, L.rowsY0 - 14, wire(WIRES.N, 1.8));
+    out += ln(L.drX, y + 12, L.leftCol.nX + G.stripW / 2, ny, wire(WIRES.N, 1.8));
+    out += ln(L.leftCol.nX + G.stripW / 2, ny, L.leftCol.nX + G.stripW / 2, L.rowsY0 - 14, wire(WIRES.N, 1.8));
+    out += ln(L.mainX + mw, y + 12, L.rightCol.nX + G.stripW / 2, ny, wire(WIRES.N, 1.8));
+    out += ln(L.rightCol.nX + G.stripW / 2, ny, L.rightCol.nX + G.stripW / 2, L.rowsY0 - 14, wire(WIRES.N, 1.8));
     out += `</g>`;
     return out;
   }
