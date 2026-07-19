@@ -1,5 +1,12 @@
 # Changelog
 
+## v3.7.2 — 2026-07-19 · Entrada no estilo do diagrama de ligação clássico
+
+### Changed
+- **Zona de entrada redesenhada a partir do diagrama de ligação de referência**: linhas de alimentação horizontais **A(R)/B(S)/C(T)/N/PE** no topo do painel (rotuladas, nas cores da norma), **QG** derivado das fases com pontos de junção, **DR tetrapolar** logo abaixo recebendo também o **neutro direto da linha N**, e **banco de DPS à direita** alimentado em paralelo (derivado entre o QG e o DR; módulo N pela linha N), todos drenando por coletor **verde ao PE**; saída pelo rótulo **"Circuitos"** para o pente central.
+- **Dispositivos desenhados realistas**: QG multipolar com alavancas e parafusos de terminal por polo, DR com alavanca única e botão de teste "T", DPS com janela verde de status e terminal de terra — como nas imagens de catálogo.
+- Linhas N e PE do topo conectam-se ortogonalmente às barras verticais das bordas (pontos de junção); DXF espelha toda a nova geometria.
+
 ## v3.7.1 — 2026-07-08 · Disposição do disjuntor geral e DR geral
 
 ### Changed

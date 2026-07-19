@@ -153,11 +153,34 @@
     const cx = encX + encW / 2;
 
     const titleY = encY + 26;
-    // Linha ÚNICA de dispositivos de entrada (como num painel real):
-    // DPS (esq) · DR GERAL (centro, sobre o pente) · DISJUNTOR GERAL
-    // (imediatamente à direita do DR, recebendo o alimentador)
-    const topY1 = encY + 96;
-    const combTop = topY1 + 64;
+    // Zona de entrada no estilo do diagrama de ligação clássico:
+    // linhas de alimentação horizontais A(R)/B(S)/C(T)/N/PE no topo,
+    // QG (geral) derivado delas ao centro, DR tetrapolar abaixo
+    // (recebendo também o N) e banco de DPS em paralelo à direita,
+    // derivado ENTRE o QG e o DR, drenando ao PE.
+    const supX0 = encX + G.padX + 46;
+    const supX1 = encX + encW - G.padX - 10;
+    const supY = {};
+    ["A", "B", "C"].slice(0, phases.length).concat(["N", "PE"]).forEach((p, i) => {
+      supY[p] = encY + 54 + i * 9;
+    });
+    const supYEnd = encY + 54 + (phases.length + 1) * 9;
+
+    const qg = { w: 78, h: 56, y: encY + 158 };                 // QG 3P centrado
+    qg.x = cx - qg.w / 2;
+    qg.poleXs = phases.map((p, i) => cx + (i - (phases.length - 1) / 2) * 22);
+    const dr = { w: 104, h: 56, y: encY + 252 };                // DR (fases+N) abaixo
+    dr.x = cx - dr.w / 2;
+    dr.termXs = [-1.5, -0.5, 0.5, 1.5].slice(0, phases.length + 1)
+      .map(k => cx + k * (phases.length >= 3 ? 24 : 30));       // N + fases
+    const tkY = encY + 214;                                     // nível de derivação QG→DR
+    const spdBank = {                                           // banco de DPS à direita
+      modW: 26, gap: 7, count: phases.length + 1,
+      yTop: dr.y - dr.h / 2
+    };
+    spdBank.x0 = cx + dr.w / 2 + 96;
+
+    const combTop = dr.y + dr.h / 2 + 46;
     const rowsY0 = combTop + 26;
     const rowsYEnd = rowsY0 + Math.max(cols.rows, 1) * G.rowH;
     const combBottom = rowsYEnd + 6;
@@ -187,20 +210,12 @@
 
     const rowY = i => rowsY0 + i * G.rowH + G.rowH / 2;
 
-    // Zona de entrada — dimensões dos módulos gerais
-    const drW = 96, mainW = 118, devH = 44;
-    const spd = {
-      x0: encX + G.padX + 14, y: topY1,
-      modW: 26, modGap: 5, count: phases.length + 1  // fases + N
-    };
-    const drX = cx - drW / 2;               // DR centrado sobre o pente
-    const mainX = cx + drW / 2 + 52;        // geral logo à direita do DR
-
     return {
       headerH, encX, encY, encW, encH, width, height, cx,
-      titleY, topY1, combTop, combBottom, busLabelY,
+      titleY, supX0, supX1, supY, supYEnd, qg, dr, tkY, spdBank,
+      combTop, combBottom, busLabelY,
       combX, phases, cols, rowY, rowsY0, rowsYEnd,
-      leftCol, rightCol, spd, mainX, drX, drW, mainW, devH
+      leftCol, rightCol
     };
   }
 
@@ -293,127 +308,214 @@
     return out;
   }
 
-  /** Zona de entrada em LINHA ÚNICA (disposição de painel real):
-   *  DPS em paralelo (esq) ← tap no jumper ← DR GERAL (centro,
-   *  sobre o pente) ← jumper curto ← DISJUNTOR GERAL (dir), que
-   *  recebe o alimentador descendo reto do topo do gabinete. */
+  /* Cor da alavanca dos dispositivos (azul de catálogo, como nas
+   * fotos de disjuntores residenciais) */
+  const LEVER = "#3a66b8";
+
+  /** Parafuso de terminal (círculo com fenda). */
+  function screw(x, y, P, r) {
+    r = r || 2.6;
+    return ci(x, y, r, `fill="url(#qtw-steel)" stroke="${P.moduleStroke}" stroke-width="0.7"`) +
+      ln(x - r * 0.55, y, x + r * 0.55, y, `stroke="${P.dimIn}" stroke-width="0.8"`);
+  }
+
+  /** Disjuntor multipolar realista (corpo, divisões, alavancas,
+   *  parafusos de terminal em cima e embaixo). */
+  function breakerDevice(x, y, w, h, poles, P, opts, status) {
+    const sc = statusColor(P, status);
+    const pw = w / poles;
+    let out = rc(x, y, w, h, `fill="${P.module}" stroke="${P.moduleStroke}" stroke-width="1.3" rx="4"`);
+    for (let i = 1; i < poles; i++)
+      out += ln(x + i * pw, y + 3, x + i * pw, y + h - 3, `stroke="${P.plateStroke}" stroke-width="0.8"`);
+    for (let i = 0; i < poles; i++) {
+      const px = x + (i + 0.5) * pw;
+      out += screw(px, y + 6, P);
+      out += screw(px, y + h - 6, P);
+      out += rc(px - 4.5, y + h / 2 - 10, 9, 20, `fill="${P.plate}" stroke="${P.moduleStroke}" stroke-width="0.9" rx="2"`);
+      out += rc(px - 3, y + h / 2 - 8, 6, 9, `fill="${LEVER}" rx="1.5"`);
+    }
+    if (opts.overlays.validation) out += ci(x + w - 5, y + 5, 2.4, `class="qtw-ov qtw-ov-validation" fill="${sc}"`);
+    return out;
+  }
+
+  /** DR/IDR tetrapolar realista (corpo largo, alavanca única,
+   *  botão de teste "T" e parafusos por polo). */
+  function drDevice(x, y, w, h, poles, P, opts, status) {
+    const sc = statusColor(P, status);
+    const pw = w / poles;
+    let out = rc(x, y, w, h, `fill="${P.module}" stroke="${P.moduleStroke}" stroke-width="1.3" rx="4"`);
+    for (let i = 0; i < poles; i++) {
+      const px = x + (i + 0.5) * pw;
+      out += screw(px, y + 6, P);
+      out += screw(px, y + h - 6, P);
+    }
+    out += rc(x + w / 2 - 22, y + h / 2 - 10, 9, 20, `fill="${P.plate}" stroke="${P.moduleStroke}" stroke-width="0.9" rx="2"`);
+    out += rc(x + w / 2 - 20.5, y + h / 2 - 8, 6, 9, `fill="${LEVER}" rx="1.5"`);
+    out += rc(x + w / 2 + 8, y + h / 2 - 5, 10, 10, `fill="${P.plate}" stroke="${P.moduleStroke}" stroke-width="0.9" rx="2"`);
+    out += tx(x + w / 2 + 13, y + h / 2 + 2.6, "T", `text-anchor="middle" font-size="6.5" font-weight="800" fill="${P.dimIn}"`);
+    if (opts.overlays.validation) out += ci(x + w - 5, y + 5, 2.4, `class="qtw-ov qtw-ov-validation" fill="${sc}"`);
+    return out;
+  }
+
+  /** Zona de entrada no estilo do diagrama de ligação clássico:
+   *
+   *   A(R)/B(S)/C(T)/N/PE ──────────────── (linhas de alimentação)
+   *        │ │ │                       │(N)
+   *        [ QG 3P ]                   │
+   *        │ │ │  ── derivação ──→ [DPS][DPS][DPS][DPS]  (paralelo)
+   *      [ DR 4P ]←N                   └──── PE (verde)
+   *        │ │ │
+   *      "Circuitos" → pente central
+   */
   function incomingZone(model, P, L, opts) {
     const by = model.byId;
     const feeder = by.feeder, main = by["main-breaker"], spd = by.spd, mrcd = by["main-rcd"];
-    const dh = L.devH, dw = L.drW, mw = L.mainW;
-    const y = L.topY1;
-    const mainCx = L.mainX + mw / 2;
-    const drCx = L.cx;
+    const phN = L.phases.concat(["N"]);
+    const supplyLbl = { A: "A (R)", B: "B (S)", C: "C (T)", N: "N", PE: "PE" };
     let out = "";
 
-    // ── Alimentador: desce RETO do topo do gabinete no geral ──
+    // ── Linhas de alimentação horizontais (nó feeder) ────────────
     out += `<g class="qtw-node" data-node="feeder" data-kind="conductor">`;
-    out += ln(mainCx, L.encY - 12, mainCx, L.encY + 4, wire(P.ink, 3));
-    out += ln(mainCx, L.encY + 36, mainCx, y - dh / 2, wire(WIRES.A, 3));
-    // Rótulos à DIREITA do módulo do geral (coluna totalmente livre)
-    const flx = L.mainX + mw + 12;
-    out += tx(flx, L.encY + 52, "ALIMENTADOR", `font-size="7.5" font-weight="700" letter-spacing="1" fill="${P.dimIn}"`);
+    Object.keys(L.supY).forEach(p => {
+      const yy = L.supY[p];
+      out += ln(L.supX0, yy, L.supX1, yy, wire(WIRES[p], p === "N" || p === "PE" ? 2.2 : 2.6));
+      out += tx(L.supX0 - 6, yy + 2.8, supplyLbl[p] || p, `text-anchor="end" font-size="7.5" font-weight="800" fill="${WIRES[p]}"`);
+    });
+    // dados do alimentador (bloco à esquerda, sob os rótulos)
     if (feeder.data.section) {
-      out += tx(flx, L.encY + 64, `${feeder.data.section} mm² + N ${feeder.data.neutral} + PE ${feeder.data.pe} mm²`, `font-size="8" font-weight="700" fill="${P.inkIn}"`);
-      out += tx(flx, L.encY + 75, `${feeder.data.lengthM} m · ${feeder.data.method} · Izc ${fmt(feeder.calc.Izc)} A`, `font-size="7.5" fill="${P.dimIn}"`);
-      let fy = L.encY + 86;
+      const fx = L.encX + G.padX + 6;
+      out += tx(fx, L.supYEnd + 24, "ALIMENTADOR", `font-size="7.5" font-weight="700" letter-spacing="1" fill="${P.dimIn}"`);
+      out += tx(fx, L.supYEnd + 35, `${feeder.data.section} mm² + N ${feeder.data.neutral} + PE ${feeder.data.pe} mm²`, `font-size="8" font-weight="700" fill="${P.inkIn}"`);
+      out += tx(fx, L.supYEnd + 45, `${feeder.data.lengthM} m · ${feeder.data.method} · Izc ${fmt(feeder.calc.Izc)} A`, `font-size="7.5" fill="${P.dimIn}"`);
+      let fy = L.supYEnd + 55;
       if (opts.overlays.current) {
-        out += tx(flx, fy, `Ib ${fmt(feeder.calc.Ib)} A (dim. ${fmt(feeder.calc.Idim)} A)`, `class="qtw-ov qtw-ov-current" font-size="7.5" fill="${P.accent}"`);
-        fy += 11;
+        out += tx(fx, fy, `Ib ${fmt(feeder.calc.Ib)} A (dim. ${fmt(feeder.calc.Idim)} A)`, `class="qtw-ov qtw-ov-current" font-size="7.5" fill="${P.accent}"`);
+        fy += 10;
       }
       if (opts.overlays.drop) {
-        out += tx(flx, fy, `ΔV ${fmt(feeder.calc.dropPct, 2)}% ≤ ${feeder.calc.maxDropPct}%`, `class="qtw-ov qtw-ov-drop" font-size="7.5" fill="${statusColor(P, feeder.validation.status)}"`);
+        out += tx(fx, fy, `ΔV ${fmt(feeder.calc.dropPct, 2)}% ≤ ${feeder.calc.maxDropPct}%`, `class="qtw-ov qtw-ov-drop" font-size="7.5" fill="${statusColor(P, feeder.validation.status)}"`);
       }
     }
     out += `</g>`;
 
-    // ── Jumper curto geral → DR (com nó de derivação do DPS) ──
-    const junX = (L.mainX + L.cx + dw / 2) / 2;   // meio do jumper
-    out += ln(L.cx + dw / 2, y, L.mainX, y, wire(WIRES.A, 2.4));
-
-    // ── Disjuntor geral (recebe o alimentador; alimenta o DR) ──
-    out += `<g class="qtw-node" data-node="main-breaker" data-kind="breaker">`;
-    out += moduleBody(L.mainX, y - dh / 2, mw, dh, P, opts, main.validation.status);
-    out += tx(L.mainX + 24, y - 6, "DISJUNTOR GERAL", `font-size="7" font-weight="800" letter-spacing="1" fill="${P.dimIn}"`);
-    out += tx(L.mainX + 24, y + 8, main.data.In ? `${main.data.In} A · ${main.data.curve} · ${main.data.poles}P` : "—", `font-size="9.5" font-weight="800" fill="${P.inkIn}"`);
-    const mainRef = opts.catalog && opts.catalog.byNode && opts.catalog.byNode["main-breaker"];
-    if (mainRef) out += tx(L.mainX + 24, y + 17, `${mainRef.maker} ${mainRef.reference}`, `class="qtw-cat" font-size="5.5" fill="${P.dimIn}" font-family="monospace"`);
-    if (opts.overlays.icc && main.calc.icnRequiredA)
-      out += tx(L.mainX + mw / 2, y + dh / 2 + 11, `Icn ≥ ${fmt(main.calc.icnRequiredA / 1000, 1)} kA`, `class="qtw-ov qtw-ov-icc" text-anchor="middle" font-size="7.5" fill="${P.dimIn}"`);
-    out += `</g>`;
-
-    // ── DPS em PARALELO: derivação no jumper, A MONTANTE do DR ──
-    const S = L.spd;
-    const bankW = S.count * (S.modW + S.modGap) - S.modGap;
-    const bankCx = S.x0 + bankW / 2;
-    const tapY = y - dh / 2 - 14;
-    out += `<g class="qtw-node" data-node="spd" data-kind="spd">`;
-    out += ci(junX, y, 2.6, `fill="${WIRES.A}"`);                 // nó de derivação
-    out += ln(junX, y, junX, tapY, wire(WIRES.A, 1.8));
-    out += ln(junX, tapY, bankCx, tapY, wire(WIRES.A, 1.8));
-    out += ln(bankCx, tapY, bankCx, S.y - 24, wire(WIRES.A, 1.8));
-    // distribuição da derivação para cada módulo do banco
-    out += ln(S.x0 + S.modW / 2, S.y - 24, S.x0 + bankW - S.modW / 2, S.y - 24, wire(WIRES.A, 1.6));
-    const phasesN = L.phases.concat(["N"]);
-    for (let i = 0; i < S.count; i++) {
-      const x = S.x0 + i * (S.modW + S.modGap);
-      const mcx = x + S.modW / 2;
-      const ph = phasesN[i] || "N";
-      const isN = ph === "N";
-      out += ln(mcx, S.y - 24, mcx, S.y - 20, wire(WIRES[ph] || WIRES.N, 1.8));
-      out += rc(x, S.y - 20, S.modW, 40, `fill="${P.module}" stroke="${P.moduleStroke}" stroke-width="1.1" rx="3"`);
-      out += rc(x + 4, S.y - 20, S.modW - 8, 4, `fill="${WIRES[ph] || WIRES.N}" rx="1"`);
-      out += tx(mcx, S.y - 6, "DPS", `text-anchor="middle" font-size="6.5" font-weight="800" fill="${P.dimIn}"`);
-      // Em TT o módulo do neutro é o CENTELHADOR N-PE (símbolo de gap)
-      if (isN && opts.scheme === "TT") {
-        out += ln(mcx - 4, S.y + 4, mcx - 1.4, S.y + 4, `stroke="${P.inkIn}" stroke-width="1.3"`);
-        out += ln(mcx + 1.4, S.y + 4, mcx + 4, S.y + 4, `stroke="${P.inkIn}" stroke-width="1.3"`);
-        out += ln(mcx - 1.4, S.y + 1.4, mcx - 1.4, S.y + 6.6, `stroke="${P.inkIn}" stroke-width="1.3"`);
-        out += ln(mcx + 1.4, S.y + 1.4, mcx + 1.4, S.y + 6.6, `stroke="${P.inkIn}" stroke-width="1.3"`);
-      } else {
-        out += tx(mcx, S.y + 8, ph, `text-anchor="middle" font-size="7.5" font-weight="800" fill="${WIRES[ph] || WIRES.N}"`);
-      }
-      out += tx(mcx, S.y + 16.5, spd.data.class ? `Cl.${spd.data.class}` : "—", `text-anchor="middle" font-size="6" fill="${P.dimIn}"`);
-      // saída do módulo ao PE (verde)
-      out += ln(mcx, S.y + 20, mcx, S.y + 30, wire(WIRES.PE, 1.6));
-    }
-    // barra de terra do banco → PE da borda esquerda
-    out += ln(S.x0 + S.modW / 2, S.y + 30, S.x0 + bankW - S.modW / 2, S.y + 30, wire(WIRES.PE, 2));
-    out += ln(S.x0 + S.modW / 2, S.y + 30, L.leftCol.peX + G.stripW / 2, S.y + 30, wire(WIRES.PE, 2));
-    out += ln(L.leftCol.peX + G.stripW / 2, S.y + 30, L.leftCol.peX + G.stripW / 2, L.rowsY0 - 14, wire(WIRES.PE, 2));
-    out += `<use href="#qtw-sym-ground" transform="translate(${S.x0 + bankW + 14},${S.y + 34}) scale(0.85)" style="color:${WIRES.PE}"/>`;
-    // rótulos de engenharia do DPS
-    out += tx(S.x0, S.y + 46, `INSTALAÇÃO EM PARALELO (derivação) — NBR 5410 §6.3.5.2`, `font-size="7" font-weight="700" letter-spacing="0.5" fill="${P.dimIn}"`);
-    out += tx(S.x0, S.y + 56, `Derivado entre o disjuntor geral e o DR (a montante do DR)`, `font-size="7" fill="${P.dimIn}"`);
-    out += tx(S.x0, S.y + 66, opts.scheme === "TT"
-      ? `Esquema TT: conexão ${L.phases.length}+1 — N–PE por centelhador`
-      : `Esquema TN-S: modo comum — fases e N ao PE`, `font-size="7" fill="${P.dimIn}"`);
-    if (spd.data.imaxKA) {
-      out += tx(S.x0, S.y + 76, `Classe ${spd.data.class} · Imax ${spd.data.imaxKA} kA · In ${spd.data.inKA} kA · Uc ≥ ${spd.data.ucV} V · ${spd.data.standard || "IEC 61643-11"}`, `font-size="7" fill="${P.dimIn}"`);
-    }
-    out += `</g>`;
-
-    // ── DR GERAL (centrado sobre o pente, na MESMA linha) ──
-    out += `<g class="qtw-node" data-node="main-rcd" data-kind="rcd">`;
-    out += moduleBody(L.drX, y - dh / 2, dw, dh, P, opts, mrcd.validation.status);
-    out += tx(drCx + 8, y - 6, "DR GERAL", `text-anchor="middle" font-size="7" font-weight="800" letter-spacing="1" fill="${P.dimIn}"`);
-    out += tx(drCx + 8, y + 8, mrcd.data.In ? `${mrcd.data.In} A / ${mrcd.data.sensitivityMa} mA` : "—", `text-anchor="middle" font-size="9" font-weight="800" fill="${P.inkIn}"`);
-    const drRef = opts.catalog && opts.catalog.byNode && opts.catalog.byNode["main-rcd"];
-    if (drRef) out += tx(drCx + 8, y + 17, drRef.reference, `class="qtw-cat" text-anchor="middle" font-size="5.5" fill="${P.dimIn}" font-family="monospace"`);
-    out += `</g>`;
-
-    // DR geral → topo do pente: descidas RETAS, uma por fase
-    L.phases.forEach(p => {
-      out += ln(L.combX[p], y + dh / 2, L.combX[p], L.combTop, wire(WIRES[p], 2.2));
+    // N e PE das linhas → barras verticais das bordas (ortogonal)
+    [["N", L.leftCol.nX, L.rightCol.nX], ["PE", L.leftCol.peX, L.rightCol.peX]].forEach(([p, xl, xr]) => {
+      const yy = L.supY[p];
+      [xl + G.stripW / 2, xr + G.stripW / 2].forEach(bx => {
+        out += ci(bx, yy, 2.2, `fill="${WIRES[p]}"`);
+        out += ln(bx, yy, bx, L.rowsY0 - 14, wire(WIRES[p], 1.8));
+      });
     });
-    // Neutro do DR → barras N das bordas (azul)
-    const ny = y + dh / 2 + 10;
-    out += `<g data-kind="wire-n">`;
-    out += ln(L.drX, y + 12, L.leftCol.nX + G.stripW / 2, ny, wire(WIRES.N, 1.8));
-    out += ln(L.leftCol.nX + G.stripW / 2, ny, L.leftCol.nX + G.stripW / 2, L.rowsY0 - 14, wire(WIRES.N, 1.8));
-    out += ln(L.mainX + mw, y + 12, L.rightCol.nX + G.stripW / 2, ny, wire(WIRES.N, 1.8));
-    out += ln(L.rightCol.nX + G.stripW / 2, ny, L.rightCol.nX + G.stripW / 2, L.rowsY0 - 14, wire(WIRES.N, 1.8));
+
+    // ── QG: derivações das fases (pontos de junção) → disjuntor ──
+    const qg = L.qg;
+    out += `<g class="qtw-node" data-node="main-breaker" data-kind="breaker">`;
+    L.phases.forEach((p, i) => {
+      const px = qg.poleXs[i];
+      out += ci(px, L.supY[p], 2.6, `fill="${WIRES[p]}"`);
+      out += ln(px, L.supY[p], px, qg.y - qg.h / 2, wire(WIRES[p], 2.4));
+    });
+    out += breakerDevice(qg.x, qg.y - qg.h / 2, qg.w, qg.h, L.phases.length, P, opts, main.validation.status);
+    out += tx(qg.x - 10, qg.y - 12, "QG", `text-anchor="end" font-size="10" font-weight="800" fill="${P.inkIn}"`);
+    out += tx(qg.x - 10, qg.y, main.data.In ? `${main.data.In} A · ${main.data.curve} · ${main.data.poles}P` : "—", `text-anchor="end" font-size="8" font-weight="700" fill="${P.inkIn}"`);
+    const mainRef = opts.catalog && opts.catalog.byNode && opts.catalog.byNode["main-breaker"];
+    if (mainRef) out += tx(qg.x - 10, qg.y + 10, `${mainRef.maker} ${mainRef.reference}`, `class="qtw-cat" text-anchor="end" font-size="5.5" fill="${P.dimIn}" font-family="monospace"`);
+    if (opts.overlays.icc && main.calc.icnRequiredA)
+      out += tx(qg.x - 10, qg.y + 20, `Icn ≥ ${fmt(main.calc.icnRequiredA / 1000, 1)} kA`, `class="qtw-ov qtw-ov-icc" text-anchor="end" font-size="7" fill="${P.dimIn}"`);
     out += `</g>`;
+
+    // ── QG → DR (jogos ortogonais) com DERIVAÇÃO do DPS no meio ──
+    const dr = L.dr;
+    const drTerms = dr.termXs;                 // [N, A, B, C]
+    L.phases.forEach((p, i) => {
+      const x0 = qg.poleXs[i];
+      const x1 = drTerms[i + 1];
+      const yJog = L.tkY + i * 5;
+      out += ln(x0, qg.y + qg.h / 2, x0, yJog, wire(WIRES[p], 2.4));
+      out += ln(x0, yJog, x1, yJog, wire(WIRES[p], 2.4));
+      out += ln(x1, yJog, x1, dr.y - dr.h / 2, wire(WIRES[p], 2.4));
+    });
+    // Neutro: da linha N direto ao 1º terminal do DR (azul)
+    out += ci(drTerms[0], L.supY.N, 2.6, `fill="${WIRES.N}"`);
+    out += ln(drTerms[0], L.supY.N, drTerms[0], dr.y - dr.h / 2, wire(WIRES.N, 2.2));
+
+    // ── Banco de DPS à direita, em PARALELO (derivado entre QG e DR) ──
+    const S = L.spdBank;
+    const bankW = S.count * (S.modW + S.gap) - S.gap;
+    out += `<g class="qtw-node" data-node="spd" data-kind="spd">`;
+    for (let i = 0; i < S.count; i++) {
+      const x = S.x0 + i * (S.modW + S.gap);
+      const mcx = x + S.modW / 2;
+      const ph = phN[i] || "N";
+      const isN = ph === "N";
+      // alimentação do módulo: fases derivam do jogo QG→DR; N deriva da linha N
+      if (!isN) {
+        const k = L.phases.indexOf(ph);
+        const yJog = L.tkY + k * 5;
+        const tapX = drTerms[k + 1];
+        out += ci(tapX, yJog, 2.4, `fill="${WIRES[ph]}"`);
+        out += pa(`M ${tapX} ${yJog} L ${mcx} ${yJog} L ${mcx} ${S.yTop}`, wire(WIRES[ph], 2));
+      } else {
+        out += ci(mcx, L.supY.N, 2.4, `fill="${WIRES.N}"`);
+        out += ln(mcx, L.supY.N, mcx, S.yTop, wire(WIRES.N, 2));
+      }
+      // módulo DPS realista: janela verde de status + terminais
+      out += rc(x, S.yTop, S.modW, 56, `fill="${P.module}" stroke="${P.moduleStroke}" stroke-width="1.2" rx="3"`);
+      out += screw(mcx, S.yTop + 5, P, 2.2);
+      out += rc(x + 4, S.yTop + 12, S.modW - 8, 10, `fill="#21a453" stroke="${P.moduleStroke}" stroke-width="0.7" rx="1.5"`);
+      out += tx(mcx, S.yTop + 30, "DPS", `text-anchor="middle" font-size="6" font-weight="800" fill="${P.dimIn}"`);
+      if (isN && opts.scheme === "TT") {
+        // centelhador N-PE (símbolo de gap)
+        out += ln(mcx - 4, S.yTop + 38, mcx - 1.4, S.yTop + 38, `stroke="${P.inkIn}" stroke-width="1.3"`);
+        out += ln(mcx + 1.4, S.yTop + 38, mcx + 4, S.yTop + 38, `stroke="${P.inkIn}" stroke-width="1.3"`);
+        out += ln(mcx - 1.4, S.yTop + 35, mcx - 1.4, S.yTop + 41, `stroke="${P.inkIn}" stroke-width="1.3"`);
+        out += ln(mcx + 1.4, S.yTop + 35, mcx + 1.4, S.yTop + 41, `stroke="${P.inkIn}" stroke-width="1.3"`);
+      } else {
+        out += tx(mcx, S.yTop + 41, ph, `text-anchor="middle" font-size="7" font-weight="800" fill="${WIRES[ph]}"`);
+      }
+      out += screw(mcx, S.yTop + 51, P, 2.2);
+      // dreno ao coletor de terra (verde)
+      out += ln(mcx, S.yTop + 56, mcx, S.yTop + 66, wire(WIRES.PE, 1.8));
+    }
+    // coletor verde → barra PE da borda direita
+    const colY = S.yTop + 66;
+    out += ln(S.x0 + S.modW / 2, colY, S.x0 + bankW - S.modW / 2, colY, wire(WIRES.PE, 2.2));
+    out += ln(S.x0 + bankW - S.modW / 2, colY, L.rightCol.peX + G.stripW / 2, colY, wire(WIRES.PE, 2.2));
+    out += ci(L.rightCol.peX + G.stripW / 2, colY, 2.4, `fill="${WIRES.PE}"`);
+    out += `<use href="#qtw-sym-ground" transform="translate(${S.x0 + bankW / 2},${colY + 9}) scale(0.8)" style="color:${WIRES.PE}"/>`;
+    // rótulos do banco (abaixo do coletor, fora do caminho dos fios)
+    out += tx(S.x0 + bankW + 10, S.yTop + 16, "DPS's", `font-size="9" font-weight="800" fill="${P.inkIn}"`);
+    out += tx(S.x0 - 26, colY + 22, "INSTALAÇÃO EM PARALELO (derivação) — NBR 5410 §6.3.5.2", `font-size="6.5" font-weight="700" letter-spacing="0.4" fill="${P.dimIn}"`);
+    out += tx(S.x0 - 26, colY + 31, "Derivado entre o QG e o DR (a montante do DR)", `font-size="6.5" fill="${P.dimIn}"`);
+    out += tx(S.x0 - 26, colY + 40, opts.scheme === "TT"
+      ? `Esquema TT: conexão ${L.phases.length}+1 — N–PE por centelhador`
+      : "Esquema TN-S: modo comum — fases e N ao PE", `font-size="6.5" fill="${P.dimIn}"`);
+    if (spd.data.imaxKA) {
+      out += tx(S.x0 - 26, colY + 49, `Classe ${spd.data.class} · Imax ${spd.data.imaxKA} kA · In ${spd.data.inKA} kA · Uc ≥ ${spd.data.ucV} V · ${spd.data.standard || "IEC 61643-11"}`, `font-size="6.5" fill="${P.dimIn}"`);
+    }
+    out += `</g>`;
+
+    // ── DR tetrapolar (recebe fases do QG + neutro da linha N) ──
+    out += `<g class="qtw-node" data-node="main-rcd" data-kind="rcd">`;
+    out += drDevice(dr.x, dr.y - dr.h / 2, dr.w, dr.h, L.phases.length + 1, P, opts, mrcd.validation.status);
+    out += tx(dr.x - 10, dr.y - 6, "DR", `text-anchor="end" font-size="10" font-weight="800" fill="${P.inkIn}"`);
+    out += tx(dr.x - 10, dr.y + 5, mrcd.data.In ? `${mrcd.data.In} A / ${mrcd.data.sensitivityMa} mA` : "—", `text-anchor="end" font-size="8" font-weight="700" fill="${P.inkIn}"`);
+    const drRef = opts.catalog && opts.catalog.byNode && opts.catalog.byNode["main-rcd"];
+    if (drRef) out += tx(dr.x - 10, dr.y + 15, drRef.reference, `class="qtw-cat" text-anchor="end" font-size="5.5" fill="${P.dimIn}" font-family="monospace"`);
+    out += `</g>`;
+
+    // ── DR → "Circuitos" → pente central ─────────────────────────
+    L.phases.forEach((p, i) => {
+      const x0 = drTerms[i + 1];
+      const x1 = L.combX[p];
+      const yJog = dr.y + dr.h / 2 + 12 + i * 5;
+      out += ln(x0, dr.y + dr.h / 2, x0, yJog, wire(WIRES[p], 2.4));
+      out += ln(x0, yJog, x1, yJog, wire(WIRES[p], 2.4));
+      out += ln(x1, yJog, x1, L.combTop, wire(WIRES[p], 2.4));
+    });
+    // rótulo "Circuitos" (como no diagrama de referência)
+    out += rc(L.cx - 118, L.combTop - 18, 62, 15, `fill="${P.module}" stroke="${P.err}" stroke-width="1.1" rx="2"`);
+    out += tx(L.cx - 87, L.combTop - 7.5, "Circuitos", `text-anchor="middle" font-size="8" font-weight="700" fill="${P.inkIn}"`);
     return out;
   }
 
