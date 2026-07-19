@@ -1,5 +1,12 @@
 # Changelog
 
+## v3.7.1 — 2026-07-08 · Disposição do disjuntor geral e DR geral
+
+### Changed
+- **Zona de entrada em linha única, como num painel real** — DR GERAL agora fica **centrado sobre o pente** (descidas retas A/B/C, sem diagonais) com o **DISJUNTOR GERAL imediatamente à direita, na mesma linha**, ligado por um **jumper curto**; o alimentador desce reto do topo do gabinete direto no geral, com os rótulos em coluna própria à direita do módulo (sem sobreposição).
+- **Derivação do DPS no jumper, A MONTANTE do DR** — o nó de derivação fica entre o disjuntor geral e o DR (conexão correta para o arranjo N+1/centelhador em TT), anotado no desenho e no DXF.
+- Textos do DR geral corrigidos (centralização) e referência de catálogo também no DR geral; zona superior ~40 px mais compacta; DXF espelha a nova geometria.
+
 ## v3.7 — 2026-07-08 · Painel Real: DPS em paralelo, TT/TN-S e cores NBR
 
 Layout do QDF redesenhado a partir de um quadro residencial real: DPS instalado corretamente EM PARALELO, escolha do esquema de aterramento TT/TN-S, cores de condutores conforme a norma e nomenclatura DR (geral) / IDR (por circuito).
