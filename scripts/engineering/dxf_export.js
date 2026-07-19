@@ -139,51 +139,70 @@
     w.rect(L.encX, L.encY, L.encW, L.encH, "QDF-GABINETE");
     w.rect(L.encX + 8, L.encY + 40, L.encW - 16, L.encH - 50, "QDF-GABINETE");
 
-    // ── Entrada em linha única: geral (dir) ← jumper ← DR (centro) ──
+    // ── Entrada estilo diagrama de ligação: linhas de alimentação
+    //    A/B/C/N/PE → QG → DR (com N) → circuitos; DPS à direita ──
     const feeder = by.feeder, main = by["main-breaker"], mrcd = by["main-rcd"], spd = by.spd;
-    const dh = L.devH, dw = L.drW, mw = L.mainW;
-    const yTop = L.topY1;
-    const mainCx = L.mainX + mw / 2;
-    w.line(mainCx, L.encY - 12, mainCx, yTop - dh / 2, "QDF-CABO");
+    const qg = L.qg, dr = L.dr;
+    const phN = L.phases.concat(["N"]);
+    Object.keys(L.supY).forEach(p => {
+      w.line(L.supX0, L.supY[p], L.supX1, L.supY[p], PHASE_LAYER[p] || "QDF-CABO");
+      w.text(L.supX0 - 8, L.supY[p] + 2, 3.5, p, PHASE_LAYER[p] || "QDF-TEXTO");
+    });
     if (feeder.data.section) {
-      w.text(mainCx + 12, L.encY + 61, 4,
+      w.text(L.encX + G.padX + 6, L.supYEnd + 35, 4,
         `ALIMENTADOR ${feeder.data.section}mm2 + N ${feeder.data.neutral} + PE ${feeder.data.pe}mm2 - ${feeder.data.lengthM}m ${feeder.data.method}`, "QDF-TEXTO");
     }
-    w.rect(L.mainX, yTop - dh / 2, mw, dh, "QDF-DISPOSITIVO");
-    w.text(mainCx, yTop + 4, 4.5, main.data.In ? `GERAL ${main.data.In}A ${main.data.curve} ${main.data.poles}P` : "GERAL", "QDF-TEXTO", "center");
-
-    // Jumper curto geral → DR, com nó de derivação do DPS no meio
-    const junX = (L.mainX + L.cx + dw / 2) / 2;
-    w.line(L.cx + dw / 2, yTop, L.mainX, yTop, "QDF-BARRAMENTO-A");
-
-    // ── DPS em PARALELO (derivação a montante do DR) → PE ──
-    const S = L.spd;
-    const bankW = S.count * (S.modW + S.modGap) - S.modGap;
-    const bankCx = S.x0 + bankW / 2;
-    const tapY = yTop - dh / 2 - 14;
-    w.line(junX, yTop, junX, tapY, "QDF-BARRAMENTO-A");
-    w.line(junX, tapY, bankCx, tapY, "QDF-BARRAMENTO-A");
-    w.line(bankCx, tapY, bankCx, S.y - 24, "QDF-BARRAMENTO-A");
-    const phasesN = L.phases.concat(["N"]);
+    // QG
+    L.phases.forEach((p, i) => {
+      w.line(qg.poleXs[i], L.supY[p], qg.poleXs[i], qg.y - qg.h / 2, PHASE_LAYER[p]);
+    });
+    w.rect(qg.x, qg.y - qg.h / 2, qg.w, qg.h, "QDF-DISPOSITIVO");
+    w.text(qg.x - 10, qg.y + 2, 4.5, main.data.In ? `QG GERAL ${main.data.In}A ${main.data.curve} ${main.data.poles}P` : "QG", "QDF-TEXTO");
+    // QG → DR (jogos) e neutro da linha N ao DR
+    L.phases.forEach((p, i) => {
+      const x0 = qg.poleXs[i], x1 = dr.termXs[i + 1], yJog = L.tkY + i * 5;
+      w.line(x0, qg.y + qg.h / 2, x0, yJog, PHASE_LAYER[p]);
+      w.line(x0, yJog, x1, yJog, PHASE_LAYER[p]);
+      w.line(x1, yJog, x1, dr.y - dr.h / 2, PHASE_LAYER[p]);
+    });
+    w.line(dr.termXs[0], L.supY.N, dr.termXs[0], dr.y - dr.h / 2, "QDF-NEUTRO");
+    // DR
+    w.rect(dr.x, dr.y - dr.h / 2, dr.w, dr.h, "QDF-DISPOSITIVO");
+    w.text(dr.x - 10, dr.y + 2, 4.5, mrcd.data.In ? `DR GERAL ${mrcd.data.In}A/${mrcd.data.sensitivityMa}mA` : "DR", "QDF-TEXTO");
+    // Banco de DPS em paralelo (direita), drenando ao PE
+    const S = L.spdBank;
+    const bankW = S.count * (S.modW + S.gap) - S.gap;
     for (let i = 0; i < S.count; i++) {
-      const x = S.x0 + i * (S.modW + S.modGap);
+      const x = S.x0 + i * (S.modW + S.gap);
       const mcx = x + S.modW / 2;
-      w.rect(x, S.y - 20, S.modW, 40, "QDF-DISPOSITIVO");
-      w.text(mcx, S.y + 2, 3.5, `DPS ${phasesN[i] || "N"}`, "QDF-TEXTO", "center");
-      w.line(mcx, S.y + 20, mcx, S.y + 30, "QDF-PE");
+      const ph = phN[i] || "N";
+      if (ph !== "N") {
+        const k = L.phases.indexOf(ph), yJog = L.tkY + k * 5;
+        w.line(dr.termXs[k + 1], yJog, mcx, yJog, PHASE_LAYER[ph]);
+        w.line(mcx, yJog, mcx, S.yTop, PHASE_LAYER[ph]);
+      } else {
+        w.line(mcx, L.supY.N, mcx, S.yTop, "QDF-NEUTRO");
+      }
+      w.rect(x, S.yTop, S.modW, 56, "QDF-DISPOSITIVO");
+      w.text(mcx, S.yTop + 32, 3.2, `DPS ${ph}`, "QDF-TEXTO", "center");
+      w.line(mcx, S.yTop + 56, mcx, S.yTop + 66, "QDF-PE");
     }
-    w.line(S.x0 + S.modW / 2, S.y + 30, S.x0 + bankW - S.modW / 2, S.y + 30, "QDF-PE");
-    w.line(S.x0 + S.modW / 2, S.y + 30, L.leftCol.peX + G.stripW / 2, S.y + 30, "QDF-PE");
-    w.text(S.x0, S.y + 48, 3.8, "DPS EM PARALELO (DERIVACAO) - NBR 5410 6.3.5.2 - A MONTANTE DO DR - ESQUEMA " + opts.scheme, "QDF-TEXTO");
-
-    // ── DR geral (centrado sobre o pente, mesma linha) ──
-    w.rect(L.drX, yTop - dh / 2, dw, dh, "QDF-DISPOSITIVO");
-    w.text(L.cx, yTop + 4, 4, mrcd.data.In ? `DR GERAL ${mrcd.data.In}A/${mrcd.data.sensitivityMa}mA` : "DR GERAL", "QDF-TEXTO", "center");
+    const colY = S.yTop + 66;
+    w.line(S.x0 + S.modW / 2, colY, S.x0 + bankW - S.modW / 2, colY, "QDF-PE");
+    w.line(S.x0 + bankW - S.modW / 2, colY, L.rightCol.peX + G.stripW / 2, colY, "QDF-PE");
+    w.text(S.x0 - 26, colY + 24, 3.8, "DPS EM PARALELO (DERIVACAO) - NBR 5410 6.3.5.2 - A MONTANTE DO DR - ESQUEMA " + opts.scheme, "QDF-TEXTO");
+    // DR → circuitos (pente)
+    L.phases.forEach((p, i) => {
+      const x0 = dr.termXs[i + 1], x1 = L.combX[p], yJog = dr.y + dr.h / 2 + 12 + i * 5;
+      w.line(x0, dr.y + dr.h / 2, x0, yJog, PHASE_LAYER[p]);
+      w.line(x0, yJog, x1, yJog, PHASE_LAYER[p]);
+      w.line(x1, yJog, x1, L.combTop, PHASE_LAYER[p]);
+    });
+    w.text(L.cx - 87, L.combTop - 10, 3.8, "CIRCUITOS", "QDF-TEXTO", "center");
 
     // ── Pente vertical central (uma barra por fase) ──
     L.phases.forEach(p => {
       const x = L.combX[p];
-      w.line(x, yTop + dh / 2, x, L.combTop, PHASE_LAYER[p]);
       w.rect(x - G.combW / 2, L.combTop, G.combW, L.combBottom - L.combTop, PHASE_LAYER[p]);
       w.text(x, L.combTop - 4, 4, p, PHASE_LAYER[p], "center");
       const busNode = by["bus-" + p];

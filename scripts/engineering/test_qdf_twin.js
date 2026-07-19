@@ -179,11 +179,12 @@ test("Cada circuito mostra In do disjuntor e seção do condutor", () =>
     svg.includes(`${model.byId[c.breakerId].data.In} A`) &&
     svg.includes(`${model.byId[c.conductorId].data.section} mm²`)));
 
-test("Nomenclatura: DR = geral · IDR = por circuito (badge IDR)", () => {
+test("Nomenclatura: DR = geral (QG/DR rotulados) · IDR = por circuito", () => {
   const withRcd = model.circuits.filter(c => c.rcdId);
   return withRcd.length > 0 &&
     withRcd.every(c => svg.includes(`data-node="${c.rcdId}"`)) &&
-    svg.includes("IDR 30 mA") && svg.includes("DR GERAL");
+    svg.includes("IDR 30 mA") && svg.includes(">QG<") && svg.includes(">DR<") &&
+    svg.includes(">Circuitos<");
 });
 
 test("Catálogo de fabricante: referências impressas nos módulos", () => {
