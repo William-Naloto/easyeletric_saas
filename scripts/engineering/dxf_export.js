@@ -149,7 +149,7 @@
       w.text(L.supX0 - 8, L.supY[p] + 2, 3.5, p, PHASE_LAYER[p] || "QDF-TEXTO");
     });
     if (feeder.data.section) {
-      w.text(L.encX + G.padX + 6, L.supYEnd + 35, 4,
+      w.text(L.supX0 + 2, L.supYEnd + 35, 4,
         `ALIMENTADOR ${feeder.data.section}mm2 + N ${feeder.data.neutral} + PE ${feeder.data.pe}mm2 - ${feeder.data.lengthM}m ${feeder.data.method}`, "QDF-TEXTO");
     }
     // QG
@@ -157,7 +157,7 @@
       w.line(qg.poleXs[i], L.supY[p], qg.poleXs[i], qg.y - qg.h / 2, PHASE_LAYER[p]);
     });
     w.rect(qg.x, qg.y - qg.h / 2, qg.w, qg.h, "QDF-DISPOSITIVO");
-    w.text(qg.x - 10, qg.y + 2, 4.5, main.data.In ? `QG GERAL ${main.data.In}A ${main.data.curve} ${main.data.poles}P` : "QG", "QDF-TEXTO");
+    w.text(qg.x - 10, qg.y + 2, 4.5, main.data.In ? `DG GERAL ${main.data.In}A ${main.data.curve} ${main.data.poles}P` : "DG", "QDF-TEXTO");
     // QG → DR (jogos) e neutro da linha N ao DR
     L.phases.forEach((p, i) => {
       const x0 = qg.poleXs[i], x1 = dr.termXs[i + 1], yJog = L.tkY + i * 5;
@@ -230,9 +230,10 @@
         `${cond.data.section}mm2 ${cond.data.lengthM}m`, "QDF-TEXTO", "center");
       w.rect(col.tagX, y - 13, G.tagW, 26, "QDF-CABO");
       w.text(col.tagX + G.tagW / 2, y + 2, 3.2, String(load.data.name).slice(0, 24), "QDF-TEXTO", "center");
-      // N e PE da carga às barras da borda
+      // Neutro só quando a fiação tem N; PE sempre (Tab. 58)
       const outEdge = isLeft ? col.tagX : col.tagX + G.tagW;
-      w.line(outEdge, y - 5, col.nX + G.stripW / 2, y - 5, "QDF-NEUTRO");
+      if (String(load.data.wiring || "").includes("N"))
+        w.line(outEdge, y - 5, col.nX + G.stripW / 2, y - 5, "QDF-NEUTRO");
       w.line(outEdge, y + 5, col.peX + G.stripW / 2, y + 5, "QDF-PE");
     };
     L.cols.left.forEach((c, i) => drawRow(c, L.rowY(i), L.leftCol, true));

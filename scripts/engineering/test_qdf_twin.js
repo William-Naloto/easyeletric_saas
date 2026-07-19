@@ -183,7 +183,7 @@ test("Nomenclatura: DR = geral (QG/DR rotulados) · IDR = por circuito", () => {
   const withRcd = model.circuits.filter(c => c.rcdId);
   return withRcd.length > 0 &&
     withRcd.every(c => svg.includes(`data-node="${c.rcdId}"`)) &&
-    svg.includes("IDR 30 mA") && svg.includes(">QG<") && svg.includes(">DR<") &&
+    svg.includes("IDR 30 mA") && svg.includes(">DG<") && svg.includes(">DR<") &&
     svg.includes(">Circuitos<");
 });
 
@@ -193,6 +193,16 @@ test("Catálogo de fabricante: referências impressas nos módulos", () => {
   const s = Q.render(model, { catalog });
   return s.includes("MDWH-C63-3") && s.includes("MDW-C10-1") && s.includes("qtw-cat") &&
     !svg.includes("qtw-cat"); // sem catálogo, nenhuma referência
+});
+
+test("Neutro só em circuitos com N; PE em todos (Tab. 58)", () => {
+  const ff = model.circuits.find(c => !String(model.byId[c.loadId].data.wiring).includes("N"));
+  const fn = model.circuits.find(c => String(model.byId[c.loadId].data.wiring).includes("N"));
+  if (!ff || !fn) return false;
+  const gOf = id => (svg.match(new RegExp(`<g class="qtw-node" data-node="${id}"[\\s\\S]*?</g>`)) || [])[0] || "";
+  const gFF = gOf(ff.loadId), gFN = gOf(fn.loadId);
+  return !gFF.includes("qtw-wire-n") && gFN.includes("qtw-wire-n") &&
+    gFF.includes("qtw-wire-pe") && gFN.includes("qtw-wire-pe");
 });
 
 test("Determinismo: mesmo modelo + opções → mesmo SVG", () =>

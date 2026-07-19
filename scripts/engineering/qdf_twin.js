@@ -155,7 +155,7 @@
     const titleY = encY + 26;
     // Zona de entrada no estilo do diagrama de ligação clássico:
     // linhas de alimentação horizontais A(R)/B(S)/C(T)/N/PE no topo,
-    // QG (geral) derivado delas ao centro, DR tetrapolar abaixo
+    // DG (disjuntor geral) derivado delas ao centro, DR tetrapolar abaixo
     // (recebendo também o N) e banco de DPS em paralelo à direita,
     // derivado ENTRE o QG e o DR, drenando ao PE.
     const supX0 = encX + G.padX + 46;
@@ -166,21 +166,21 @@
     });
     const supYEnd = encY + 54 + (phases.length + 1) * 9;
 
-    const qg = { w: 78, h: 56, y: encY + 158 };                 // QG 3P centrado
+    const qg = { w: 78, h: 56, y: encY + 158 };                 // DG 3P centrado
     qg.x = cx - qg.w / 2;
     qg.poleXs = phases.map((p, i) => cx + (i - (phases.length - 1) / 2) * 22);
     const dr = { w: 104, h: 56, y: encY + 252 };                // DR (fases+N) abaixo
     dr.x = cx - dr.w / 2;
     dr.termXs = [-1.5, -0.5, 0.5, 1.5].slice(0, phases.length + 1)
       .map(k => cx + k * (phases.length >= 3 ? 24 : 30));       // N + fases
-    const tkY = encY + 214;                                     // nível de derivação QG→DR
+    const tkY = encY + 214;                                     // nível de derivação DG→DR
     const spdBank = {                                           // banco de DPS à direita
       modW: 26, gap: 7, count: phases.length + 1,
       yTop: dr.y - dr.h / 2
     };
     spdBank.x0 = cx + dr.w / 2 + 96;
 
-    const combTop = dr.y + dr.h / 2 + 46;
+    const combTop = dr.y + dr.h / 2 + 66;   // folga p/ textos do DPS sem invadir a 1ª fileira
     const rowsY0 = combTop + 26;
     const rowsYEnd = rowsY0 + Math.max(cols.rows, 1) * G.rowH;
     const combBottom = rowsYEnd + 6;
@@ -361,7 +361,7 @@
    *
    *   A(R)/B(S)/C(T)/N/PE ──────────────── (linhas de alimentação)
    *        │ │ │                       │(N)
-   *        [ QG 3P ]                   │
+   *        [ DG 3P ]                   │
    *        │ │ │  ── derivação ──→ [DPS][DPS][DPS][DPS]  (paralelo)
    *      [ DR 4P ]←N                   └──── PE (verde)
    *        │ │ │
@@ -381,9 +381,10 @@
       out += ln(L.supX0, yy, L.supX1, yy, wire(WIRES[p], p === "N" || p === "PE" ? 2.2 : 2.6));
       out += tx(L.supX0 - 6, yy + 2.8, supplyLbl[p] || p, `text-anchor="end" font-size="7.5" font-weight="800" fill="${WIRES[p]}"`);
     });
-    // dados do alimentador (bloco à esquerda, sob os rótulos)
+    // dados do alimentador (bloco à esquerda, sob os rótulos e à
+    // DIREITA das descidas N/PE da borda — sem cruzar fios)
     if (feeder.data.section) {
-      const fx = L.encX + G.padX + 6;
+      const fx = L.supX0 + 2;
       out += tx(fx, L.supYEnd + 24, "ALIMENTADOR", `font-size="7.5" font-weight="700" letter-spacing="1" fill="${P.dimIn}"`);
       out += tx(fx, L.supYEnd + 35, `${feeder.data.section} mm² + N ${feeder.data.neutral} + PE ${feeder.data.pe} mm²`, `font-size="8" font-weight="700" fill="${P.inkIn}"`);
       out += tx(fx, L.supYEnd + 45, `${feeder.data.lengthM} m · ${feeder.data.method} · Izc ${fmt(feeder.calc.Izc)} A`, `font-size="7.5" fill="${P.dimIn}"`);
@@ -407,7 +408,7 @@
       });
     });
 
-    // ── QG: derivações das fases (pontos de junção) → disjuntor ──
+    // ── DG: derivações das fases (pontos de junção) → disjuntor ──
     const qg = L.qg;
     out += `<g class="qtw-node" data-node="main-breaker" data-kind="breaker">`;
     L.phases.forEach((p, i) => {
@@ -416,7 +417,7 @@
       out += ln(px, L.supY[p], px, qg.y - qg.h / 2, wire(WIRES[p], 2.4));
     });
     out += breakerDevice(qg.x, qg.y - qg.h / 2, qg.w, qg.h, L.phases.length, P, opts, main.validation.status);
-    out += tx(qg.x - 10, qg.y - 12, "QG", `text-anchor="end" font-size="10" font-weight="800" fill="${P.inkIn}"`);
+    out += tx(qg.x - 10, qg.y - 12, "DG", `text-anchor="end" font-size="10" font-weight="800" fill="${P.inkIn}"`);
     out += tx(qg.x - 10, qg.y, main.data.In ? `${main.data.In} A · ${main.data.curve} · ${main.data.poles}P` : "—", `text-anchor="end" font-size="8" font-weight="700" fill="${P.inkIn}"`);
     const mainRef = opts.catalog && opts.catalog.byNode && opts.catalog.byNode["main-breaker"];
     if (mainRef) out += tx(qg.x - 10, qg.y + 10, `${mainRef.maker} ${mainRef.reference}`, `class="qtw-cat" text-anchor="end" font-size="5.5" fill="${P.dimIn}" font-family="monospace"`);
@@ -424,7 +425,7 @@
       out += tx(qg.x - 10, qg.y + 20, `Icn ≥ ${fmt(main.calc.icnRequiredA / 1000, 1)} kA`, `class="qtw-ov qtw-ov-icc" text-anchor="end" font-size="7" fill="${P.dimIn}"`);
     out += `</g>`;
 
-    // ── QG → DR (jogos ortogonais) com DERIVAÇÃO do DPS no meio ──
+    // ── DG → DR (jogos ortogonais) com DERIVAÇÃO do DPS no meio ──
     const dr = L.dr;
     const drTerms = dr.termXs;                 // [N, A, B, C]
     L.phases.forEach((p, i) => {
@@ -448,7 +449,7 @@
       const mcx = x + S.modW / 2;
       const ph = phN[i] || "N";
       const isN = ph === "N";
-      // alimentação do módulo: fases derivam do jogo QG→DR; N deriva da linha N
+      // alimentação do módulo: fases derivam do jogo DG→DR; N deriva da linha N
       if (!isN) {
         const k = L.phases.indexOf(ph);
         const yJog = L.tkY + k * 5;
@@ -486,7 +487,7 @@
     // rótulos do banco (abaixo do coletor, fora do caminho dos fios)
     out += tx(S.x0 + bankW + 10, S.yTop + 16, "DPS's", `font-size="9" font-weight="800" fill="${P.inkIn}"`);
     out += tx(S.x0 - 26, colY + 22, "INSTALAÇÃO EM PARALELO (derivação) — NBR 5410 §6.3.5.2", `font-size="6.5" font-weight="700" letter-spacing="0.4" fill="${P.dimIn}"`);
-    out += tx(S.x0 - 26, colY + 31, "Derivado entre o QG e o DR (a montante do DR)", `font-size="6.5" fill="${P.dimIn}"`);
+    out += tx(S.x0 - 26, colY + 31, "Derivado entre o DG e o DR (a montante do DR)", `font-size="6.5" fill="${P.dimIn}"`);
     out += tx(S.x0 - 26, colY + 40, opts.scheme === "TT"
       ? `Esquema TT: conexão ${L.phases.length}+1 — N–PE por centelhador`
       : "Esquema TN-S: modo comum — fases e N ao PE", `font-size="6.5" fill="${P.dimIn}"`);
@@ -599,10 +600,13 @@
     if (opts.overlays.drop) parts.push(`ΔV ${fmt(cond.calc.dropPct, 2)}%`);
     if (opts.overlays.icc) parts.push(`Icc ${fmt(cond.calc.iccEndA / 1000, 1)} kA`);
     const lx = modX + G.modW / 2;
-    out += tx(lx, y - G.modH / 2 - 10, lbl, `text-anchor="middle" font-size="6.5" fill="${P.dimIn}"`);
+    // halo de fundo: mantém as legendas legíveis sobre o trilho DIN
+    const haloH = parts.length ? 19 : 10;
+    out += rc(lx - 64, y - G.modH / 2 - 11 - haloH + 1, 128, haloH, `fill="${P.plate}" opacity="0.94" rx="3"`);
+    out += tx(lx, y - G.modH / 2 - 4 - (parts.length ? 9 : 0), lbl, `text-anchor="middle" font-size="6.5" fill="${P.dimIn}"`);
     if (parts.length) {
       const dropStatus = statusColor(P, cond.validation.status);
-      out += tx(lx, y - G.modH / 2 - 3, parts.join(" · "), `class="qtw-ov" text-anchor="middle" font-size="6.5" fill="${opts.overlays.drop ? dropStatus : P.accent}"`);
+      out += tx(lx, y - G.modH / 2 - 4, parts.join(" · "), `class="qtw-ov" text-anchor="middle" font-size="6.5" fill="${opts.overlays.drop ? dropStatus : P.accent}"`);
     }
     out += `</g>`;
 
@@ -613,10 +617,13 @@
     out += rc(tagX, y - 13, G.tagW, 26, `fill="${P.module}" stroke="${opts.overlays.validation ? lsc : P.moduleStroke}" stroke-width="1" rx="4"`);
     out += tx(tagX + G.tagW / 2, y - 2.5, trunc(load.data.name, 16), `text-anchor="middle" font-size="7" font-weight="600" fill="${P.inkIn}"`);
     out += tx(tagX + G.tagW / 2, y + 7.5, `${fmt(load.data.powerVA, 0)} VA · ${load.data.wiring}`, `text-anchor="middle" font-size="6" fill="${P.dimIn}"`);
-    // N e PE da carga às barras da borda
+    // Ligações da carga às barras da borda: NEUTRO somente quando a
+    // fiação tem N (circuitos F+F/3F não levam neutro); PE sempre —
+    // todo circuito tem condutor de proteção (NBR 5410 Tab. 58)
     const outEdge = isLeft ? tagX : tagX + G.tagW;
-    out += ln(outEdge, y - 5, col.nX + G.stripW / 2, y - 5, wire(WIRES.N, 1.4));
-    out += ln(outEdge, y + 5, col.peX + G.stripW / 2, y + 5, wire(WIRES.PE, 1.4));
+    const hasN = String(load.data.wiring || "").includes("N");
+    if (hasN) out += ln(outEdge, y - 5, col.nX + G.stripW / 2, y - 5, `class="qtw-wire-n" ` + wire(WIRES.N, 1.4));
+    out += ln(outEdge, y + 5, col.peX + G.stripW / 2, y + 5, `class="qtw-wire-pe" ` + wire(WIRES.PE, 1.4));
     out += `</g>`;
 
     out += `</g>`;
