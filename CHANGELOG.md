@@ -1,5 +1,14 @@
 # Changelog
 
+## v3.7.3 — 2026-07-19 · Correções de legendas, DG e neutro por circuito
+
+### Fixed
+- **Neutro somente para circuitos que têm neutro** — a ligação da carga à barra N passa a ser desenhada apenas quando a fiação inclui N (F+N); circuitos F+F (bifásicos, ex.: chuveiro A+B) e 3F não levam mais fio de neutro no desenho nem no DXF. A ligação ao **PE permanece em todos os circuitos** (condutor de proteção obrigatório — NBR 5410 Tab. 58).
+- **Legendas sobrepostas** — bloco do ALIMENTADOR reposicionado para a direita das descidas N/PE da borda (nenhum fio cruza o texto); rótulos de cabo dos circuitos ganham **halo de fundo** e ficam legíveis sobre o trilho DIN; folga vertical extra antes do pente para os textos do DPS não invadirem a primeira fileira.
+
+### Changed
+- **Sigla do disjuntor geral: QG → DG** no painel e no DXF.
+
 ## v3.7.2 — 2026-07-19 · Entrada no estilo do diagrama de ligação clássico
 
 ### Changed
