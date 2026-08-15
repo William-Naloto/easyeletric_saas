@@ -2340,6 +2340,15 @@ function removeRoomTUE(roomId,tueId){
 
 function renderRooms(){
   const c=document.getElementById("roomsList");
+  // Preserva foco e posição do cursor do input ativo antes de reconstruir o HTML,
+  // pois o innerHTML=... abaixo destrói e recria todos os elementos (o que tirava
+  // o foco da caixa de texto a cada tecla digitada).
+  const active=document.activeElement;
+  let fk=null,selStart=null,selEnd=null;
+  if(active&&c.contains(active)&&active.dataset&&active.dataset.fk){
+    fk=active.dataset.fk;
+    if(typeof active.selectionStart==="number"){selStart=active.selectionStart;selEnd=active.selectionEnd;}
+  }
   if(!rooms.length){
     c.innerHTML='<div style="text-align:center;padding:20px;color:var(--t3);font-size:12px"><i class="fa-solid fa-house" style="font-size:22px;display:block;margin-bottom:8px;opacity:.2"></i>Clique em "+ Cômodo" para adicionar ambientes.</div>';
     return;
@@ -2354,8 +2363,8 @@ function renderRooms(){
     const tueRows=(tuePoints||[]).map(t=>{
       const isMono=t.phaseSystem==="monofasico";
       return`<div class="tue-edit-row">
-        <input class="tue-in" type="text"   value="${t.name}"  placeholder="Nome"  oninput="updRoomTUE(${r.id},${t.id},'name',this.value)">
-        <input class="tue-in" type="number" value="${t.power}" placeholder="W" min="1" oninput="updRoomTUE(${r.id},${t.id},'power',this.value)">
+        <input class="tue-in" type="text"   data-fk="tue-${r.id}-${t.id}-name"  value="${t.name}"  placeholder="Nome"  oninput="updRoomTUE(${r.id},${t.id},'name',this.value)">
+        <input class="tue-in" type="number" data-fk="tue-${r.id}-${t.id}-power" value="${t.power}" placeholder="W" min="1" oninput="updRoomTUE(${r.id},${t.id},'power',this.value)">
         <div style="display:flex;gap:3px">
           <button class="tue-volt-btn ${isMono?"active-mono":""}" onclick="updRoomTUE(${r.id},${t.id},'phaseSystem','monofasico')">127V</button>
           <button class="tue-volt-btn ${!isMono?"active-bi":""}"  onclick="updRoomTUE(${r.id},${t.id},'phaseSystem','bifasico')">220V</button>
@@ -2378,7 +2387,7 @@ function renderRooms(){
       <!-- DADOS DO CÔMODO -->
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:2px">
         <div class="lf" style="grid-column:1/-1"><label>Nome do cômodo</label>
-          <input type="text" value="${r.name}" oninput="updRoom(${r.id},'name',this.value)"></div>
+          <input type="text" data-fk="room-${r.id}-name" value="${r.name}" oninput="updRoom(${r.id},'name',this.value)"></div>
         <div class="lf"><label>Tipo</label>
           <select onchange="updRoom(${r.id},'type',this.value)">
             <option value="sala"       ${r.type==="sala"?"selected":""}>Sala / Dormitório</option>
@@ -2391,11 +2400,11 @@ function renderRooms(){
             <option value="corredor"   ${r.type==="corredor"?"selected":""}>Corredor / Hall</option>
           </select></div>
         <div class="lf"><label>Área (m²)</label>
-          <input type="number" value="${r.area}" min="1" step="0.5" oninput="updRoom(${r.id},'area',this.value)"></div>
+          <input type="number" data-fk="room-${r.id}-area" value="${r.area}" min="1" step="0.5" oninput="updRoom(${r.id},'area',this.value)"></div>
         <div class="lf"><label>Perímetro (m)</label>
-          <input type="number" value="${r.perim}" min="1" step="0.5" oninput="updRoom(${r.id},'perim',this.value)"></div>
+          <input type="number" data-fk="room-${r.id}-perim" value="${r.perim}" min="1" step="0.5" oninput="updRoom(${r.id},'perim',this.value)"></div>
         <div class="lf"><label>Dist. QDF (m)</label>
-          <input type="number" value="${r.dist}" min="1" oninput="updRoom(${r.id},'dist',this.value)"></div>
+          <input type="number" data-fk="room-${r.id}-dist" value="${r.dist}" min="1" oninput="updRoom(${r.id},'dist',this.value)"></div>
       </div>
 
       <!-- PONTOS NBR 5410 -->
@@ -2470,6 +2479,16 @@ function renderRooms(){
       </div>
     </div>`;
   }).join("");
+  // Restaura foco e cursor no input que estava sendo editado.
+  if(fk){
+    const el=c.querySelector(`[data-fk="${fk}"]`);
+    if(el){
+      el.focus();
+      if(selStart!==null){
+        try{el.setSelectionRange(selStart,selEnd);}catch(e){}
+      }
+    }
+  }
 }
 
 function renderPointsSummary(){
