@@ -1357,9 +1357,9 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
         <div class="fg" style="margin-bottom:10px">
           <label class="fl" style="color:var(--wn)"><i class="fa-solid fa-bolt"></i> <strong>Tipo de Alimentação</strong> <span style="color:var(--er);font-size:10px">★ obrigatório</span></label>
           <select class="fc2" id="supplyType" onchange="updateSupplyType()" style="border-color:var(--wn);font-weight:600">
-            <option value="monofasico">Monofásico — 1F+N (127V ou 220V)</option>
-            <option value="bifasico">Bifásico — 2F+N (220V ou 380V)</option>
-            <option value="trifasico" selected>Trifásico — 3F+N+T (padrão)</option>
+            <option value="monofasico">Monofásico: 1F+N (127V ou 220V)</option>
+            <option value="bifasico">Bifásico: 2F+N (220V ou 380V)</option>
+            <option value="trifasico" selected>Trifásico: 3F+N+T (padrão)</option>
           </select>
         </div>
         <div class="g2">
@@ -1381,21 +1381,21 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
           <div class="fg">
             <label class="fl"><i class="fa-solid fa-layer-group"></i> Método Padrão</label>
             <select class="fc2" id="defMethod">
-              <option value="B1" selected>B1 — Eletroduto embutido</option>
-              <option value="B2">B2 — Aparente</option>
-              <option value="C">C — Superfície</option>
-              <option value="D">D — Enterrado</option>
-              <option value="E">E — Ar livre</option>
+              <option value="B1" selected>B1: Eletroduto embutido</option>
+              <option value="B2">B2: Aparente</option>
+              <option value="C">C: Superfície</option>
+              <option value="D">D: Enterrado</option>
+              <option value="E">E: Ar livre</option>
             </select>
           </div>
           <div class="fg">
             <label class="fl"><i class="fa-solid fa-object-group"></i> Circ. no eletroduto</label>
             <select class="fc2" id="totCirc">
-              <option value="1">1 — Fg=1,00</option><option value="2">2 — Fg=0,80</option>
-              <option value="3" selected>3 — Fg=0,70</option><option value="4">4 — Fg=0,65</option>
-              <option value="5">5 — Fg=0,60</option><option value="6">6 — Fg=0,57</option>
-              <option value="7">7 — Fg=0,54</option><option value="8">8 — Fg=0,52</option>
-              <option value="9">9 — Fg=0,50</option><option value="10">10+ — Fg=0,50</option>
+              <option value="1">1: Fg=1,00</option><option value="2">2: Fg=0,80</option>
+              <option value="3" selected>3: Fg=0,70</option><option value="4">4: Fg=0,65</option>
+              <option value="5">5: Fg=0,60</option><option value="6">6: Fg=0,57</option>
+              <option value="7">7: Fg=0,54</option><option value="8">8: Fg=0,52</option>
+              <option value="9">9: Fg=0,50</option><option value="10">10+: Fg=0,50</option>
             </select>
           </div>
           <div class="fg">
@@ -1411,9 +1411,9 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
           </div>
           <div class="fg">
             <label class="fl"><i class="fa-solid fa-plug-circle-check"></i> Aterramento</label>
-            <select class="fc2" id="earthScheme" onchange="onEarthSchemeChange()" title="Esquema de aterramento — NBR 5410 §5.1.2.2. TT: eletrodo próprio, DR obrigatório, DPS conexão N+1 (centelhador N-PE). TN-S: PE da fonte, DPS em modo comum.">
-              <option value="TT" selected>TT — eletrodo próprio (padrão BR)</option>
-              <option value="TN-S">TN-S — PE separado da fonte</option>
+            <select class="fc2" id="earthScheme" onchange="onEarthSchemeChange()" title="Esquema de aterramento: NBR 5410 §5.1.2.2. TT: eletrodo próprio, DR obrigatório, DPS conexão N+1 (centelhador N-PE). TN-S: PE da fonte, DPS em modo comum.">
+              <option value="TT" selected>TT: eletrodo próprio (padrão BR)</option>
+              <option value="TN-S">TN-S: PE separado da fonte</option>
             </select>
           </div>
         </div>
@@ -2152,14 +2152,14 @@ function renderLoads(){
           </select></div>
         <div class="lf"><label>Método inst.</label>
           <select onchange="upd(${l.id},'method',this.value)">
-            <option value="B1" ${l.method==="B1"?"selected":""}>B1-Embutido</option>
-            <option value="B2" ${l.method==="B2"?"selected":""}>B2-Aparente</option>
-            <option value="C"  ${l.method==="C"?"selected":""}>C-Superfície</option>
-            <option value="D"  ${l.method==="D"?"selected":""}>D-Enterrado</option>
-            <option value="E"  ${l.method==="E"?"selected":""}>E-Ar livre</option>
+            <option value="B1" ${l.method==="B1"?"selected":""}>B1: Embutido</option>
+            <option value="B2" ${l.method==="B2"?"selected":""}>B2: Aparente</option>
+            <option value="C"  ${l.method==="C"?"selected":""}>C: Superfície</option>
+            <option value="D"  ${l.method==="D"?"selected":""}>D: Enterrado</option>
+            <option value="E"  ${l.method==="E"?"selected":""}>E: Ar livre</option>
           </select></div>
       </div>
-      <div class="lf"><label>Fiação — selecione as fases:</label>
+      <div class="lf"><label>Fiação: selecione as fases</label>
         <div class="phase-selector">${phBtn}</div></div>
     </div>`;
   }).join("");
@@ -2611,7 +2611,7 @@ function autoGenerate(){
     const flush=(bucket,roomNames,ps,wt,type,pf,label)=>{
       if(!bucket)return;
       const dist=Math.max(...roomNames.map(n=>{const r=rooms.find(x=>x.name===n);return r?r.dist:12;}));
-      generated.push({name:`${label} — ${roomNames.join(", ")}`,power:bucket,distance:dist,pf,type,method,phaseSystem:ps,wiringType:wt});
+      generated.push({name:`${label}: ${roomNames.join(", ")}`,power:bucket,distance:dist,pf,type,method,phaseSystem:ps,wiringType:wt});
     };
 
     const st=getSupplyType();
@@ -2665,7 +2665,7 @@ function autoGenerate(){
       if(tugCount127<2){
         for(let i=tugCount127;i<2;i++){
           generated.push({
-            name:`TUG Cozinha 20A — ${coz.name}`,
+            name:`TUG Cozinha 20A: ${coz.name}`,
             power:600,distance:cozDist,pf:0.92,
             type:"tomadas",method,phaseSystem:"monofasico",wiringType:"C+N",
             _nbr:"§9.5.2.2.3 — mín. 2 TUGs 20A cozinha"
@@ -2679,7 +2679,7 @@ function autoGenerate(){
       (room.tuePoints||[]).filter(t=>t.qty>0).forEach(t=>{
         for(let q=0;q<t.qty;q++){
           generated.push({
-            name:`${t.name} — ${room.name}`,
+            name:`${t.name}: ${room.name}`,
             power:t.power,distance:room.dist,
             pf:t.phaseSystem==="monofasico"?0.92:1.0,
             type:WET_TYPES.includes(room.type)||t.power>=2000?"aquecimento":"tomadas",
