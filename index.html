@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="description" content="EasyEletric SaaS v3.7 - Projetista elétrico residencial NBR 5410:2023. Smart Distribution Board interativo, dimensionamento automático, mono/bi/trifásico.">
+<meta name="description" content="EasyEletric SaaS v3.8 - Projetista elétrico residencial NBR 5410:2023. Smart Distribution Board interativo, dimensionamento automático, mono/bi/trifásico.">
 <meta name="keywords" content="dimensionador elétrico,NBR 5410,calcular disjuntor,QDF residencial,DR DPS,projeto elétrico">
 <meta name="robots" content="index,follow">
 <meta property="og:title" content="EasyEletric SaaS | Projetista Elétrico NBR 5410:2023">
@@ -1182,6 +1182,127 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
   .stats-row { grid-template-columns:1fr 1fr }
   .dev-panel { width:calc(100vw - 32px); right:16px; bottom:16px }
 }
+
+/* ============================================================
+   BILLBOARDS — contextual, state-driven action banners.
+   Not decorative marketing; each one reflects real project
+   state (loads, results, EEPanelHealth) and drives one action.
+   ============================================================ */
+.billboard-stack{display:flex;flex-direction:column;gap:10px;padding:14px 22px 0}
+.billboard-stack:empty{display:none}
+.billboard{
+  display:flex;align-items:center;gap:14px;
+  padding:14px 16px;border-radius:12px;border:1px solid var(--bd);
+  background:var(--bgc);animation:bbIn .25s ease both;
+}
+@keyframes bbIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+.billboard-ic{
+  flex:0 0 auto;width:38px;height:38px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;font-size:16px;
+}
+.billboard-body{flex:1;min-width:0}
+.billboard-title{font-weight:700;font-size:13.5px;color:var(--t1);margin-bottom:2px}
+.billboard-desc{font-size:12px;color:var(--t2);line-height:1.4}
+.billboard-actions{flex:0 0 auto;display:flex;gap:8px;align-items:center}
+.bb-cta{
+  border:none;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:700;
+  cursor:pointer;white-space:nowrap;background:var(--ac);color:#fff;transition:filter .15s;
+}
+.bb-cta:hover{filter:brightness(1.1)}
+.bb-cta-sec{
+  border:1px solid var(--bd);border-radius:8px;padding:8px 12px;font-size:12px;font-weight:600;
+  cursor:pointer;white-space:nowrap;background:transparent;color:var(--t2);
+}
+.bb-cta-sec:hover{color:var(--t1);border-color:var(--t3)}
+.billboard[data-type="onboarding"]{border-color:var(--ac)}
+.billboard[data-type="onboarding"] .billboard-ic{background:var(--acg);color:var(--acl)}
+.billboard[data-type="progress"]{border-color:var(--ac)}
+.billboard[data-type="progress"] .billboard-ic{background:var(--acg);color:var(--acl)}
+.billboard[data-type="success"]{border-color:var(--ok)}
+.billboard[data-type="success"] .billboard-ic{background:var(--okb);color:var(--ok)}
+.billboard[data-type="success"] .bb-cta{background:var(--ok)}
+.billboard[data-type="warning"]{border-color:var(--wn)}
+.billboard[data-type="warning"] .billboard-ic{background:var(--wnb);color:var(--wn)}
+.billboard[data-type="warning"] .bb-cta{background:var(--wn)}
+.billboard[data-type="error"]{border-color:var(--er)}
+.billboard[data-type="error"] .billboard-ic{background:var(--erb);color:var(--er)}
+.billboard[data-type="error"] .bb-cta{background:var(--er)}
+.billboard[data-type="material"]{border-color:var(--inf)}
+.billboard[data-type="material"] .billboard-ic{background:var(--infb);color:var(--inf)}
+.billboard[data-type="material"] .bb-cta{background:var(--inf)}
+@media (max-width:760px){
+  .billboard{flex-wrap:wrap}
+  .billboard-actions{width:100%;justify-content:flex-start}
+}
+
+/* ============================================================
+   LIFECYCLE STEPPER — where am I / what's next (brief §6).
+   Driven by loads[], results[], _qxHealth, _qxDocsGenerated.
+   ============================================================ */
+.lc-stepper{display:flex;align-items:center;gap:2px;padding:12px 22px 0;overflow-x:auto}
+.lc-step{display:flex;align-items:center;gap:8px;cursor:pointer;flex:0 0 auto;opacity:.55;transition:opacity .15s}
+.lc-step.done,.lc-step.active{opacity:1}
+.lc-dot{
+  width:22px;height:22px;border-radius:50%;flex:0 0 auto;
+  display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;
+  border:2px solid var(--bd);color:var(--t3);background:var(--bgc);
+}
+.lc-step.done .lc-dot{background:var(--ok);border-color:var(--ok);color:#fff}
+.lc-step.active .lc-dot{border-color:var(--ac);color:var(--ac)}
+.lc-label{font-size:11.5px;font-weight:600;color:var(--t2);white-space:nowrap}
+.lc-step.active .lc-label{color:var(--t1)}
+.lc-line{width:26px;height:2px;background:var(--bd);flex:0 0 auto}
+.lc-line.done{background:var(--ok)}
+@media (max-width:760px){.lc-label{display:none}.lc-line{width:14px}}
+
+/* ============================================================
+   COMMAND CENTER (Ctrl+K) — brief §28. Reuses .modal-ov overlay
+   convention already used by unifilarModal/optimizeModal/affModal.
+   ============================================================ */
+#cmdkModal .modal-box{max-width:560px;padding:0;overflow:hidden}
+.cmdk-input-wrap{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--bd)}
+.cmdk-input-wrap i{color:var(--t3)}
+#cmdkInput{
+  flex:1;background:transparent;border:none;outline:none;color:var(--t1);
+  font-size:14.5px;font-family:inherit;
+}
+#cmdkInput::placeholder{color:var(--t3)}
+.cmdk-hint{font-size:10px;color:var(--t3);border:1px solid var(--bd);border-radius:4px;padding:2px 5px}
+#cmdkList{max-height:340px;overflow-y:auto;padding:6px}
+.cmdk-item{
+  display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:8px;cursor:pointer;
+}
+.cmdk-item.sel{background:var(--acg)}
+.cmdk-item i{width:18px;text-align:center;color:var(--t3);flex:0 0 auto}
+.cmdk-item.sel i{color:var(--acl)}
+.cmdk-item-label{flex:1;font-size:13px;color:var(--t1)}
+.cmdk-item-grp{font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.03em}
+.cmdk-empty{padding:24px;text-align:center;color:var(--t3);font-size:12.5px}
+
+/* ============================================================
+   EASYENGINEER AI — chat panel (brief §11/§12).
+   ============================================================ */
+.ai-chat-log{
+  min-height:220px;max-height:440px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;
+  padding:4px 2px 10px;
+}
+.ai-msg{max-width:82%;padding:10px 13px;border-radius:12px;font-size:13px;line-height:1.5;white-space:pre-wrap}
+.ai-msg.user{align-self:flex-end;background:var(--ac);color:#fff;border-bottom-right-radius:3px}
+.ai-msg.ai{align-self:flex-start;background:var(--bgi);color:var(--t1);border:1px solid var(--bd);border-bottom-left-radius:3px}
+.ai-msg.sys{align-self:center;background:transparent;color:var(--t3);font-size:11.5px;text-align:center;max-width:100%}
+.ai-msg.err{align-self:flex-start;background:var(--erb);color:var(--er);border:1px solid var(--er)}
+.ai-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.ai-chip{
+  font-size:11.5px;border:1px solid var(--bd);background:transparent;color:var(--t2);
+  border-radius:20px;padding:6px 12px;cursor:pointer;
+}
+.ai-chip:hover{border-color:var(--ac);color:var(--acl)}
+.ai-input-row{display:flex;gap:8px}
+#aiInput{
+  flex:1;padding:11px 14px;border-radius:10px;border:1px solid var(--bd);
+  background:var(--bgi);color:var(--t1);font-size:13px;font-family:inherit;outline:none;
+}
+#aiInput:focus{border-color:var(--ac)}
 </style>
 
 <!-- ============================================================
@@ -1191,7 +1312,7 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
   <div class="nav-logo" onclick="gotoSection('hero')">
     <div class="logo-icon"><i class="fa-solid fa-bolt"></i></div>
     <span>EasyEletric</span>
-    <span class="logo-badge">SaaS v3.7</span>
+    <span class="logo-badge">SaaS v3.8</span>
   </div>
   <div class="nav-links">
     <button class="nav-link" onclick="gotoSection('features')">Recursos</button>
@@ -1199,6 +1320,10 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
     <button class="nav-link" onclick="gotoSection('formulas')">Fórmulas NBR</button>
   </div>
   <div class="nav-right">
+    <button class="btn-sm" onclick="openCmdk()" title="Central de Comandos">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <span class="cmdk-hint" style="margin-left:4px">Ctrl+K</span>
+    </button>
     <button class="btn-sm" onclick="toggleTheme()">
       <i class="fa-solid fa-circle-half-stroke"></i>
       <span id="themeLbl">Claro</span>
@@ -1268,7 +1393,7 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
      FEATURES
      ============================================================ -->
 <section class="section" id="features">
-  <div class="sec-lbl"><i class="fa-solid fa-star"></i> Recursos v3.7</div>
+  <div class="sec-lbl"><i class="fa-solid fa-star"></i> Recursos v3.8</div>
   <h2 class="sec-h2">Projetista Assistido Residencial</h2>
   <p class="sec-sub">Duas formas de uso: informe cômodos e áreas para geração automática, ou adicione cargas manualmente.</p>
   <div class="feat-grid">
@@ -1346,6 +1471,9 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
       <button class="btn btn-tb" onclick="loadPreset()" title="Carregar projeto residencial de exemplo"><i class="fa-solid fa-house-chimney"></i> Projeto Tipo</button>
     </div>
   </div>
+
+  <div id="lcStepper" class="lc-stepper" aria-label="Progresso do projeto"></div>
+  <div id="billboardStack" class="billboard-stack" aria-live="polite"></div>
 
   <div class="app-body">
     <!-- ========== LEFT PANEL ========== -->
@@ -1547,6 +1675,7 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
         <button class="app-tab" id="tab-qdf"  role="tab" aria-selected="false" tabindex="-1" aria-controls="panel-qdf"  onclick="showTab('qdf')"><i class="fa-solid fa-table-cells" aria-hidden="true"></i> QDF</button>
         <button class="app-tab" id="tab-bom"  role="tab" aria-selected="false" tabindex="-1" aria-controls="panel-bom"  onclick="showTab('bom')"><i class="fa-solid fa-boxes-stacked" aria-hidden="true"></i> Materiais</button>
         <button class="app-tab" id="tab-memo" role="tab" aria-selected="false" tabindex="-1" aria-controls="panel-memo" onclick="showTab('memo')"><i class="fa-solid fa-scroll" aria-hidden="true"></i> Memorial</button>
+        <button class="app-tab" id="tab-ai" role="tab" aria-selected="false" tabindex="-1" aria-controls="panel-ai" onclick="showTab('ai')"><i class="fa-solid fa-sparkles" aria-hidden="true"></i> Assistente IA</button>
       </div>
 
       <div class="stats-row" id="statsRow" style="display:none">
@@ -1715,6 +1844,25 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
           <div class="empty-st"><i class="fa-solid fa-scroll"></i><p>Calcule para gerar memorial</p></div>
         </div>
       </div>
+
+      <!-- ASSISTENTE IA (EasyEngineer AI) -->
+      <div id="panel-ai" role="tabpanel" aria-labelledby="tab-ai" style="display:none">
+        <div class="sh" style="margin-bottom:12px;flex-wrap:wrap;gap:8px">
+          <div style="font-size:13px;font-weight:600;color:var(--t2);display:flex;align-items:center;gap:7px">
+            <i class="fa-solid fa-sparkles" style="color:var(--ac)"></i> EasyEngineer AI
+          </div>
+          <button class="btn btn-tb" onclick="aiOpenSettings()"><i class="fa-solid fa-key"></i> Chave de API</button>
+        </div>
+        <p style="font-size:12px;color:var(--t3);margin:-4px 0 12px">
+          A IA responde apenas com base nos dados reais do seu projeto (cargas, circuitos calculados e Electrical Health). O motor determinístico NBR 5410 continua sendo a única fonte de verdade — a IA explica e orienta, nunca recalcula nem substitui o resultado do motor.
+        </p>
+        <div id="aiChatLog" class="ai-chat-log"></div>
+        <div id="aiChips" class="ai-chips"></div>
+        <div class="ai-input-row">
+          <input id="aiInput" type="text" placeholder="Pergunte sobre seu projeto…" autocomplete="off">
+          <button class="btn btn-ac" id="aiSendBtn" onclick="aiSend()"><i class="fa-solid fa-paper-plane"></i></button>
+        </div>
+      </div>
     </div><!-- /app-right -->
   </div><!-- /app-body -->
 </div><!-- /app -->
@@ -1811,12 +1959,12 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
       <div class="footer-col">
         <h4>Sobre</h4>
         <a href="https://github.com/William-Naloto/easyeletric_saas" target="_blank">GitHub</a>
-        <a href="CHANGELOG.md">Changelog v3.7</a>
+        <a href="CHANGELOG.md">Changelog v3.8</a>
         <a href="README.md">Documentação</a>
       </div>
     </div>
     <div class="footer-bottom">
-      <p>EasyEletric SaaS v3.7 &copy; 2025 William Naloto &bull; Sem coleta de PII &bull;
+      <p>EasyEletric SaaS v3.8 &copy; 2025 William Naloto &bull; Sem coleta de PII &bull;
         <a href="https://github.com/William-Naloto/easyeletric_saas" target="_blank">GitHub Pages</a><br>
         <strong>Aviso:</strong> Ferramenta de pré-dimensionamento. Não substitui projeto elétrico, ART/RRT, consulta NBR 5410 oficial e catálogos de fabricantes.
       </p>
@@ -1824,7 +1972,7 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
         <span class="fbadge">NBR 5410</span>
         <span class="fbadge">Offline</span>
         <span class="fbadge">No PII</span>
-        <span class="fbadge">v3.7</span>
+        <span class="fbadge">v3.8</span>
       </div>
     </div>
   </div>
@@ -1884,6 +2032,40 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
       O motor analisa equilíbrio de fases, dimensionamento, queda de tensão, utilização dos barramentos e capacidade futura, e gera recomendações explicáveis com referência normativa. <strong>Nada é aplicado sem a sua aprovação.</strong>
     </p>
     <div id="qxRecList"></div>
+  </div>
+</div>
+
+<!-- ============================================================
+     COMMAND CENTER (Ctrl+K)
+     ============================================================ -->
+<div class="modal-ov" id="cmdkModal">
+  <div class="modal-box">
+    <div class="cmdk-input-wrap">
+      <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+      <input id="cmdkInput" type="text" placeholder="Dimensionar chuveiro, abrir QDF, gerar PDF…" autocomplete="off">
+      <span class="cmdk-hint">Esc</span>
+    </div>
+    <div id="cmdkList" role="listbox"></div>
+  </div>
+</div>
+
+<!-- ============================================================
+     EASYENGINEER AI — CONFIGURAÇÃO DE CHAVE
+     ============================================================ -->
+<div class="modal-ov" id="aiSettingsModal">
+  <div class="modal-box" style="max-width:480px">
+    <div class="modal-hdr">
+      <h2><i class="fa-solid fa-key"></i> Chave de API (Anthropic)</h2>
+      <button class="modal-close" aria-label="Fechar" onclick="closeModal('aiSettingsModal')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <p style="font-size:12.5px;color:var(--t3);margin-bottom:10px">
+      A chave fica salva apenas no seu navegador (localStorage) e é enviada diretamente da sua máquina para a API da Anthropic — este site não tem backend. Em produção, uma chave client-side fica visível a quem abrir o DevTools; para uso público, o ideal é um proxy simples que guarde a chave no servidor.
+    </p>
+    <input id="aiKeyInput" type="password" placeholder="sk-ant-…" style="width:100%;padding:9px 12px;border-radius:8px;border:1px solid var(--bd);background:var(--bgi);color:var(--t1);font-size:13px;margin-bottom:10px">
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn btn-tb" onclick="aiClearKey()">Remover chave</button>
+      <button class="btn btn-ac" onclick="aiSaveKey()">Salvar</button>
+    </div>
   </div>
 </div>
 
@@ -2064,7 +2246,7 @@ function phUsed(wt){
 // ================================================================
 // STATE
 // ================================================================
-let loads=[],lcnt=0,results=[];
+let loads=[],lcnt=0,results=[],_qxDocsGenerated=false;
 let tueLoads=[],tueCnt=0;
 let rooms=[],rcnt=0;
 let currentMode="manual";
@@ -2093,9 +2275,9 @@ function addLoad(p={}){
     pf:p.pf||0.92,type:p.type||"tomadas",method:p.method||document.getElementById("defMethod").value,
     qty:p.qty||1,phaseSystem:ps,wiringType:wt};
   loads.unshift(newLoad);  // TOPO da pilha
-  renderLoads();saveState();
+  renderLoads();saveState();renderBillboards();
 }
-function removeLoad(id){loads=loads.filter(l=>l.id!==id);renderLoads();if(!loads.length)clearRes();saveState()}
+function removeLoad(id){loads=loads.filter(l=>l.id!==id);renderLoads();if(!loads.length)clearRes();saveState();renderBillboards()}
 function upd(id,f,v){
   const l=loads.find(x=>x.id===id);if(!l)return;
   if(["name","type","method","phaseSystem","wiringType"].includes(f))l[f]=v;
@@ -2778,6 +2960,7 @@ function calculateAll(targetTab="circ"){
       updStats(results);
       showTab(targetTab);
       toast(results.length+" circuito(s) dimensionado(s)!","ok");
+      renderBillboards();
     }catch(e){toast("Erro no cálculo: "+e.message,"err");console.error(e)}
     finally{document.getElementById("lov").classList.remove("on")}
   },loads.length>10?400:150);
@@ -3238,6 +3421,120 @@ function clearRes(){
   document.getElementById("dpsCard").style.display="none";
   const pb=document.getElementById("phaseBalance");if(pb)pb.style.display="none";
   document.getElementById("memoContent").innerHTML='<div class="empty-st"><i class="fa-solid fa-scroll"></i><p>Calcule para gerar memorial</p></div>';
+  renderBillboards();
+}
+
+// ================================================================
+// LIFECYCLE STEPPER — 4 estágios reais do fluxo (brief §6),
+// mapeados ao estado de fato: loads[], results[], _qxHealth,
+// _qxDocsGenerated. Sem estágios fictícios não implementados.
+// ================================================================
+function renderLifecycleStepper(){
+  const el=document.getElementById("lcStepper");
+  if(!el)return;
+  const hasLoads=loads.length>0;
+  const hasResults=results.length>0;
+  const validated=hasResults&&typeof _qxHealth!=="undefined"&&_qxHealth&&_qxHealth.errorCount===0;
+  const documented=!!_qxDocsGenerated;
+  const steps=[
+    {key:"cargas",label:"Cargas",done:hasLoads,fn:"gotoSection('app')"},
+    {key:"circ",label:"Circuitos",done:hasResults,fn:hasResults?"showTab('circ')":"calculateAll()"},
+    {key:"qdf",label:"Proteções/QDF",done:validated,fn:hasResults?"showTab('qdf')":null},
+    {key:"doc",label:"Documentação",done:documented,fn:hasResults?"showTab('memo')":null}
+  ];
+  let firstNotDone=steps.findIndex(s=>!s.done);
+  if(firstNotDone===-1)firstNotDone=steps.length; // tudo concluído
+  el.innerHTML=steps.map((s,i)=>{
+    const cls=s.done?"done":(i===firstNotDone?"active":"");
+    const clickable=s.fn?`onclick="${s.fn}"`:"";
+    const line=i<steps.length-1?`<div class="lc-line ${steps[i+1].done||s.done?'done':''}"></div>`:"";
+    return `<div class="lc-step ${cls}" ${clickable}>
+      <div class="lc-dot">${s.done?'<i class=\"fa-solid fa-check\"></i>':(i+1)}</div>
+      <div class="lc-label">${s.label}</div>
+    </div>${line}`;
+  }).join("");
+}
+
+// ================================================================
+// BILLBOARDS — state-driven action banners (§4/§26 do brief de
+// transformação). Nunca marketing decorativo: cada billboard lê
+// estado real do projeto (loads[], results[], _qxHealth de
+// EEPanelHealth.assess() já calculado em renderQDF()) — nada é
+// recalculado ou inventado aqui.
+// ================================================================
+function billboardHtml(b){
+  return `<div class="billboard" data-type="${b.type}">
+    <div class="billboard-ic"><i class="fa-solid ${b.icon}"></i></div>
+    <div class="billboard-body">
+      <div class="billboard-title">${b.title}</div>
+      <div class="billboard-desc">${b.desc}</div>
+    </div>
+    <div class="billboard-actions">
+      ${b.secondary?`<button class="bb-cta-sec" onclick="${b.secondary.fn}">${b.secondary.label}</button>`:""}
+      ${b.primary?`<button class="bb-cta" onclick="${b.primary.fn}">${b.primary.label}</button>`:""}
+    </div>
+  </div>`;
+}
+function renderBillboards(){
+  const stack=document.getElementById("billboardStack");
+  if(!stack)return;
+  const bbs=[];
+
+  if(!loads.length){
+    bbs.push({
+      type:"onboarding",icon:"fa-wand-magic-sparkles",
+      title:"Comece seu projeto elétrico",
+      desc:"Informe os cômodos e áreas da residência para gerar os circuitos automaticamente, ou adicione cargas manualmente.",
+      primary:{label:"Dimensionar por Cômodos",fn:"activateAutoMode()"},
+      secondary:{label:"Carregar Projeto Tipo",fn:"loadPreset()"}
+    });
+  } else if(!results.length){
+    bbs.push({
+      type:"progress",icon:"fa-bolt",
+      title:loads.length+" circuito(s) pronto(s) para calcular",
+      desc:"Revise as cargas na coluna à esquerda e calcule para gerar QDF, materiais e memorial.",
+      primary:{label:"Calcular Circuitos",fn:"calculateAll()"}
+    });
+  } else {
+    if(typeof _qxHealth!=="undefined"&&_qxHealth){
+      const h=_qxHealth,issues=(h.errorCount||0)+(h.warningCount||0);
+      if(h.errorCount>0){
+        bbs.push({
+          type:"error",icon:"fa-triangle-exclamation",
+          title:"Encontramos "+issues+" ponto(s) que precisam de atenção",
+          desc:h.errorCount+" violação(ões) normativa(s) e "+h.warningCount+" aviso(s) no quadro. Electrical Health: "+h.healthPct+"%.",
+          primary:{label:"Corrigir no QDF",fn:"showTab('qdf')"},
+          secondary:{label:"Ver recomendações",fn:"openOptimizePanel()"}
+        });
+      } else if(h.warningCount>0){
+        bbs.push({
+          type:"warning",icon:"fa-circle-exclamation",
+          title:issues+" recomendação(ões) de otimização",
+          desc:"Nenhuma violação normativa, mas "+h.warningCount+" ponto(s) podem melhorar. Electrical Health: "+h.healthPct+"%.",
+          primary:{label:"Ver recomendações",fn:"openOptimizePanel()"},
+          secondary:{label:"Abrir QDF",fn:"showTab('qdf')"}
+        });
+      } else {
+        bbs.push({
+          type:"success",icon:"fa-circle-check",
+          title:"Projeto validado — Electrical Health "+h.healthPct+"%",
+          desc:h.grade+". Nenhuma violação ou aviso pendente no quadro.",
+          primary:{label:"Ver Quadro (QDF)",fn:"showTab('qdf')"},
+          secondary:{label:"Revisar com IA",fn:"showTab('ai')"}
+        });
+      }
+    }
+    bbs.push({
+      type:"material",icon:"fa-boxes-stacked",
+      title:"Sua lista de materiais está pronta",
+      desc:results.length+" circuito(s) calculado(s) geraram a lista de compras (cabos, disjuntores, DR/DPS e acessórios).",
+      primary:{label:"Ver materiais",fn:"showTab('bom')"},
+      secondary:{label:"Exportar XLSX",fn:"exportToExcel()"}
+    });
+  }
+
+  stack.innerHTML=bbs.map(billboardHtml).join("");
+  renderLifecycleStepper();
 }
 
 // ================================================================
@@ -3490,6 +3787,7 @@ function loadProjectFile(input){
 // ================================================================
 function exportToExcel(){
   if(!results.length){toast("Calcule os circuitos primeiro.","err");return}
+  _qxDocsGenerated=true;renderBillboards();
   if(typeof XLSX==="undefined"){
     toast("Carregando XLSX…","info");
     const sc=document.createElement("script");
@@ -3527,6 +3825,7 @@ function exportToExcel(){
 }
 function exportToPDF(){
   if(!results.length){toast("Calcule os circuitos primeiro.","err");return}
+  _qxDocsGenerated=true;renderBillboards();
   if(typeof window.jspdf==="undefined"){
     toast("Carregando jsPDF…","info");
     const sc=document.createElement("script");
@@ -3695,6 +3994,7 @@ function loadPreset(){
 // ================================================================
 function toggleDev(){document.getElementById("devPanel").classList.toggle("open")}
 document.addEventListener("keydown",e=>{if(e.ctrlKey&&e.shiftKey&&e.key==="D"){e.preventDefault();toggleDev()}});
+document.addEventListener("keydown",e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="k"){e.preventDefault();openCmdk()}});
 
 // ================================================================
 // UI HELPERS
@@ -3715,7 +4015,7 @@ function toggleColl(id){
 }
 function gotoSection(id){document.getElementById(id)?.scrollIntoView({behavior:"smooth",block:"start"})}
 function showTab(id){
-  ["circ","qdf","bom","memo"].forEach(t=>{
+  ["circ","qdf","bom","memo","ai"].forEach(t=>{
     const active=t===id;
     document.getElementById("panel-"+t).style.display=active?"block":"none";
     const tab=document.getElementById("tab-"+t);
@@ -3729,7 +4029,7 @@ function showTab(id){
 }
 // Roving arrow-key navigation inside the result tablist (WAI-ARIA APG)
 document.querySelector(".app-tabs")?.addEventListener("keydown",e=>{
-  const order=["circ","qdf","bom","memo"];
+  const order=["circ","qdf","bom","memo","ai"];
   const cur=order.findIndex(t=>document.getElementById("tab-"+t)===document.activeElement);
   if(cur<0)return;
   let next=null;
@@ -3744,7 +4044,199 @@ document.querySelector(".app-tabs")?.addEventListener("keydown",e=>{
 });
 function openModal(id){document.getElementById(id).classList.add("open")}
 function closeModal(id){document.getElementById(id).classList.remove("open")}
+
+// ================================================================
+// COMMAND CENTER (Ctrl+K) — brief §28. Static list of real actions
+// already wired to existing functions; underlying functions keep
+// their own guards (e.g. exportToPDF toasts if no results yet).
+// ================================================================
+const CMDK_COMMANDS=[
+  {grp:"Navegar",label:"Ir para Circuitos",icon:"fa-bolt",fn:()=>showTab("circ")},
+  {grp:"Navegar",label:"Abrir QDF",icon:"fa-table-cells",fn:()=>showTab("qdf")},
+  {grp:"Navegar",label:"Ver Lista de Materiais",icon:"fa-boxes-stacked",fn:()=>showTab("bom")},
+  {grp:"Navegar",label:"Ver Memorial de Cálculo",icon:"fa-scroll",fn:()=>showTab("memo")},
+  {grp:"Navegar",label:"Abrir Assistente IA",icon:"fa-sparkles",fn:()=>showTab("ai")},
+  {grp:"Ação",label:"Dimensionar por Cômodos (Modo Automático)",icon:"fa-wand-magic-sparkles",fn:()=>activateAutoMode()},
+  {grp:"Ação",label:"Carregar Projeto Tipo",icon:"fa-house",fn:()=>loadPreset()},
+  {grp:"Ação",label:"Adicionar Carga em Branco",icon:"fa-plus",fn:()=>{addLoad();gotoSection("app")}},
+  {grp:"Ação",label:"Calcular Circuitos",icon:"fa-calculator",fn:()=>calculateAll()},
+  {grp:"Ação",label:"Ver Recomendações do Otimizador",icon:"fa-sliders",fn:()=>openOptimizePanel()},
+  {grp:"Exportar",label:"Exportar PDF",icon:"fa-file-pdf",fn:()=>exportToPDF()},
+  {grp:"Exportar",label:"Exportar XLSX (Materiais)",icon:"fa-file-excel",fn:()=>exportToExcel()},
+  {grp:"Sistema",label:"Alternar Tema Claro/Escuro",icon:"fa-circle-half-stroke",fn:()=>toggleTheme()},
+  {grp:"Sistema",label:"Abrir Painel Dev",icon:"fa-terminal",fn:()=>toggleDev()}
+];
+let _cmdkSel=0,_cmdkFiltered=CMDK_COMMANDS;
+function openCmdk(){
+  openModal("cmdkModal");
+  const inp=document.getElementById("cmdkInput");
+  inp.value="";_cmdkSel=0;
+  cmdkFilter("");
+  setTimeout(()=>inp.focus(),10);
+}
+function closeCmdk(){closeModal("cmdkModal")}
+function cmdkFilter(q){
+  const nq=q.trim().toLowerCase();
+  _cmdkFiltered=nq?CMDK_COMMANDS.filter(c=>c.label.toLowerCase().includes(nq)||c.grp.toLowerCase().includes(nq)):CMDK_COMMANDS;
+  _cmdkSel=0;
+  cmdkRender();
+}
+function cmdkRender(){
+  const list=document.getElementById("cmdkList");
+  if(!_cmdkFiltered.length){list.innerHTML='<div class="cmdk-empty">Nenhum comando encontrado.</div>';return}
+  let lastGrp=null,html="";
+  _cmdkFiltered.forEach((c,i)=>{
+    if(c.grp!==lastGrp){html+=`<div class="cmdk-item-grp" style="padding:6px 10px 2px">${c.grp}</div>`;lastGrp=c.grp}
+    html+=`<div class="cmdk-item ${i===_cmdkSel?'sel':''}" role="option" onmousemove="_cmdkSel=${i};cmdkRender()" onclick="cmdkRun(${i})">
+      <i class="fa-solid ${c.icon}" aria-hidden="true"></i><span class="cmdk-item-label">${c.label}</span>
+    </div>`;
+  });
+  list.innerHTML=html;
+}
+function cmdkRun(i){
+  const c=_cmdkFiltered[i];if(!c)return;
+  closeCmdk();
+  c.fn();
+}
+document.getElementById("cmdkInput")?.addEventListener("input",e=>cmdkFilter(e.target.value));
+document.getElementById("cmdkInput")?.addEventListener("keydown",e=>{
+  if(e.key==="ArrowDown"){e.preventDefault();_cmdkSel=Math.min(_cmdkSel+1,_cmdkFiltered.length-1);cmdkRender()}
+  else if(e.key==="ArrowUp"){e.preventDefault();_cmdkSel=Math.max(_cmdkSel-1,0);cmdkRender()}
+  else if(e.key==="Enter"){e.preventDefault();cmdkRun(_cmdkSel)}
+  else if(e.key==="Escape"){e.preventDefault();closeCmdk()}
+});
 document.querySelectorAll(".modal-ov").forEach(m=>m.addEventListener("click",e=>{if(e.target===m)m.classList.remove("open")}));
+
+// ================================================================
+// EASYENGINEER AI — copilot contextual (brief §11/§12).
+// Chama a API da Anthropic (Claude) diretamente do navegador com o
+// JSON real do projeto como contexto. O motor NBR 5410 é a única
+// fonte de verdade: a IA só recebe resultados já calculados por
+// nbr5410_engine.js/EEPanelHealth e nunca deve inventar números.
+// AVISO: chamada client-side — a chave fica exposta a quem abrir o
+// DevTools. Aceitável para prototipagem; trocar por um proxy de
+// servidor antes de expor a chave a usuários públicos.
+// ================================================================
+const AI_MODEL="claude-sonnet-5";
+const AI_KEY_STORAGE="ee_ai_key";
+let _aiMessages=[]; // {role:"user"|"assistant", content:string}
+
+function aiOpenSettings(){
+  document.getElementById("aiKeyInput").value=localStorage.getItem(AI_KEY_STORAGE)||"";
+  openModal("aiSettingsModal");
+}
+function aiSaveKey(){
+  const v=document.getElementById("aiKeyInput").value.trim();
+  if(v)localStorage.setItem(AI_KEY_STORAGE,v);
+  closeModal("aiSettingsModal");
+  toast(v?"Chave salva neste navegador.":"Nenhuma chave informada.","info");
+}
+function aiClearKey(){
+  localStorage.removeItem(AI_KEY_STORAGE);
+  document.getElementById("aiKeyInput").value="";
+  toast("Chave removida.","info");
+}
+function aiGetKey(){return localStorage.getItem(AI_KEY_STORAGE)||""}
+
+// Monta o contexto real do projeto — nada inventado, só o que o
+// motor determinístico e o EEPanelHealth já calcularam.
+function buildAIContext(){
+  const ctx={
+    cargas: loads.map(l=>({nome:l.name,tipo:l.type,potenciaW:l.power,fases:l.phaseSystem,distanciaM:l.distance})),
+    circuitosCalculados: results.map(r=>({
+      id:r.idx, nome:r.l&&r.l.name, tipo:r.l&&r.l.type, correnteA:r.Ib,
+      condutorMm2:r.sz, disjuntorA:r.mcb, quedaTensaoPct:r.vd&&r.vd.pct,
+      quedaTensaoLimitePct:r.maxDp, correnteCurtoA:r.icc, status:r.status,
+      mcbOk:r.mcbOk
+    }))
+  };
+  if(typeof _qxHealth!=="undefined"&&_qxHealth){
+    ctx.electricalHealth={
+      percentual:_qxHealth.healthPct, nota:_qxHealth.grade,
+      erros:_qxHealth.errorCount, avisos:_qxHealth.warningCount,
+      indicadores:_qxHealth.indicators
+    };
+  }
+  if(typeof _qxRecs!=="undefined"&&_qxRecs&&_qxRecs.length){
+    ctx.recomendacoes=_qxRecs.map(r=>({severidade:r.severity,titulo:r.title,detalhe:r.detail}));
+  }
+  return ctx;
+}
+
+function aiChipsInit(){
+  const chips=["Por que esse circuito está com queda de tensão alta?","Qual circuito está sobrecarregado?","Como melhorar o balanceamento de fases?","Revise meu projeto"];
+  document.getElementById("aiChips").innerHTML=chips.map(c=>`<button class="ai-chip" onclick="aiSend(${JSON.stringify(c)})">${c}</button>`).join("");
+}
+function aiAppendMsg(role,text){
+  const log=document.getElementById("aiChatLog");
+  const div=document.createElement("div");
+  div.className="ai-msg "+role;
+  div.textContent=text;
+  log.appendChild(div);
+  log.scrollTop=log.scrollHeight;
+}
+async function aiSend(preset){
+  const inp=document.getElementById("aiInput");
+  const q=(typeof preset==="string"?preset:inp.value).trim();
+  if(!q)return;
+  if(!loads.length){aiAppendMsg("sys","Adicione cargas e calcule os circuitos antes de perguntar à IA.");return}
+  const key=aiGetKey();
+  if(!key){
+    aiAppendMsg("sys","Nenhuma chave de API configurada.");
+    aiOpenSettings();
+    return;
+  }
+  inp.value="";
+  aiAppendMsg("user",q);
+  _aiMessages.push({role:"user",content:q});
+  const btn=document.getElementById("aiSendBtn");btn.disabled=true;
+  const thinking=document.createElement("div");
+  thinking.className="ai-msg ai";thinking.id="aiThinking";thinking.textContent="…";
+  document.getElementById("aiChatLog").appendChild(thinking);
+  try{
+    const ctx=buildAIContext();
+    const system="Você é o EasyEngineer AI, copiloto de engenharia elétrica do EasyEletric. "+
+      "Responda SOMENTE com base no JSON de contexto do projeto fornecido — nunca invente valores, "+
+      "circuitos ou cálculos que não estejam no contexto. O motor determinístico NBR 5410 é a única "+
+      "fonte de verdade; seu papel é explicar e orientar, nunca recalcular ou substituir o motor. "+
+      "Se a informação necessária não estiver no contexto, diga isso claramente em vez de supor. "+
+      "Responda em português do Brasil, de forma direta e técnica.\n\nContexto do projeto (JSON):\n"+
+      JSON.stringify(ctx);
+    const resp=await fetch("https://api.anthropic.com/v1/messages",{
+      method:"POST",
+      headers:{
+        "content-type":"application/json",
+        "x-api-key":key,
+        "anthropic-version":"2023-06-01",
+        "anthropic-dangerous-direct-browser-access":"true"
+      },
+      body:JSON.stringify({
+        model:AI_MODEL,
+        max_tokens:1024,
+        system:system,
+        messages:_aiMessages
+      })
+    });
+    const data=await resp.json();
+    document.getElementById("aiThinking")?.remove();
+    if(!resp.ok){
+      const msg=(data&&data.error&&data.error.message)||("Erro HTTP "+resp.status);
+      aiAppendMsg("err","Falha ao consultar a IA: "+msg);
+      return;
+    }
+    const text=(data.content||[]).filter(b=>b.type==="text").map(b=>b.text).join("\n").trim()||"(resposta vazia)";
+    aiAppendMsg("ai",text);
+    _aiMessages.push({role:"assistant",content:text});
+  }catch(e){
+    document.getElementById("aiThinking")?.remove();
+    aiAppendMsg("err","Falha ao consultar a IA: "+e.message);
+  }finally{
+    btn.disabled=false;
+  }
+}
+document.getElementById("aiInput")?.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();aiSend()}});
+aiChipsInit();
+
 function toast(msg,type="ok"){
   const c=document.getElementById("toasts"),t=document.createElement("div");
   t.className="toast "+type;
@@ -4357,6 +4849,7 @@ document.addEventListener("DOMContentLoaded",()=>{
     setMode("auto");
   }
   showTab("circ");
+  renderBillboards();
 });
 </script>
 </body>
