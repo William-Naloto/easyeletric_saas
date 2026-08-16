@@ -1,5 +1,16 @@
 # Changelog
 
+## v3.8.0 — 2026-08-16 · Camada de UX orientada a ação (Billboards, Stepper, Command Center, EasyEngineer AI)
+
+### Added
+- **Billboards contextuais** — banners dinâmicos acima do workspace, dirigidos por estado real (`loads`, `results`, `_qxHealth` do `EEPanelHealth.assess()`), não texto de marketing fixo. Cobrem onboarding, progresso, erro/aviso, sucesso e materiais.
+- **Stepper de progresso do projeto** — 4 estágios reais (Cargas → Circuitos → Proteções/QDF → Documentação), cada um só marcado como concluído quando o estado correspondente é verdadeiro; "Documentação" exige exportação real (PDF/XLSX), não apenas ter resultados.
+- **Central de Comandos (Ctrl+K)** — paleta de comandos com 14 ações reais (navegação, cálculo, exportação, tema, dev panel), reaproveitando o padrão `.modal-ov` já existente.
+- **EasyEngineer AI** — nova aba "Assistente IA", copiloto que chama a API da Anthropic (Claude) diretamente do navegador com o JSON real do projeto como contexto (cargas, circuitos calculados, Electrical Health). O motor determinístico NBR 5410 continua sendo a única fonte de verdade — a IA explica, nunca recalcula. Chave de API armazenada em `localStorage` (uso client-side; trocar por proxy de servidor antes de expor a usuários públicos).
+
+### Notes
+- Nenhuma mudança no motor de cálculo (`nbr5410_engine.js`) ou nos engines de `/scripts/engineering/` — as 291 suítes de teste existentes permanecem inalteradas e aprovadas.
+
 ## v3.7.3 — 2026-07-19 · Correções de legendas, DG e neutro por circuito
 
 ### Fixed
