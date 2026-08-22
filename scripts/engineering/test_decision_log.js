@@ -49,8 +49,12 @@ test("Disjuntores rejeitados com motivo (abaixo de Ib / acima de Izc)", () => {
     b.rejected.some(x => /Izc/.test(x.reason)) && b.value === 25;
 });
 test("Exemplo da especificação: Ib=24,8A → cabo 4mm², 25A; 20A e 32A rejeitados", () => {
-  // 24,8A: tomadas 2900VA/127V/FP0,92 ≈ 24,8A, sem agrupamento
-  const r = E.sizeCircuit({ power: 2900, pf: 0.92, distance: 10, type: "tomadas", method: "B1", wiringType: "A+N" },
+  // 24,8A: climatização 2900VA/127V/FP0,92 ≈ 24,8A, sem agrupamento.
+  // Equipamento fixo/dedicado → estratégia "min" (In ≈ Ib), que é o
+  // cenário que este exemplo da especificação sempre documentou.
+  // (Para circuitos de tomada, ver a estratégia "max" nos testes do
+  // motor: o disjuntor usa a folga do condutor, não o menor In≥Ib.)
+  const r = E.sizeCircuit({ power: 2900, pf: 0.92, distance: 10, type: "climatizacao", method: "B1", wiringType: "A+N" },
     { ...SITE, groupedCircuits: 1 });
   const log = D.fromCircuit(r);
   const c = log.find(e => e.id === "condutor"), b = log.find(e => e.id === "disjuntor");

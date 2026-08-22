@@ -165,9 +165,36 @@ test("Distância inviável (10kW a 500m) → ERROR de viabilidade", () => {
     { ...SITE_127, groupedCircuits: 1 });
   return r.status === "ERROR" && r.checks.some(c => c.id === "viabilidade" && c.status === "ERROR");
 });
-test("Carga zero → seção mínima + menor disjuntor, sem exceção", () => {
+test("Carga zero (tomada): seção mínima + disjuntor NO TETO da folga do condutor (não 6A)", () => {
+  // Regressão do bug relatado: uma tomada de 2,5mm² (Izc ~24A) não
+  // pode ficar "travada" num disjuntor de 6A só porque a carga do
+  // dia é zero/ínfima — o cabo já foi pago na seção mínima da Tab.
+  // 47, então o disjuntor deve aproveitar essa folga (limitado ao
+  // teto de plugue NBR 14136 = 20A), não colar no Ib.
   const r = E.sizeCircuit({ power: 0, pf: 0.92, distance: 10, type: "tomadas", method: "B1", wiringType: "A+N" }, SITE_127);
-  return r.conductor.section === 2.5 && r.breaker.In === 6;
+  // SITE_127 usa groupedCircuits:3 (Fg=0,70) → Izc = 24×0,70 = 16,8A,
+  // então o maior In comercial ≤ Izc é 16A (ainda assim bem acima
+  // do antigo 6A "colado" no Ib=0).
+  return r.conductor.section === 2.5 && r.breaker.In === 16 && r.breaker.strategy === "max";
+});
+test("Regressão do relato do usuário: micro-ondas 1200VA/2,5mm² não fica preso em 6A", () => {
+  const r = E.sizeCircuit({ power: 1200, pf: 0.92, distance: 12, type: "tomadas", method: "B1", wiringType: "A+B" }, SITE_127);
+  return r.conductor.section === 2.5 && r.breaker.In > 6 && r.breaker.In <= r.conductor.Izc;
+});
+test("Equipamento FIXO dedicado mantém estratégia 'min' (In ≈ placa, não a folga do cabo)", () => {
+  // Ar-condicionado é climatização (equipamento fixo/dedicado):
+  // o In deve seguir a corrente do aparelho instalado, não a maior
+  // folga possível do condutor — comportamento original preservado.
+  const r = E.sizeCircuit({ power: 1800, pf: 0.92, distance: 12, type: "climatizacao", method: "B1", wiringType: "A+B" }, SITE_127);
+  return r.breaker.strategy === "min" && r.breaker.In === 10;
+});
+test("Teto de tomada NBR 14136 (site.socketMaxA): circuito de TUG não passa de 20A por padrão", () => {
+  const r = E.sizeCircuit({ power: 500, pf: 0.92, distance: 8, type: "tomadas", method: "B1", wiringType: "A+N" }, SITE_127);
+  return r.breaker.In <= 20 && r.breaker.socketMaxA === 20;
+});
+test("Teto de tomada é ignorado se Ib já o excede (prioridade normativa Ib ≤ In)", () => {
+  const r = E.sizeCircuit({ power: 5500, pf: 0.92, distance: 8, type: "tomadas", method: "B1", wiringType: "A+B" }, SITE_127);
+  return r.Ib > 20 && r.breaker.In >= r.Ib && r.breaker.socketCapApplied === false;
 });
 
 /* ---------------- Demanda (QDF) ---------------- */

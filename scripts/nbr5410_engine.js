@@ -13,10 +13,36 @@
  *        → Capacidade corrigida Izc = Iz·Ft·Fg
  *        → Seção mínima (Tabela 47) + capacidade + queda de tensão
  *          ⇒ MENOR condutor que atende TODOS os critérios
- *        → Disjuntor: MENOR In comercial com Ib ≤ In ≤ Izc (§5.3.4)
+ *        → Disjuntor: In comercial com Ib ≤ In ≤ Izc (§5.3.4), com
+ *          ESTRATÉGIA por tipo de circuito (ver nota de engenharia
+ *          abaixo) — nunca In > Izc (o condutor SEMPRE governa o
+ *          disjuntor, nunca a carga instantânea isoladamente)
  *        → Verificação de curto-circuito (capacidade de interrupção)
  *        → DR / DPS
  *        → Validação final (PASS / WARN / ERROR)
+ *
+ * NOTA DE ENGENHARIA — critério de escolha do In dentro da janela
+ * [Ib, Izc] (revisão v3.6, ver CHANGELOG):
+ *   A NBR 5410 §5.3.4 exige apenas Ib ≤ In ≤ Iz; a norma NÃO manda
+ *   usar o MENOR In da janela. Adotar sempre o menor In (In ≈ Ib)
+ *   "trava" o circuito na carga do dia da obra: como a seção mínima
+ *   de 2,5 mm² já é obrigatória por tabela (independe da carga), um
+ *   disjuntor colado no Ib de hoje não economiza cobre nenhum — só
+ *   descarta, de graça, a folga de amperagem que o condutor já tem.
+ *   Estratégia adotada:
+ *     • Circuitos de TOMADA (tomadas/uso_geral, inclusive TUE como
+ *       geladeira/micro-ondas): disjuntor = MAIOR In comercial que
+ *       ainda respeita In ≤ Izc, limitado à corrente nominal padrão
+ *       da tomada/plugue NBR 14136 (10 A ou 20 A — parametrizável
+ *       em site.socketMaxA, default 20 A). Preserva reserva técnica
+ *       para troca de aparelho sem obra nova, sem violar a proteção
+ *       do condutor nem exceder a tomada instalada.
+ *     • Circuitos DEDICADOS de equipamento fixo (iluminação,
+ *       climatização, aquecimento/chuveiro, motor): disjuntor = MENOR
+ *       In ≥ Ib (comportamento original) — aqui o In deve refletir a
+ *       placa do equipamento, não uma reserva especulativa.
+ *   Em ambos os casos: In ≤ Izc é absoluto (o condutor protege o
+ *   limite superior; a carga só define o limite inferior).
  *
  * Referências:
  *  - ABNT NBR 5410:2023 (Tabelas 36, 37, 40, 42, 47, 58; §5.3.4,
@@ -351,13 +377,23 @@
    * ============================================================== */
 
   /**
-   * Seleciona o MENOR In comercial que satisfaz Ib ≤ In ≤ Izc.
-   * O disjuntor protege o condutor: In nunca pode exceder Izc.
+   * Seleciona o In comercial dentro da janela Ib ≤ In ≤ Izc.
+   * O disjuntor protege o condutor: In NUNCA pode exceder Izc — isso
+   * é absoluto em ambas as estratégias.
    * O critério I2 ≤ 1,45·Iz da NBR 5410 é automaticamente atendido
    * por disjuntores IEC 60898 (I2 = 1,45·In ≤ 1,45·Izc).
+   *
+   * strategy:
+   *   "min" (padrão) — MENOR In ≥ Ib. Correto para circuito dedicado
+   *      a um equipamento fixo: o In deve refletir a placa do
+   *      aparelho (chuveiro, motor, split), não uma folga especulativa.
+   *   "max" — MAIOR In ≤ Izc. Correto para circuitos de tomada: usa
+   *      toda a capacidade que o condutor (já na seção mínima
+   *      obrigatória) oferece de graça, dando reserva técnica real
+   *      para troca de carga futura sem religar/trocar cabo.
    * Retorna a lista de candidatos avaliados p/ o memorial.
    */
-  function selectBreaker({ Ib, Izc, ratings = MCB_RATINGS }) {
+  function selectBreaker({ Ib, Izc, ratings = MCB_RATINGS, strategy = "min" }) {
     const candidates = [];
     let chosen = null;
     for (const In of ratings) {
@@ -370,11 +406,28 @@
           : !geIb ? `In < Ib (${fmt(Ib)}A)`
           : `In > Izc (${fmt(Izc)}A) — não protege o condutor`
       });
-      if (ok && chosen === null) chosen = In;
-      if (In > Izc && chosen !== null) break; // já passou da janela útil
+      if (ok) {
+        if (strategy === "max") chosen = In;        // segue atualizando → fica com o maior
+        else if (chosen === null) chosen = In;       // "min": trava no primeiro (menor)
+      }
     }
-    return { In: chosen, candidates };
+    return { In: chosen, candidates, strategy };
   }
+
+  // Tipos de circuito cuja proteção deve usar TODA a folga do
+  // condutor (estratégia "max"): tomadas de uso geral e específico
+  // (TUE — geladeira, micro-ondas, etc.). Equipamento fixo/dedicado
+  // usa "min" (In ≈ placa do aparelho).
+  const CONDUCTOR_DRIVEN_TYPES = new Set(["tomadas", "uso_geral"]);
+
+  // Corrente nominal padrão de tomada/plugue doméstico — NBR 14136
+  // (10 A ou 20 A). Teto de segurança para a estratégia "max": o
+  // disjuntor de um circuito de tomada não deve superar a corrente
+  // que o próprio plugue/tomada instalados suportam, mesmo que o
+  // condutor aguente mais. Não se aplica se Ib já exceder o teto
+  // (aí a prioridade normativa Ib ≤ In prevalece e o memorial sinaliza
+  // a necessidade de tomada dedicada de maior capacidade).
+  const DEFAULT_SOCKET_MAX_A = 20;
 
   /** Curva do disjuntor por tipo de carga (partida de motor/compressor → C). */
   function breakerCurve(circuitType) {
@@ -472,9 +525,22 @@
       minSectionMm2: minS, lengthM, V, system, pf, maxDropPct
     });
 
-    // 4. Proteção: menor In com Ib ≤ In ≤ Izc. Se nenhum In couber
+    // 4. Proteção: In dentro de Ib ≤ In ≤ Izc. Se nenhum In couber
     //    na janela [Ib, Izc], sobe-se a seção até caber (§5.3.4).
-    let brk = selectBreaker({ Ib, Izc: cond.Izc });
+    //    Estratégia depende do tipo de circuito — ver nota de
+    //    engenharia no cabeçalho do arquivo:
+    //      "min" (equipamento fixo/dedicado) → In ≈ Ib (placa do aparelho)
+    //      "max" (tomadas/TUE)               → In ≈ Izc (usa a folga do condutor)
+    const strategy = CONDUCTOR_DRIVEN_TYPES.has(load.type) ? "max" : "min";
+    const socketMaxA = strategy === "max" ? (site.socketMaxA ?? DEFAULT_SOCKET_MAX_A) : null;
+    // O teto de tomada só é aplicado se Ib já couber nele; do
+    // contrário a proteção do circuito (Ib ≤ In) prevalece sobre a
+    // convenção de plugue, e o memorial sinaliza tomada dedicada.
+    const socketCapUsable = socketMaxA !== null && Ib <= socketMaxA + 1e-9;
+
+    const effIzc = (izc) => (socketCapUsable ? Math.min(izc, socketMaxA) : izc);
+
+    let brk = selectBreaker({ Ib, Izc: effIzc(cond.Izc), strategy });
     let upsizedForBreaker = false;
     while (brk.In === null) {
       const i = SECTIONS.indexOf(cond.section);
@@ -487,11 +553,13 @@
                governedBy: "coordenação da proteção (In ≤ Izc)" };
       cond.steps = cond.steps.concat([{ section: S, ok: true, reason: "seção elevada p/ coordenação da proteção" }]);
       upsizedForBreaker = true;
-      brk = selectBreaker({ Ib, Izc });
+      brk = selectBreaker({ Ib, Izc: effIzc(Izc), strategy });
     }
-    // Fallback (Ib acima de qualquer janela): menor In ≥ Ib, sinalizado
+    // Fallback (Ib acima de qualquer janela, mesmo sem teto de tomada):
+    // menor In ≥ Ib, sinalizado como não-coordenado.
     const uncoordinated = brk.In === null;
     const In = brk.In ?? (MCB_RATINGS.find(r => r >= Ib) || MCB_RATINGS[MCB_RATINGS.length - 1]);
+    const socketCapApplied = socketCapUsable && brk.In !== null && brk.In === socketMaxA && socketMaxA < cond.Izc - 1e-9;
 
     const curve = breakerCurve(load.type);
     const rcdMa = rcdSensitivity(load.type);
@@ -517,7 +585,10 @@
       breaker: {
         In, curve, candidates: brk.candidates,
         coordinated: !uncoordinated,
-        icnRequiredA: icnRequired
+        icnRequiredA: icnRequired,
+        strategy,
+        socketMaxA,
+        socketCapApplied
       },
       rcd: { In: RCD_RATINGS.find(r => r >= In) || RCD_RATINGS[RCD_RATINGS.length - 1], sensitivityMa: rcdMa },
       shortCircuit: { ...sc, adiabatic, magneticTripOk, tripMultiple },

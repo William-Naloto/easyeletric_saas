@@ -1,5 +1,19 @@
 # Changelog
 
+## v3.9.0 — 2026-08-22 · CORREÇÃO CRÍTICA: disjuntor colado à carga em vez do condutor
+
+### Fixed — BLOCKER
+- **Disjuntor de circuitos de tomada/TUE não usava mais a folga do condutor.** `selectBreaker()` sempre escolhia o MENOR In comercial ≥ Ib. Como a seção mínima de tomada (2,5 mm², Tab. 47) já é obrigatória independente da carga, isso "colava" o disjuntor na carga do dia da obra (ex.: geladeira de 350 VA → 6 A) mesmo quando o próprio cabo já instalado suportava muito mais (Izc ≈ 24 A) — travando o circuito para qualquer upgrade de carga futuro sem custo real de cobre economizado.
+  - Nova estratégia dupla em `sizeCircuit()`, por tipo de circuito:
+    - `tomadas` / `uso_geral` (inclui TUE — geladeira, micro-ondas etc.): **estratégia "max"** — disjuntor = MAIOR In comercial ≤ Izc, limitado à corrente nominal padrão de tomada/plugue NBR 14136 (`site.socketMaxA`, default 20 A). O teto de tomada é ignorado automaticamente se Ib já o exceder (a coordenação Ib ≤ In é sempre prioritária).
+    - Circuitos de equipamento fixo/dedicado (`iluminacao`, `climatizacao`, `aquecimento`, `motor`): mantém a **estratégia "min"** original — In deve refletir a placa do aparelho, não uma folga especulativa.
+  - `In ≤ Izc` continua absoluto em ambas as estratégias — o condutor sempre protege o teto; a mudança afeta apenas onde, dentro da janela permitida, o In é escolhido.
+  - `breaker.strategy`, `breaker.socketMaxA` e `breaker.socketCapApplied` expostos no resultado para auditoria no memorial e no decision log.
+  - 5 novos testes de regressão em `scripts/test_nbr5410_engine.js` cobrindo o caso relatado (micro-ondas 1200 VA / 2,5 mm² preso em 6 A), o teto de tomada e a preservação da estratégia "min" para carga fixa.
+
+### Docs
+- Nota de engenharia detalhada adicionada ao cabeçalho de `scripts/nbr5410_engine.js` explicando a distinção normativa entre "Ib ≤ In ≤ Iz é obrigatório" (NBR 5410 §5.3.4) e "In = menor valor da janela é apenas convenção, não exigência".
+
 ## v3.8.0 — 2026-08-16 · Camada de UX orientada a ação (Billboards, Stepper, Command Center, EasyEngineer AI)
 
 ### Added
