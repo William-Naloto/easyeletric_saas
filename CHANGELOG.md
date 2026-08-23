@@ -1,5 +1,15 @@
 # Changelog
 
+## v3.9.1 — 2026-08-22 · DR geral seletivo + IDR individual sempre visível + legendas
+
+### Fixed
+- **IDR individual "sumia" na maioria dos circuitos.** `qdf_twin.js` desenhava o badge "IDR 30 mA" logo abaixo de cada disjuntor, mas o halo semi-opaco da legenda de corrente/queda de tensão da fileira SEGUINTE (na mesma coluna) era desenhado por cima em ordem de documento — cobria o badge quase sempre. Só sobrava visível o último circuito de cada coluna, dando a impressão de que os IDRs estavam faltando. Corrigido adiando o desenho de todos os badges de IDR para depois de todas as fileiras (sempre no topo da pilha).
+- **DR geral duplicava proteção de 30 mA com os IDRs terminais.** `sizeFeederAndMain()` sempre retornava o DR geral em 30 mA instantâneo, mesmo quando cada circuito de tomada/TUE já tem IDR de 30 mA próprio — nesse caso o geral dispararia junto com o terminal em qualquer fuga, derrubando o quadro inteiro sem necessidade (perda de seletividade). Agora o geral vira automaticamente **seletivo tipo S, 300 mA** quando há IDR terminal (função `selectMainRCD` de `rcd.js` já existia e já tinha essa regra — só não estava sendo chamada por `sizeFeederAndMain`). Sem nenhum IDR terminal, o geral permanece 30 mA instantâneo (única linha de defesa).
+- **Nome do circuito truncava a 16 caracteres no meio da palavra** ("COzin…", "quart…") independente da largura real da etiqueta (102 px, cabe ~22 caracteres). Truncamento agora prefere cortar no último espaço antes do limite.
+
+### Docs
+- CHANGELOG v3.9.0 (ver abaixo) documenta a correção do disjuntor de tomada/TUE.
+
 ## v3.9.0 — 2026-08-22 · CORREÇÃO CRÍTICA: disjuntor colado à carga em vez do condutor
 
 ### Fixed — BLOCKER

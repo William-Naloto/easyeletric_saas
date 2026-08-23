@@ -248,6 +248,21 @@ test("QDF: coordenação do geral Ib ≤ In ≤ Izc do alimentador", () => {
   const q = E.sizeFeederAndMain(HOUSE, SITE_127);
   return q.IbFeeder <= q.main.In && q.main.In <= q.feeder.Izc && q.main.coordinated;
 });
+test("QDF: com IDR terminal (tomadas/TUE), DR geral vira SELETIVO 300mA tipo S (não duplica 30mA)", () => {
+  // HOUSE tem circuitos 'tomadas' → cada um já ganha IDR 30mA próprio
+  // (rcdSensitivity). O geral não pode ser também 30mA instantâneo,
+  // senão dispara junto com o terminal e derruba o quadro à toa.
+  const q = E.sizeFeederAndMain(HOUSE, SITE_127);
+  return q.rcd.sensitivityMa === 300 && q.rcd.selective === true && q.rcd.type === "S";
+});
+test("QDF: SEM nenhum circuito de tomada/TUE (só iluminação), DR geral continua 30mA instantâneo", () => {
+  const onlyLighting = [
+    { power: 660, pf: 0.95, type: "iluminacao", wiringType: "A+N" },
+    { power: 500, pf: 0.95, type: "iluminacao", wiringType: "B+N" }
+  ];
+  const q = E.sizeFeederAndMain(onlyLighting, SITE_127);
+  return q.rcd.sensitivityMa === 30 && q.rcd.selective === false;
+});
 test("QDF: cabo do alimentador com margem de expansão 20%", () => {
   const q = E.sizeFeederAndMain(HOUSE, SITE_127);
   return approx(q.IdimFeeder, q.IbFeeder * 1.2, 0.01) && q.feeder.Izc >= q.IdimFeeder;

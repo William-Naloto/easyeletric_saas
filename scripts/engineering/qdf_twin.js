@@ -111,7 +111,15 @@
   }
   const fmt = (v, d) => (v == null || isNaN(v)) ? "—"
     : Number(v).toFixed(d == null ? 1 : d).replace(".", ",");
-  const trunc = (s, n) => !s ? "" : (s.length > n ? s.slice(0, n - 1) + "…" : s);
+  // Trunca preferindo o último espaço antes do limite (evita cortar
+  // no meio de uma palavra, ex. "COzin…"/"quart…") — cai no corte
+  // duro só se a palavra isolada já for maior que o limite.
+  const truncWord = (s, n) => {
+    if (!s || s.length <= n) return s || "";
+    const cut = s.slice(0, n);
+    const lastSpace = cut.lastIndexOf(" ");
+    return (lastSpace > n * 0.55 ? cut.slice(0, lastSpace) : cut.slice(0, n - 1)) + "…";
+  };
 
   const ln = (x1, y1, x2, y2, a) => `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" ${a || ""}/>`;
   const rc = (x, y, w, h, a) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" ${a || ""}/>`;
@@ -553,8 +561,16 @@
   }
 
   /** Coluna de um circuito: stub do pente → IDR/disjuntor → fio de
-   *  saída (cor da fase) → etiqueta de carga → N/PE nas bordas. */
-  function circuitRow(model, circ, y, col, side, P, L, opts) {
+   *  saída (cor da fase) → etiqueta de carga → N/PE nas bordas.
+   *  `deferred`: badges de IDR são empilhados aqui e desenhados só
+   *  no final (ver render()) — o halo semi-opaco da legenda da
+   *  fileira SEGUINTE (queda de tensão/Ib) cai bem em cima da faixa
+   *  onde o badge de IDR fica, e como SVG pinta em ordem de
+   *  documento, a fileira de baixo tampava o badge da fileira de
+   *  cima quase sempre (só sobrava visível o último circuito de cada
+   *  coluna). Adiar o desenho do badge resolve sem precisar abrir
+   *  mais espaço vertical entre disjuntores. */
+  function circuitRow(model, circ, y, col, side, P, L, opts, deferred) {
     const by = model.byId;
     const brk = by[circ.breakerId], rcd = circ.rcdId ? by[circ.rcdId] : null;
     const cond = by[circ.conductorId], load = by[circ.loadId];
@@ -581,12 +597,16 @@
     if (brkRef) out += tx(modX + 55, y + 8, brkRef.reference, `class="qtw-cat" font-size="5.2" fill="${P.dimIn}" font-family="monospace"`);
     out += `</g>`;
 
-    // IDR do circuito (badge sob o módulo) — IDR = por circuito
-    if (rcd) {
-      out += `<g class="qtw-node" data-node="${circ.rcdId}" data-kind="rcd">`;
-      out += rc(modX + 22, y + G.modH / 2 + 1, 62, 10, `fill="${P.plate}" stroke="${P.moduleStroke}" stroke-width="0.8" rx="3"`);
-      out += tx(modX + 53, y + G.modH / 2 + 8.5, `IDR ${rcd.data.sensitivityMa} mA`, `text-anchor="middle" font-size="6.5" font-weight="700" fill="${P.inkIn}"`);
-      out += `</g>`;
+    // IDR do circuito (badge sob o módulo) — IDR = por circuito.
+    // Desenho adiado (ver comentário acima da função) para nunca
+    // ficar por baixo do halo da fileira de baixo.
+    if (rcd && deferred) {
+      deferred.push(
+        `<g class="qtw-node" data-node="${circ.rcdId}" data-kind="rcd">` +
+        rc(modX + 22, y + G.modH / 2 + 1, 62, 10, `fill="${P.plate}" stroke="${P.moduleStroke}" stroke-width="0.8" rx="3"`) +
+        tx(modX + 53, y + G.modH / 2 + 8.5, `IDR ${rcd.data.sensitivityMa} mA`, `text-anchor="middle" font-size="6.5" font-weight="700" fill="${P.inkIn}"`) +
+        `</g>`
+      );
     }
 
     // Fio de saída (cor da 1ª fase) + rótulos do cabo
@@ -615,7 +635,7 @@
     out += `<g class="qtw-node" data-node="${circ.loadId}" data-kind="load">`;
     out += `<title>${esc(load.data.name)} — ${fmt(load.data.powerVA, 0)} VA · ${esc(load.data.wiring)}</title>`;
     out += rc(tagX, y - 13, G.tagW, 26, `fill="${P.module}" stroke="${opts.overlays.validation ? lsc : P.moduleStroke}" stroke-width="1" rx="4"`);
-    out += tx(tagX + G.tagW / 2, y - 2.5, trunc(load.data.name, 16), `text-anchor="middle" font-size="7" font-weight="600" fill="${P.inkIn}"`);
+    out += tx(tagX + G.tagW / 2, y - 2.5, truncWord(load.data.name, 22), `text-anchor="middle" font-size="7" font-weight="600" fill="${P.inkIn}"`);
     out += tx(tagX + G.tagW / 2, y + 7.5, `${fmt(load.data.powerVA, 0)} VA · ${load.data.wiring}`, `text-anchor="middle" font-size="6" fill="${P.dimIn}"`);
     // Ligações da carga às barras da borda: NEUTRO somente quando a
     // fiação tem N (circuitos F+F/3F não levam neutro); PE sempre —
@@ -736,8 +756,10 @@
       });
     }
     s += comb(model, P, L, opts);
-    L.cols.left.forEach((c, i) => { s += circuitRow(model, c, L.rowY(i), L.leftCol, "left", P, L, opts); });
-    L.cols.right.forEach((c, i) => { s += circuitRow(model, c, L.rowY(i), L.rightCol, "right", P, L, opts); });
+    const deferredRcdBadges = [];
+    L.cols.left.forEach((c, i) => { s += circuitRow(model, c, L.rowY(i), L.leftCol, "left", P, L, opts, deferredRcdBadges); });
+    L.cols.right.forEach((c, i) => { s += circuitRow(model, c, L.rowY(i), L.rightCol, "right", P, L, opts, deferredRcdBadges); });
+    s += deferredRcdBadges.join("");
     if (!model.circuits.length) {
       s += tx(L.cx, L.rowsY0 + 20, "Nenhum circuito calculado — adicione cargas e calcule o projeto.",
         `text-anchor="middle" font-size="12" fill="${P.dimIn}"`);

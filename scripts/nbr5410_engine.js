@@ -818,6 +818,20 @@
 
     // 5. DR geral e DPS
     const drIn = RCD_RATINGS.find(r => r >= mainIn) || RCD_RATINGS[RCD_RATINGS.length - 1];
+    // DR geral: seletividade com os IDRs terminais (§5.1.3.2.2 + IEC
+    // 61008-1 tipo S). Se os circuitos de tomada/TUE já têm IDR de
+    // 30 mA individual (comportamento padrão desta engine — ver
+    // project_model.js), o geral NÃO pode ser também 30 mA
+    // instantâneo: ele dispararia junto com o terminal em qualquer
+    // fuga, derrubando o quadro inteiro sem necessidade — a clássica
+    // "proteção dupla" que parece mais segura mas só tira
+    // seletividade. Nesse caso o geral vira SELETIVO (tipo S),
+    // 300 mA, com retardo, e sua função passa a ser só incêndio —
+    // a proteção de pessoas fica com o IDR de cada circuito.
+    // Sem IDR terminal em nenhum circuito, o geral permanece 30 mA
+    // instantâneo (única linha de defesa da instalação).
+    const branchesHaveRcd = loadsArr.some(l => rcdSensitivity(l.type) === 30);
+    const mainRcdSensitivityMa = branchesHaveRcd ? 300 : 30;
     const dps = {
       class: "II", inKA: 20, imaxKA: 40,
       ucV: Vfn === 127 ? 275 : 440,
@@ -853,6 +867,11 @@
       icnRequired === null ? "ERROR" : icnRequired > 4500 ? "WARN" : "PASS",
       icnRequired === null ? `Icc ${fmt0(iccBoardA)}A > 10 kA`
         : `Icc presumida ${fmt0(iccBoardA)}A → Icn mínimo ${icnRequired / 1000} kA`));
+    checks.push(check("qdf-seletividade-dr", "Seletividade DR geral × IDR terminais",
+      "PASS",
+      branchesHaveRcd
+        ? `Geral 300 mA tipo S (seletivo) — circuitos com IDR 30 mA próprio protegem pessoas; geral cobre incêndio sem derrubar o quadro inteiro`
+        : `Geral 30 mA instantâneo — nenhum circuito terminal tem IDR próprio, então o geral é a única proteção de pessoas`));
 
     return {
       supplyType: st, system: supplySystem, V, phasesInUse,
@@ -874,7 +893,12 @@
         candidates: main.candidates,
         icnRequiredA: icnRequired
       },
-      rcd: { In: drIn, sensitivityMa: 30 },
+      rcd: {
+        In: drIn, sensitivityMa: mainRcdSensitivityMa,
+        selective: branchesHaveRcd,
+        type: branchesHaveRcd ? "S" : "AC",
+        purpose: branchesHaveRcd ? "seletividade + incêndio" : "proteção de pessoas (instalação inteira)"
+      },
       dps,
       shortCircuit: { iccBoardA, zAtBoardOhm, ikOriginA },
       checks,

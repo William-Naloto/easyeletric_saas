@@ -257,12 +257,13 @@
       viz: { phases: phasesInUse.slice(), kind: "spd" }
     });
 
-    // 7. DR geral
+    // 7. DR geral — rótulo mostra o tipo (S = seletivo) quando os
+    //    circuitos terminais já têm IDR próprio (ver sizeFeederAndMain)
     const mainRcd = addNode({
       id: "main-rcd", type: "main-rcd", parent: mainBreaker.id,
-      label: "DR Geral",
-      sub: qdf ? `${qdf.rcd.In} A / ${qdf.rcd.sensitivityMa} mA` : "—",
-      data: qdf ? { In: qdf.rcd.In, sensitivityMa: qdf.rcd.sensitivityMa } : {},
+      label: qdf && qdf.rcd.selective ? "DR Geral · Tipo S" : "DR Geral",
+      sub: qdf ? `${qdf.rcd.In} A / ${qdf.rcd.sensitivityMa} mA${qdf.rcd.selective ? " · seletivo" : ""}` : "—",
+      data: qdf ? { In: qdf.rcd.In, sensitivityMa: qdf.rcd.sensitivityMa, selective: qdf.rcd.selective, type: qdf.rcd.type } : {},
       calc: {},
       viz: { phases: phasesInUse.slice(), kind: "rcd" }
     });
