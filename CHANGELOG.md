@@ -1,5 +1,16 @@
 # Changelog
 
+## v3.11.2 — 2026-08-22 · CORREÇÃO CRÍTICA: cache-bust travado em v3.7.3 escondia todas as correções
+
+### Fixed — BLOCKER (deploy)
+- **`index.html` fixava `?v=3.7.3` em toda tag `<script>`** desde antes desta sessão, e nenhum dos 6 commits anteriores tocou nesse arquivo — cada correção de engine/render (disjuntor de tomada, DR seletivo, badges de IDR, legendas) foi publicada no `main` e no GitHub Pages **normalmente**, mas o navegador de qualquer visitante que já tinha aberto o site antes continuava servindo os arquivos `.js` **do cache do próprio navegador**, porque a URL (path + query string) era byte-idêntica à já visitada. Deploy correto, cache do cliente desatualizado — confirmado comparando o `CHANGELOG.md` servido ao vivo (já em v3.11.1) com o comportamento reportado (ainda no bug antigo).
+  - Todas as 13 tags `<script src="scripts/...">` atualizadas para `?v=3.11.1`.
+  - Versão exibida na UI (meta description, badge do logo, rodapé, seção "Recursos") sincronizada de "v3.8" para "v3.11.1"/"v3.11" — estava parada desde a v3.8.0, mascarando visualmente todo o trabalho de v3.9–v3.11.
+- **Módulos novos da Fase B/C (`wire_schedule.js`, `device_geometry.js`, `qdf_3d_builder.js`) não estavam carregados pelo `index.html`** — existiam no repositório, testados e validados via Node, mas nenhuma tag `<script>` os incluía, então ficavam inacessíveis no app publicado. Adicionadas as 3 tags que faltavam.
+
+### Nota para o time
+Recomenda-se automatizar o cache-bust (ex.: hash do conteúdo do arquivo ou timestamp de build) em vez de um número de versão editado manualmente — esse mesmo problema vai se repetir a cada release se o passo de bump for esquecido.
+
 ## v3.11.1 — 2026-08-22 · Validação final: dimensões de MCB confirmadas nas 5 marcas
 
 ### Changed

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="description" content="EasyEletric SaaS v3.8 - Projetista elétrico residencial NBR 5410:2023. Smart Distribution Board interativo, dimensionamento automático, mono/bi/trifásico.">
+<meta name="description" content="EasyEletric SaaS v3.11.1 - Projetista elétrico residencial NBR 5410:2023. Smart Distribution Board interativo, dimensionamento automático, mono/bi/trifásico.">
 <meta name="keywords" content="dimensionador elétrico,NBR 5410,calcular disjuntor,QDF residencial,DR DPS,projeto elétrico">
 <meta name="robots" content="index,follow">
 <meta property="og:title" content="EasyEletric SaaS | Projetista Elétrico NBR 5410:2023">
@@ -1312,7 +1312,7 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
   <div class="nav-logo" onclick="gotoSection('hero')">
     <div class="logo-icon"><i class="fa-solid fa-bolt"></i></div>
     <span>EasyEletric</span>
-    <span class="logo-badge">SaaS v3.8</span>
+    <span class="logo-badge">SaaS v3.11.1</span>
   </div>
   <div class="nav-links">
     <button class="nav-link" onclick="gotoSection('features')">Recursos</button>
@@ -1393,7 +1393,7 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
      FEATURES
      ============================================================ -->
 <section class="section" id="features">
-  <div class="sec-lbl"><i class="fa-solid fa-star"></i> Recursos v3.8</div>
+  <div class="sec-lbl"><i class="fa-solid fa-star"></i> Recursos v3.11</div>
   <h2 class="sec-h2">Projetista Assistido Residencial</h2>
   <p class="sec-sub">Duas formas de uso: informe cômodos e áreas para geração automática, ou adicione cargas manualmente.</p>
   <div class="feat-grid">
@@ -1959,12 +1959,12 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
       <div class="footer-col">
         <h4>Sobre</h4>
         <a href="https://github.com/William-Naloto/easyeletric_saas" target="_blank">GitHub</a>
-        <a href="CHANGELOG.md">Changelog v3.8</a>
+        <a href="CHANGELOG.md">Changelog v3.11</a>
         <a href="README.md">Documentação</a>
       </div>
     </div>
     <div class="footer-bottom">
-      <p>EasyEletric SaaS v3.8 &copy; 2025 William Naloto &bull; Sem coleta de PII &bull;
+      <p>EasyEletric SaaS v3.11.1 &copy; 2025 William Naloto &bull; Sem coleta de PII &bull;
         <a href="https://github.com/William-Naloto/easyeletric_saas" target="_blank">GitHub Pages</a><br>
         <strong>Aviso:</strong> Ferramenta de pré-dimensionamento. Não substitui projeto elétrico, ART/RRT, consulta NBR 5410 oficial e catálogos de fabricantes.
       </p>
@@ -1972,7 +1972,7 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
         <span class="fbadge">NBR 5410</span>
         <span class="fbadge">Offline</span>
         <span class="fbadge">No PII</span>
-        <span class="fbadge">v3.8</span>
+        <span class="fbadge">v3.11</span>
       </div>
     </div>
   </div>
@@ -2105,19 +2105,22 @@ footer { background:var(--bg2); border-top:1px solid var(--br); padding:42px 28p
   </div>
 </div>
 
-<script src="scripts/nbr5410_engine.js?v=3.7.3"></script>
-<script src="scripts/engineering/phase_balance.js?v=3.7.3"></script>
-<script src="scripts/engineering/rcd.js?v=3.7.3"></script>
-<script src="scripts/engineering/spd.js?v=3.7.3"></script>
-<script src="scripts/engineering/grounding.js?v=3.7.3"></script>
-<script src="scripts/engineering/decision_log.js?v=3.7.3"></script>
-<script src="scripts/engineering/project_model.js?v=3.7.3"></script>
-<script src="scripts/engineering/unifilar_twin.js?v=3.7.3"></script>
-<script src="scripts/engineering/panel_health.js?v=3.7.3"></script>
-<script src="scripts/engineering/qdf_twin.js?v=3.7.3"></script>
-<script src="scripts/engineering/manufacturer_catalog.js?v=3.7.3"></script>
-<script src="scripts/engineering/panel_schedule.js?v=3.7.3"></script>
-<script src="scripts/engineering/dxf_export.js?v=3.7.3"></script>
+<script src="scripts/nbr5410_engine.js?v=3.11.1"></script>
+<script src="scripts/engineering/phase_balance.js?v=3.11.1"></script>
+<script src="scripts/engineering/rcd.js?v=3.11.1"></script>
+<script src="scripts/engineering/spd.js?v=3.11.1"></script>
+<script src="scripts/engineering/grounding.js?v=3.11.1"></script>
+<script src="scripts/engineering/decision_log.js?v=3.11.1"></script>
+<script src="scripts/engineering/project_model.js?v=3.11.1"></script>
+<script src="scripts/engineering/unifilar_twin.js?v=3.11.1"></script>
+<script src="scripts/engineering/panel_health.js?v=3.11.1"></script>
+<script src="scripts/engineering/qdf_twin.js?v=3.11.1"></script>
+<script src="scripts/engineering/manufacturer_catalog.js?v=3.11.1"></script>
+<script src="scripts/engineering/panel_schedule.js?v=3.11.1"></script>
+<script src="scripts/engineering/dxf_export.js?v=3.11.1"></script>
+<script src="scripts/engineering/wire_schedule.js?v=3.11.1"></script>
+<script src="scripts/engineering/device_geometry.js?v=3.11.1"></script>
+<script src="scripts/engineering/qdf_3d_builder.js?v=3.11.1"></script>
 <script>
 // ================================================================
 // NBR 5410:2023 — camada de integração com o motor de cálculo
