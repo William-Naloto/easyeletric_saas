@@ -21,6 +21,8 @@ const SUITES = [
   "engineering/test_panel_health.js",
   "engineering/test_qdf_twin.js",
   "engineering/test_manufacturer_catalog.js",
+  "engineering/test_device_geometry.js",
+  "engineering/test_qdf_3d_builder.js",
   "engineering/test_panel_schedule.js",
   "engineering/test_wire_schedule.js",
   "engineering/test_dxf_export.js"

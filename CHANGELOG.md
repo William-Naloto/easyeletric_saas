@@ -1,5 +1,19 @@
 # Changelog
 
+## v3.11.0 — 2026-08-22 · Fase B: modelo 3D paramétrico próprio (5 fabricantes)
+
+### Added
+- **Novo módulo `scripts/engineering/device_geometry.js`** (`EEDeviceGeometry`): dimensões físicas reais (mm) e cores de acabamento por fabricante — não é o asset CAD oficial (isso exige licenciamento comercial, ver nota abaixo), é geometria própria construída a partir de datasheet/norma pública.
+  - WEG: dimensões conferidas no catálogo oficial (weg.net) — 18 mm/módulo, disjuntor 86 mm de altura, IDR 89×74 mm, DPS 90×68 mm. Marcado `sourced: true`.
+  - Schneider/Siemens/ABB/Legrand: envolvente padrão de mercado (IEC 60947-2/EN 50022, 17,5 mm/módulo) até confirmarmos o datasheet oficial de cada marca — marcado `sourced: false`, com nota explícita no próprio dado.
+  - Trilho DIN: EN 50022 (35 mm), padrão universal.
+- **Novo módulo `scripts/engineering/qdf_3d_builder.js`** (`EEQdf3D`): gera a lista de peças 3D (posição/tamanho/cor em mm) do quadro inteiro a partir do `ElectricalProjectModel` — disjuntor geral, DR geral (com selo de seletividade), DPS's, barramentos de fase, trilhos DIN, e um disjuntor+IDR por circuito terminal, exatamente espelhando a topologia elétrica real (mesmo agrupamento De/Para do `wire_schedule.js`). Testado nos 5 fabricantes contra o projeto real de 17 circuitos: 48 peças, painel 710×1235 mm, zero sobreposição.
+- **5º fabricante: Legrand** adicionado a `manufacturer_catalog.js` (linha DX3), completando o conjunto de 5 marcas com biblioteca própria (WEG, Schneider, Siemens, ABB, Legrand).
+- 20 testes novos (`test_device_geometry.js` + `test_qdf_3d_builder.js`), 16 suítes no total.
+
+### Reality check documentado (ver discussão de planejamento)
+Investigação confirmou que nenhum fabricante do setor oferece API para elementos 3D sob demanda — apenas bibliotecas BIM (Revit/IFC) para download manual, sob licença de projeto de especificação, não de redistribuição em SaaS de terceiro. A rota escolhida foi construir uma biblioteca 3D paramétrica própria a partir de especificação técnica pública (datasheet, norma), evitando qualquer dependência de licenciamento de terceiro. Uso do asset oficial de cada fabricante (Fase C do roadmap) exige negociação comercial direta, fora do escopo de desenvolvimento de software.
+
 ## v3.10.0 — 2026-08-22 · Guia de Instalação: identificação De/Para de cabeamento
 
 ### Added

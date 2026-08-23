@@ -26,11 +26,11 @@ const LOADS = [
 const model = M.build(LOADS, SITE_TRI);
 
 /* ---------------- Fabricantes ---------------- */
-test("Lista de fabricantes: genérico + 4 marcas, com id e nome", () => {
+test("Lista de fabricantes: genérico + 5 marcas, com id e nome", () => {
   const mks = C.manufacturers();
-  return mks.length === 5 && mks[0].id === "generic" &&
+  return mks.length === 6 && mks[0].id === "generic" &&
     mks.every(m => m.id && m.name) &&
-    ["weg", "schneider", "siemens", "abb"].every(id => mks.some(m => m.id === id));
+    ["weg", "schneider", "siemens", "abb", "legrand"].every(id => mks.some(m => m.id === id));
 });
 
 /* ---------------- Disjuntores ---------------- */

@@ -80,6 +80,15 @@
       ],
       rcd: { series: "F200", ref: d => `F20${d.poles}-${d.In}/0,0${d.sensitivityMa / 10}` },
       spd: { series: "OVR", ref: d => `OVR T2 ${d.imaxKA} 275` }
+    },
+    legrand: {
+      name: "Legrand",
+      mcb: [
+        { series: "DX3", icnKA: 6, ref: d => `DX3-${d.poles}${d.curve}${d.In}-6K` },
+        { series: "DX3-N", icnKA: 10, ref: d => `DX3-${d.poles}${d.curve}${d.In}-10K` }
+      ],
+      rcd: { series: "DX3-ID", ref: d => `DX3ID-${d.poles}-${d.In}-${d.sensitivityMa}mA` },
+      spd: { series: "DX3-SP", ref: d => `DX3SP-${d.imaxKA}kA-275` }
     }
   };
 
@@ -87,7 +96,7 @@
 
   /** Fabricantes disponíveis (ordem de exibição). */
   function manufacturers() {
-    return ["generic", "weg", "schneider", "siemens", "abb"]
+    return ["generic", "weg", "schneider", "siemens", "abb", "legrand"]
       .map(id => ({ id, name: MAKERS[id].name }));
   }
 
