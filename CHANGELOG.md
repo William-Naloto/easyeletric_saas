@@ -1,5 +1,18 @@
 # Changelog
 
+## v3.10.0 — 2026-08-22 · Guia de Instalação: identificação De/Para de cabeamento
+
+### Added
+- **Novo módulo `scripts/engineering/wire_schedule.js`** (`EEWireSchedule`): gera, a partir do `ElectricalProjectModel`, a identificação física completa de CADA condutor do quadro — uma linha por fio real (fase(s), neutro quando existir, PE sempre), não por circuito. Para o projeto de 17 circuitos do memorial de referência: **57 condutores físicos identificados** (6 do quadro/alimentador + 51 dos circuitos terminais).
+  - Cada condutor recebe: tag único (`C06-A`, `C06-N`, `C06-PE`...), ponto **DE** (barramento/borne de origem no QDF) e **PARA** (ambiente + descrição da carga), cor normativa (NBR 5410 §6.1.5.3), bitola, método de instalação, comprimento e a que borne do disjuntor/IDR ele pousa.
+  - `WS.toMarkdown(schedule)` — tabela De/Para completa por circuito, pronta para entrar no memorial/guia de instalação.
+  - `WS.toLabelSheet(schedule)` — lista achatada de etiquetas de 2 linhas, uma por condutor físico, no formato compatível com rotuladores de obra (Brady/Vinilex/Brother P-touch), na ordem em que seriam coladas (quadro → circuito a circuito → fase → neutro → PE).
+  - Ficha do quadro (`boardWires`) cobre também o alimentador (fase+neutro+PE), DPS e DR geral com o mesmo formato De/Para.
+  - 12 testes de regressão em `scripts/engineering/test_wire_schedule.js`, registrados em `test_all.js`.
+
+### Roadmap (não incluído nesta versão)
+- Elementos 3D reais de fabricante via API/BIM: investigado — não existe API de fabricante para isso (WEG/Schneider/ABB/Siemens publicam bibliotecas BIM/Revit para download manual, sob licença de projeto, não de redistribuição em SaaS de terceiros). Próxima etapa: biblioteca 3D paramétrica própria (Three.js/GLTF) com dimensões reais de datasheet público — ver discussão no changelog/PR desta versão.
+
 ## v3.9.1 — 2026-08-22 · DR geral seletivo + IDR individual sempre visível + legendas
 
 ### Fixed
