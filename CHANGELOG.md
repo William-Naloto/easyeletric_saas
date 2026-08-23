@@ -1,5 +1,18 @@
 # Changelog
 
+## v3.11.1 — 2026-08-22 · Validação final: dimensões de MCB confirmadas nas 5 marcas
+
+### Changed
+- **`device_geometry.js` — disjuntor (MCB) agora com fonte primária confirmada nas 5 marcas**, não só WEG:
+  - WEG MDW: 18 × 86 × 45 mm (catálogo oficial weg.net) — já estava confirmado.
+  - Schneider Acti9 iC60N: 18 × 85 × 78,5 mm (datasheet oficial Schneider, download.se.com).
+  - Siemens 5SL4: 18 × 90 × 76 mm (datasheet Siemens 5SL4125-6 via RS Components; módulo de 18 mm também confirmado no catálogo oficial Siemens LV10, "1 MW = 18 mm").
+  - ABB S200: 18 × 86 × 68 mm (datasheet oficial ABB S200 OV, library.e.abb.com, seção "Dimensions (H x D x W)").
+  - Legrand DX3: 17,8 × 94,8 × 77,8 mm (datasheet Legrand DX3 via RS Components).
+  - As 5 marcas convergem em ~18 mm por módulo (a norma IEC 60947-2/EN 50022 define 17,5 mm nominal; todo fabricante do setor realiza ~18 mm na prática) — confirma que a envolvente adotada desde a v3.11.0 já estava correta mesmo antes da checagem.
+- **Sourcing passou a ser por categoria de dispositivo** (`mcb`/`rcd`/`spd`), não mais um booleano único por fabricante — porque a confirmação não chega junto para as três categorias. IDR (RCD) e DPS (SPD) permanecem confirmados apenas para WEG nesta versão; as demais marcas seguem com envolvente padrão de mercado, marcado `sourced: false` em `byCategory.rcd`/`byCategory.spd`, nunca escondido.
+- 5 novos testes de regressão travando os valores oficiais de cada marca; 16 suítes, todas verdes.
+
 ## v3.11.0 — 2026-08-22 · Fase B: modelo 3D paramétrico próprio (5 fabricantes)
 
 ### Added

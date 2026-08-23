@@ -13,9 +13,13 @@ test("makers() cobre os 5 fabricantes + genérico", () => {
   return ["weg", "schneider", "siemens", "abb", "legrand", "generic"].every(id => m.includes(id));
 });
 
-test("WEG é a única marca marcada como 'sourced' (fonte primária conferida) nesta versão", () => {
-  return DG.info("weg").sourced === true &&
-    ["schneider", "siemens", "abb", "legrand", "generic"].every(m => DG.info(m).sourced === false);
+test("WEG e as 5 marcas têm disjuntor (MCB) com fonte primária confirmada nesta versão", () => {
+  return DG.makers().filter(m => m !== "generic").every(m => DG.info(m).byCategory.mcb.sourced === true);
+});
+test("IDR/DPS confirmados apenas para WEG nesta versão — demais marcas seguem 'sourced: false' até confirmação", () => {
+  return DG.info("weg").byCategory.rcd.sourced === true && DG.info("weg").byCategory.spd.sourced === true &&
+    ["schneider", "siemens", "abb", "legrand"].every(m =>
+      DG.info(m).byCategory.rcd.sourced === false && DG.info(m).byCategory.spd.sourced === false);
 });
 
 test("Largura de disjuntor multipolar = polos × largura do módulo (não um número fixo)", () => {
@@ -28,6 +32,26 @@ test("Largura de disjuntor multipolar = polos × largura do módulo (não um nú
 test("Dimensões WEG batem com o datasheet oficial (18mm/módulo, altura ~86mm)", () => {
   const d = DG.dims("weg", "mcb", 1);
   return d.moduleWidthMm === 18 && d.heightMm === 86;
+});
+
+test("Dimensões Schneider Acti9 iC60N batem com o datasheet oficial (18 x 85 x 78,5mm)", () => {
+  const d = DG.dims("schneider", "mcb", 1);
+  return d.moduleWidthMm === 18 && d.heightMm === 85 && d.depthMm === 78.5;
+});
+
+test("Dimensões Siemens 5SL4 batem com o datasheet (18 x 90 x 76mm)", () => {
+  const d = DG.dims("siemens", "mcb", 1);
+  return d.moduleWidthMm === 18 && d.heightMm === 90 && d.depthMm === 76;
+});
+
+test("Dimensões ABB S200 batem com o datasheet oficial (18 x 86 x 68mm)", () => {
+  const d = DG.dims("abb", "mcb", 1);
+  return d.moduleWidthMm === 18 && d.heightMm === 86 && d.depthMm === 68;
+});
+
+test("Dimensões Legrand DX3 batem com o datasheet (17,8 x 94,8 x 77,8mm)", () => {
+  const d = DG.dims("legrand", "mcb", 1);
+  return d.moduleWidthMm === 17.8 && d.heightMm === 94.8 && d.depthMm === 77.8;
 });
 
 test("Fabricante inexistente cai no genérico sem lançar exceção", () => {
