@@ -138,7 +138,6 @@
    * alimentador e as ligações do topo do quadro.
    */
   function boardWires(model) {
-    const qdf = model.byId["main-breaker"] ? model.byId : null;
     const feeder = model.byId["feeder"];
     const mainBreaker = model.byId["main-breaker"];
     const mainRcd = model.byId["main-rcd"];

@@ -139,7 +139,6 @@
       list.forEach((circ, i) => {
         const brk = by[circ.breakerId];
         const rcd = circ.rcdId ? by[circ.rcdId] : null;
-        const poles = circ.phases.length + (rcd ? 1 : 0); // aproximação p/ largura visual
         const dBrk = DG.dims(makerId, "mcb", circ.phases.length);
         const y = panelHeightMm - G.marginMm - topBandMm - i * G.railPitchMm - 40;
         const colX = side === "left"
