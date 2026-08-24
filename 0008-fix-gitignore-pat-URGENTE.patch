@@ -1,0 +1,46 @@
+From 3377aadaa1be6d1205895020a2c3a7fcfc69de13 Mon Sep 17 00:00:00 2001
+From: EasyEletric Senior Engineer Agent <engenheiro@easyeletric.local>
+Date: Mon, 24 Aug 2026 00:24:24 +0000
+Subject: [PATCH] fix(gitignore): *pat* escondia qualquer arquivo .patch do git
+ add/status
+
+Causa raiz do 'git push --set-upstream' que enviou 0 objetos: a
+regra '*pat*' em .gitignore (pensada pra bloquear token/PAT) casava
+com QUALQUER nome contendo a substring 'pat' - inclusive '*.patch',
+porque '.patch' contem '.pat'. Resultado: git add/status nunca via
+o arquivo de patch, entao nao havia nada pra comitar.
+
+- '*pat*' trocado por regras mais especificas: '*.pat', '*_pat',
+  '*_pat.*', 'github_pat*' (cobrem os nomes reais de arquivo de
+  token/PAT) + negacao explicita '!*.patch' como cinto de seguranca
+- Testado: 'git add arquivo.patch' funciona normal agora; nomes de
+  token comuns (github_pat_*, *_pat, *.pat, *token*, .env) continuam
+  bloqueados
+- 16 suites, todas verdes (mudanca e so em .gitignore, sem impacto
+  no motor/render)
+---
+ .gitignore | 10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
+
+diff --git a/.gitignore b/.gitignore
+index 4c5ba88..4bf51cd 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -12,6 +12,12 @@ Thumbs.db
+ # generated archives
+ *.zip
+ 
+-# Never commit tokens
++# Never commit tokens (mas NÃO patches: .patch é convenção do
++# git format-patch, usado no fluxo de review desta equipe — *pat*
++# batia em qualquer nome contendo "pat", inclusive "*.patch")
+ *token*
+-*pat*
++*.pat
++*_pat
++*_pat.*
++github_pat*
++!*.patch
+-- 
+2.43.0
+
