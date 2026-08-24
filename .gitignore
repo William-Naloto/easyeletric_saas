@@ -12,6 +12,12 @@ Thumbs.db
 # generated archives
 *.zip
 
-# Never commit tokens
+# Never commit tokens (mas NÃO patches: .patch é convenção do
+# git format-patch, usado no fluxo de review desta equipe — *pat*
+# batia em qualquer nome contendo "pat", inclusive "*.patch")
 *token*
-*pat*
+*.pat
+*_pat
+*_pat.*
+github_pat*
+!*.patch
